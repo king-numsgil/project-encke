@@ -1,0 +1,57 @@
+[package]
+name = "goblin-runtime"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+license = "Apache-2.0"
+publish = false
+
+[lib]
+name = "goblin_runtime"
+# Linked into every compiled program, and built for the *user's* target rather
+# than the host — which is why this crate is outside the compiler's cargo
+# workspace and is built on demand.
+#
+# Both forms, from one build. `staticlib` is the default and makes a program one
+# self-contained file. `cdylib` is what `runtime: "shared"` links instead, for
+# the one case a copy per artefact cannot serve: two Goblin artefacts in one
+# process, which need one heap and one live-allocation counter between them
+# rather than one each. Neither is expensive to have sitting there, and building
+# the second on demand would mean a second cargo invocation to discover it was
+# not needed.
+crate-type = ["staticlib", "cdylib"]
+
+[dependencies]
+# `default-features = false` drops libc's own `std` feature. The crate is
+# no_std, and a dependency that pulls std back in would relink the very
+# machinery this crate is arranged to leave out.
+libc = { version = "0.2", default-features = false }
+libmimalloc-sys = { version = "0.1.49", features = ["extended"] }
+# `std/math`, in Rust rather than the platform's libm — and not for purity.
+#
+# Two reasons, and the first is a link failure. Nothing adds `-lm` to a Goblin
+# link: `system_libs` is the user's list, so a runtime that referenced `sin`
+# would fail to link on every Linux program that did not think to ask for a
+# library it never mentioned.
+#
+# The second is that this crate is a port of MUSL's libm and therefore gives the
+# *same* answer on all three targets. The platforms' own libms disagree in the
+# last ulp, and this project asserts on printed output — so a shared `sin` is
+# the difference between one expected string and three.
+libm = { version = "0.2", default-features = false }
+
+[profile.release]
+opt-level = 3
+lto = true
+panic = "abort"
+
+# The same, for a debug build nobody ships but everybody types.
+#
+# The crate is `no_std`, so it cannot unwind at all — and `panic` defaults to
+# `"unwind"` per profile, not per crate. Without this, `cargo build` here fails
+# with "unwinding panics are not supported without std" while `cargo build
+# --release` succeeds, which reads as the crate being broken rather than as one
+# profile being unset. The compiler only ever builds this `--release`
+# (`packages/runtime/src/build.ts`), so nothing shipped changes.
+[profile.dev]
+panic = "abort"

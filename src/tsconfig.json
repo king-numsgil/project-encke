@@ -1,0 +1,26 @@
+{
+    "compilerOptions": {
+        "noLib": true,
+        "types": [],
+        "typeRoots": [],
+        "target": "ES2015",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "moduleDetection": "force",
+        "allowImportingTsExtensions": true,
+        "strict": true,
+        "noImplicitOverride": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUncheckedIndexedAccess": false,
+        "strictPropertyInitialization": false,
+        "isolatedModules": true,
+        "verbatimModuleSyntax": true,
+        "noEmit": true
+    },
+    "files": [
+        "../node_modules/goblin-forge/global.d.ts"
+    ],
+    "include": [
+        "**/*.ts"
+    ]
+}

@@ -1,0 +1,9 @@
+[package]
+name = "shadercc"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+anyhow = "1.0.104"
+clap = { version = "4.6.6", features = ["derive"] }
+naga = { version = "30.0.0", features = ["wgsl-in", "spv-out"] }

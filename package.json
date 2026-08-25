@@ -1,0 +1,20 @@
+{
+    "name": "encke",
+    "module": "main.ts",
+    "type": "module",
+    "private": true,
+    "scripts": {
+        "compile": "bun build.ts",
+        "execute": "./bin/encke",
+        "start": "bun compile && bun execute"
+    },
+    "devDependencies": {
+        "@types/bun": "latest"
+    },
+    "peerDependencies": {
+        "typescript": "^6"
+    },
+    "dependencies": {
+        "goblin-forge": "file:./tools/goblin-forge"
+    }
+}
