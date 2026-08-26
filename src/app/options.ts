@@ -26,6 +26,16 @@ export class Options {
     /** Stop after this many frames. Zero means run until the window closes. */
     frames: u32;
 
+    /**
+     * Point lights in the test scene's moving field.
+     *
+     * The four shadow-casting spotlights are on top of this, and the renderer's
+     * own per-scene cap is 384, so anything above 380 is clamped by the upload
+     * with a line in the log. Exposed because light count is the axis this
+     * renderer is built to scale along, and testing it should not need a rebuild.
+     */
+    lights: u32;
+
     /** Report frame timing statistics on exit. */
     bench: boolean;
 
@@ -60,6 +70,7 @@ export class Options {
         this.present = SDL_GPUPresentMode.MAILBOX;
         this.screenshot = "";
         this.frames = 0;
+        this.lights = 160;
         this.debug = 0;
         this.bench = false;
         this.help = false;
@@ -160,6 +171,15 @@ export function parseOptions(args: string[]): Options {
                 options.present = presentModeFrom(args[i + 1]);
             }
             i += 2;
+        } else if (flag === "--lights" && hasValue) {
+            const value = parseInteger(args[i + 1]);
+            if (value < 0) {
+                console.log(`options: --lights wants a non-negative integer, got '${args[i + 1]}'`);
+                options.invalid = true;
+            } else {
+                options.lights = cast<u32>(value);
+            }
+            i += 2;
         } else if (flag === "--debug" && hasValue) {
             if (!isDebugView(args[i + 1])) {
                 console.log(`options: --debug wants off, clusters, ao or cascades, got '${args[i + 1]}'`);
@@ -207,6 +227,7 @@ export function printUsage(): void {
     console.log("  --height N           render height, default 900");
     console.log("  --present MODE       mailbox (default, falls back to vsync), vsync, immediate");
     console.log("  --screenshot PATH    write a PNG once the scene has settled, then exit");
+    console.log("  --lights N           point lights in the test scene, default 160 (cap 380)");
     console.log("  --frames N           stop after N frames");
     console.log("  --bench N            run N frames and report frame timing");
     console.log("  --debug VIEW         off (default), clusters, ao, cascades");

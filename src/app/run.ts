@@ -82,7 +82,7 @@ export function run(options: Reference<Options>): i32 {
         console.log("run: capture target failed — no screenshot will be written");
     }
 
-    const scene = buildTestScene(device);
+    const scene = buildTestScene(device, options.lights);
 
     const camera = new Camera();
     camera.fovY = cameraFovY();
@@ -124,7 +124,7 @@ export function run(options: Reference<Options>): i32 {
         const delta = clock.tick();
         input.poll();
         driveCamera(camera, input, delta);
-        populateLights(scene, clock.elapsed);
+        populateLights(scene, clock.elapsed, options.lights);
 
         if (display.readSize()) {
             // The window changed size, so the targets and the cluster bounds are

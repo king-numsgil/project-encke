@@ -46,9 +46,20 @@ export class ClusterBuffers {
 
     private staging: Staging;
 
+    /**
+     * Whether the over-cap warning has already been printed.
+     *
+     * A latch, because `uploadLights` runs every frame and the condition it
+     * reports is a property of the scene, not of the frame. Without it a scene
+     * one light over the cap prints a line per frame for as long as it runs,
+     * which buries everything else in the log.
+     */
+    private warnedOverCap: boolean;
+
     /** See the note on `Renderer`'s constructor: a class-typed field is storage, not an object. */
     constructor() {
         this.staging = new Staging();
+        this.warnedOverCap = false;
         this.bounds = null;
         this.active = null;
         this.lightCount = null;
@@ -126,7 +137,12 @@ export class ClusterBuffers {
 
         let count = cast<u32>(lights.length);
         if (count > maxLights()) {
-            console.log(`cluster: scene has ${lights.length} lights, cap is ${maxLights()} — dropping the rest`);
+            if (!this.warnedOverCap) {
+                console.log(
+                    `cluster: scene has ${lights.length} lights, cap is ${maxLights()} — dropping the rest`,
+                );
+                this.warnedOverCap = true;
+            }
             count = maxLights();
         }
         if (count === 0) {

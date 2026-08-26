@@ -171,17 +171,28 @@ fn fs_main(in : VertexOut) -> @location(0) vec4<f32> {
     );
 
     // -- the sun, the one global shadow emitter --
+    //
+    // The shadow lookup is skipped outright on a surface the sun cannot reach.
+    // It is the most expensive single thing in this shader — nine taps, or
+    // eighteen inside a cascade blend band — and on a fragment facing away from
+    // the sun every one of them is discarded by `shade_light`'s own `n_dot_l`
+    // test a few lines later. Roughly half the visible surface in a lit scene
+    // faces away from the light.
     let sun_dir = normalize(frame_fs.sun_direction.xyz);
-    let sun_visibility = sun_shadow(
-        shadow_atlas,
-        shadow_sampler,
-        shadows,
-        in.world_pos,
-        normal,
-        sun_dir,
-        view_z,
-    );
-    var color = shade_light(surface, sun_dir) * frame_fs.sun_color.rgb * sun_visibility;
+    var color = vec3<f32>(0.0);
+
+    if dot(normal, sun_dir) > 0.0 {
+        let sun_visibility = sun_shadow(
+            shadow_atlas,
+            shadow_sampler,
+            shadows,
+            in.world_pos,
+            normal,
+            sun_dir,
+            view_z,
+        );
+        color = shade_light(surface, sun_dir) * frame_fs.sun_color.rgb * sun_visibility;
+    }
 
     // -- the cluster's punctual lights, furthest first --
     let coord = cluster_of_fragment(
@@ -210,6 +221,16 @@ fn fs_main(in : VertexOut) -> @location(0) vec4<f32> {
         }
 
         let to_light = delta * inverseSqrt(max(dist_sq, 1e-8));
+
+        // Facing away from the light. `shade_light` would return zero for this
+        // anyway, but only *after* the shadow lookup below has run — and that
+        // lookup is a nine-tap PCF. A light's sphere covers surfaces on both
+        // sides of it, so this rejects a large fraction of the loop before it
+        // touches a texture.
+        if dot(normal, to_light) <= 0.0 {
+            continue;
+        }
+
         var attenuation = distance_attenuation(dist_sq, light.range);
         if light.kind == LIGHT_SPOT {
             attenuation = attenuation * spot_attenuation(light, to_light);

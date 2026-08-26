@@ -25,17 +25,13 @@ import { makeMaterial, makeMetal } from "../renderer/scene/material.ts";
 import { makePointLight, makeSpotLight } from "../renderer/scene/light.ts";
 import { Scene } from "../renderer/scene/scene.ts";
 
-/** How many point lights the moving field holds. */
-function pointLightCount(): u32 {
-    return 160;
-}
 
 /** Minimum thickness a mesh must have on every axis, in world units. */
 function minimumThickness(): f32 {
     return 0.05;
 }
 
-export function buildTestScene(device: Pointer<SDL_GPUDevice>): Scene {
+export function buildTestScene(device: Pointer<SDL_GPUDevice>, pointLights: u32): Scene {
     const scene = new Scene();
 
     scene.sunDirection = new fvec3(-0.45, 0.8, 0.4);
@@ -128,7 +124,7 @@ export function buildTestScene(device: Pointer<SDL_GPUDevice>): Scene {
     scene.add(sphere, steel, fmat4.fromTranslation(new fvec3(3.0, 1.4, 2.0)));
 
     // -- lights --
-    populateLights(scene, 0.0);
+    populateLights(scene, 0.0, pointLights);
 
     console.log(
         `scene: ${scene.instances.length} instances, ${scene.meshes.length} meshes, ${scene.lights.length} lights`,
@@ -145,12 +141,11 @@ export function buildTestScene(device: Pointer<SDL_GPUDevice>): Scene {
  * into one assignment, and a culling bug that only shows on change would never
  * appear.
  */
-export function populateLights(scene: Reference<Scene>, t: f32): void {
+export function populateLights(scene: Reference<Scene>, t: f32, count: u32): void {
     while (scene.lights.length > 0) {
         scene.lights.pop();
     }
 
-    const count = pointLightCount();
     // The golden angle, in radians. Annotated because a literal takes its width
     // from context and there is none here.
     const golden: f32 = 2.399963;
