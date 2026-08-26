@@ -16,6 +16,7 @@ import {
     SDL_GPUIndexElementSize,
     type SDL_GPURenderPass,
 } from "../../bindings/SDL3";
+import { fvec3 } from "std/linalg";
 import { createBuffer, releaseBuffer, Staging } from "../gpu/buffer.ts";
 import { type MeshData, vertexStride } from "./meshdata.ts";
 
@@ -42,12 +43,25 @@ export class GpuMesh {
     /** Indices to draw. Zero until {@link upload} has succeeded. */
     indexCount: u32;
 
+    /**
+     * Bounding sphere in the mesh's own space, for culling.
+     *
+     * The sphere around the axis-aligned box rather than a minimal one. It is
+     * looser — up to `sqrt(3)` on a cube — and it is the right looseness: a
+     * sphere is what survives an arbitrary rotation without being recomputed,
+     * and every instance of a mesh has its own transform.
+     */
+    boundsCenter: fvec3;
+    boundsRadius: f32;
+
     constructor() {
         this.vertices = null;
         this.indices = null;
         this.vertexBinding = null;
         this.indexBinding = null;
         this.indexCount = 0;
+        this.boundsCenter = fvec3.zero();
+        this.boundsRadius = 0.0;
     }
 
     /**
@@ -123,6 +137,21 @@ export class GpuMesh {
             releaseBuffer(device, indexBuffer);
             return false;
         }
+
+        // The box the generator produced, turned into the sphere that bounds it.
+        // Done here rather than per instance because it is a property of the
+        // mesh, and instances of one mesh differ only by their transform.
+        const box = mesh.bounds();
+        this.boundsCenter = new fvec3(
+            (box[0] + box[3]) * 0.5,
+            (box[1] + box[4]) * 0.5,
+            (box[2] + box[5]) * 0.5,
+        );
+        this.boundsRadius = new fvec3(
+            (box[3] - box[0]) * 0.5,
+            (box[4] - box[1]) * 0.5,
+            (box[5] - box[2]) * 0.5,
+        ).length();
 
         this.vertices = vertexBuffer;
         this.indices = indexBuffer;

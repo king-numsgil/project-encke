@@ -11,7 +11,7 @@
 // pretending otherwise by half-implementing it would make the benchmark numbers
 // lie about which work is actually being measured.
 
-import { fmat4, fvec3 } from "std/linalg";
+import { fmat4, fvec3, fvec4 } from "std/linalg";
 import type { SDL_GPUDevice } from "../../bindings/SDL3";
 import { Fallbacks, MaterialTextures } from "../assets/material_set.ts";
 import { GpuMesh } from "../geometry/mesh.ts";
@@ -24,10 +24,24 @@ export class Instance {
     material: usize;
     transform: fmat4;
 
+    /**
+     * The mesh's bounding sphere, already in world space.
+     *
+     * Computed once when the instance is registered, because a transform never
+     * changes after that — {@link Scene.add} is the only way one enters. Every
+     * pass tests this against its own frustum, and a pass runs up to ten times
+     * per frame, so recomputing it from the transform each time would be the
+     * same arithmetic done ten times for an answer that cannot have moved.
+     */
+    boundsCenter: fvec3;
+    boundsRadius: f32;
+
     constructor() {
         this.mesh = 0;
         this.material = 0;
         this.transform = fmat4.identity();
+        this.boundsCenter = fvec3.zero();
+        this.boundsRadius = 0.0;
     }
 }
 
@@ -105,11 +119,35 @@ export class Scene {
         return this.materials.length - 1;
     }
 
+    /**
+     * Register a drawable.
+     *
+     * The mesh must already be registered: its own bounding sphere is read here
+     * and carried into world space, and a mesh index that is not in
+     * {@link meshes} yet would take the zero-radius sphere of an empty slot,
+     * which every frustum test would then reject. That is a silently invisible
+     * object rather than an error, so the ordering is worth knowing about.
+     */
     add(mesh: usize, material: usize, transform: fmat4): void {
         const instance = new Instance();
         instance.mesh = mesh;
         instance.material = material;
         instance.transform = transform;
+
+        const local = this.meshes[mesh].boundsCenter;
+        const world = transform.mulVec(new fvec4(local.x, local.y, local.z, 1.0));
+        instance.boundsCenter = new fvec3(world.x, world.y, world.z);
+
+        // The largest the transform stretches any axis. Uniform scale would let
+        // a single factor through, but nothing here guarantees uniform scale,
+        // and a radius scaled by too little is an object that vanishes when it
+        // should not — the one failure mode culling must not have.
+        const x = new fvec3(transform.c0.x, transform.c0.y, transform.c0.z).length();
+        const y = new fvec3(transform.c1.x, transform.c1.y, transform.c1.z).length();
+        const z = new fvec3(transform.c2.x, transform.c2.y, transform.c2.z).length();
+        const largest = x > y ? (x > z ? x : z) : (y > z ? y : z);
+        instance.boundsRadius = this.meshes[mesh].boundsRadius * largest;
+
         this.instances.push(instance);
     }
 

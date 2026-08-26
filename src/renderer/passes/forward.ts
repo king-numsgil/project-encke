@@ -52,6 +52,7 @@ import {
     type ShadowUniform,
 } from "../frame/uniforms.ts";
 import { createForwardPipeline } from "../gpu/pipeline.ts";
+import { Frustum } from "../scene/frustum.ts";
 import { fillMaterial } from "../scene/materialpack.ts";
 import type { Scene } from "../scene/scene.ts";
 import { forwardFsMain, forwardVsMain } from "../shaders.generated.ts";
@@ -81,8 +82,15 @@ export class ForwardInputs {
 export class ForwardPass {
     private pipeline: Pointer<SDL_GPUGraphicsPipeline> | null;
 
+    /**
+     * The camera's, and it must select the same instances the depth pre-pass
+     * selected — see the note there. Both derive it from `Frame.viewProj`.
+     */
+    private frustum: Frustum;
+
     constructor() {
         this.pipeline = null;
+        this.frustum = new Frustum();
     }
 
     create(
@@ -204,7 +212,13 @@ export class ForwardPass {
         // once outside the loop and refilled, since the shape never changes.
         const maps = allocArray<SDL_GPUTextureSamplerBinding>(4);
 
+        this.frustum.build(frame.viewProj);
+
         for (let i: usize = 0; i < world.instances.length; i++) {
+            if (!this.frustum.containsSphere(world.instances[i].boundsCenter, world.instances[i].boundsRadius)) {
+                continue;
+            }
+
             fillObject(object, world.instances[i].transform);
             SDL_PushGPUVertexUniformData(cmd, 1, object, objectBytes);
 

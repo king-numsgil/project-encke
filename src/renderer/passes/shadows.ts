@@ -56,14 +56,22 @@ import { cascadeCount, shadowConstantBias, shadowSlopeBias, spotShadowSize } fro
 import type { ShadowUniform, ShadowViewUniform } from "../frame/uniforms.ts";
 import { createDepthOnlyPipeline } from "../gpu/pipeline.ts";
 import { cascadeSize, cascadeTileX, spotTileX, spotTileY } from "../scene/cascades.ts";
+import { Frustum } from "../scene/frustum.ts";
 import type { Scene } from "../scene/scene.ts";
 import { shadowDepthFsMain, shadowDepthVsMain } from "../shaders.generated.ts";
 
 export class ShadowPasses {
     private pipeline: Pointer<SDL_GPUGraphicsPipeline> | null;
 
+    /**
+     * Rebuilt for each tile, in {@link drawScene}. A field rather than a local
+     * because it holds six `vec4` inline and this runs eight times a frame.
+     */
+    private frustum: Frustum;
+
     constructor() {
         this.pipeline = null;
+        this.frustum = new Frustum();
     }
 
     create(device: Pointer<SDL_GPUDevice>, depthFormat: SDL_GPUTextureFormat): boolean {
@@ -200,6 +208,29 @@ export class ShadowPasses {
         scissor.free();
     }
 
+    /**
+     * Draw every caster this tile can actually record.
+     *
+     * **This is where a cascade stops paying for the whole scene.** Each
+     * cascade is fitted to its own frustum *slice* — cascade 1 covers from
+     * cascade 0's far plane outwards, not from the camera — so their volumes
+     * are largely disjoint rather than nested. A crate two metres from the
+     * camera is inside cascade 0's volume and outside cascade 3's, and used to
+     * be rasterised into all four. It contributed nothing to three of them: the
+     * only fragments that read cascade 3 are beyond cascade 2's split, and the
+     * crate's shadow does not reach them.
+     *
+     * The test asks the narrower question, which is the one that is safe to ask:
+     * would any fragment of this object survive clipping against this tile's
+     * volume? The frustum comes from the tile's own matrix, so a rejection here
+     * is a rejection the rasteriser was going to make anyway — see
+     * `scene/frustum.ts`. Nothing about which cascade a *receiver* samples
+     * enters into it, and so nothing about the cascade blend band can break it.
+     *
+     * The same test serves the spotlights, where it is worth more: a spot has a
+     * range of a few metres and a cone narrower than that, and the scene it was
+     * being handed is the whole world.
+     */
     private drawScene(
         cmd: Pointer<SDL_GPUCommandBuffer>,
         pass: Pointer<SDL_GPURenderPass>,
@@ -209,8 +240,13 @@ export class ShadowPasses {
         viewBytes: u32,
     ): void {
         view.viewProj = viewProj;
+        this.frustum.build(viewProj);
 
         for (let i: usize = 0; i < scene.instances.length; i++) {
+            if (!this.frustum.containsSphere(scene.instances[i].boundsCenter, scene.instances[i].boundsRadius)) {
+                continue;
+            }
+
             view.model = scene.instances[i].transform;
             SDL_PushGPUVertexUniformData(cmd, 0, view, viewBytes);
             scene.meshes[scene.instances[i].mesh].draw(pass);

@@ -33,14 +33,19 @@ import {
 } from "../../bindings/SDL3";
 import { fillObject, type FrameUniform, type ObjectUniform } from "../frame/uniforms.ts";
 import { createDepthOnlyPipeline } from "../gpu/pipeline.ts";
+import { Frustum } from "../scene/frustum.ts";
 import type { Scene } from "../scene/scene.ts";
 import { depthPrepassFsMain, depthPrepassVsMain } from "../shaders.generated.ts";
 
 export class DepthPrepass {
     private pipeline: Pointer<SDL_GPUGraphicsPipeline> | null;
 
+    /** The camera's, rebuilt each frame from `Frame.viewProj`. */
+    private frustum: Frustum;
+
     constructor() {
         this.pipeline = null;
+        this.frustum = new Frustum();
     }
 
     create(device: Pointer<SDL_GPUDevice>, depthFormat: SDL_GPUTextureFormat): boolean {
@@ -110,7 +115,19 @@ export class DepthPrepass {
         // per-object block moves inside the loop.
         SDL_PushGPUVertexUniformData(cmd, 0, frame, frameBytes);
 
+        // **The forward pass must cull to exactly this set.** It tests depth
+        // `EQUAL` against what this pass wrote, so an object drawn there but
+        // skipped here has no depth to match and every one of its fragments
+        // fails. Both build the frustum from `frame.viewProj`, which is one
+        // value in one uniform block, so there is no second matrix for the two
+        // to disagree about.
+        this.frustum.build(frame.viewProj);
+
         for (let i: usize = 0; i < scene.instances.length; i++) {
+            if (!this.frustum.containsSphere(scene.instances[i].boundsCenter, scene.instances[i].boundsRadius)) {
+                continue;
+            }
+
             fillObject(object, scene.instances[i].transform);
             SDL_PushGPUVertexUniformData(cmd, 1, object, objectBytes);
             scene.meshes[scene.instances[i].mesh].draw(pass);
