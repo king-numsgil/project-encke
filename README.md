@@ -145,7 +145,8 @@ src/
   main.ts                   entry point, nothing else
   app/                      options, display, frame loop, test scene
   core/                     clock, input
-  graphics/sdl/             SDL3 bindings
+  bindings/SDL3/            SDL3 bindings
+  bindings/SDL3_image/      SDL3_image bindings
   renderer/
     config.ts               every tunable, mirrored against a shader
     renderer.ts             the frame graph
@@ -159,6 +160,24 @@ tools/
   shadercc/                 WGSL -> SPIR-V, in SDL's binding layout
   goblin-forge/             the compiler
 ```
+
+### Native dependencies
+
+On Windows `build.ts` fetches the prebuilt `-VC` packages from libsdl-org's
+releases into `build/sdl3/` and copies their DLLs beside the executable. Adding
+SDL3_ttf or SDL3_mixer later is one line in `DEPENDENCIES`. Elsewhere the same
+list resolves through pkg-config instead.
+
+SDL3_image's `optional/` folder is **not** optional here: it holds the codec
+DLLs, including `libpng16-16.dll`, and none of them are linked statically.
+Without them the library still loads and `IMG_Load` still runs — every PNG just
+fails at run time with a message about an unsupported format. The whole folder
+is copied.
+
+SDL3_image has no `IMG_Init`; decoders come up on first use. The
+`SDL_Renderer` entry points (`IMG_LoadTexture*`) are deliberately unbound —
+they belong to SDL's 2D renderer, which is a different and incompatible API
+from SDL_gpu. `IMG_LoadGPUTexture*` are the equivalents this project uses.
 
 ### Shaders are compiled, reflected and generated
 

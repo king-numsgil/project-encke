@@ -286,29 +286,97 @@ function renderManifest(compiled: readonly { entry: EntryPoint; counts: Counts }
 // SDL3, and the Goblin program itself.
 // ---------------------------------------------------------------------------
 
-const SDL3_VERSION = "3.4.14";
+/**
+ * An SDL family library, fetched as a prebuilt `-VC` package on Windows.
+ *
+ * Every one of these releases has the same shape — `<name>-<version>/lib/x64`
+ * holding the import library, the DLL, and sometimes an `optional/` folder of
+ * codec DLLs — so one routine serves all of them and adding SDL3_ttf or
+ * SDL3_mixer later is a line in the list below.
+ */
+interface NativeDependency {
+    /** The repository under `libsdl-org`. Not derivable: SDL3 lives in `SDL`, SDL3_image in `SDL_image`. */
+    readonly repo: string;
+    /** Library name, which is also the extracted folder's prefix and the `.lib` stem. */
+    readonly name: string;
+    readonly version: string;
+    /** The pkg-config package, for the platforms that use one. */
+    readonly pkgConfig: string;
+}
 
-async function ensureSdl3Devel(): Promise<string> {
-    const zipName = `SDL3-devel-${SDL3_VERSION}-VC`;
-    const root = "build/sdl3";
-    const lib = `${root}/SDL3-${SDL3_VERSION}/lib/x64`;
+const DEPENDENCIES: readonly NativeDependency[] = [
+    { repo: "SDL", name: "SDL3", version: "3.4.14", pkgConfig: "sdl3" },
+    { repo: "SDL_image", name: "SDL3_image", version: "3.4.4", pkgConfig: "sdl3-image" },
+];
 
-    if (!(await Bun.file(`${lib}/SDL3.lib`).exists())) {
-        const zip = `${root}/${zipName}.zip`;
-        const url = `https://github.com/libsdl-org/SDL/releases/download/release-${SDL3_VERSION}/${zipName}.zip`;
+const DEPENDENCY_ROOT = "build/sdl3";
 
-        await Bun.$`mkdir -p ${root}`;
+/** Where a dependency's `x64` libraries live once extracted. Relative to the project root. */
+function libraryDirectory(dep: NativeDependency): string {
+    return `${DEPENDENCY_ROOT}/${dep.name}-${dep.version}/lib/x64`;
+}
+
+/**
+ * Download and extract one devel package, if it is not already there.
+ *
+ * Keyed on the import library existing, so a half-extracted directory is
+ * re-fetched rather than trusted.
+ */
+async function ensureDevelPackage(dep: NativeDependency): Promise<string> {
+    const lib = libraryDirectory(dep);
+
+    if (!(await Bun.file(`${lib}/${dep.name}.lib`).exists())) {
+        const zipName = `${dep.name}-devel-${dep.version}-VC`;
+        const zip = `${DEPENDENCY_ROOT}/${zipName}.zip`;
+        const url = `https://github.com/libsdl-org/${dep.repo}/releases/download/release-${dep.version}/${zipName}.zip`;
+
+        console.log(`deps: fetching ${dep.name} ${dep.version}`);
+        await Bun.$`mkdir -p ${DEPENDENCY_ROOT}`;
         await Bun.$`curl.exe -L --fail --silent --show-error --max-time 300 -o ${zip} ${url}`;
-        await Bun.$`powershell -NoProfile -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory('${zip}', '${root}')"`;
+        await Bun.$`powershell -NoProfile -Command "Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory('${zip}', '${DEPENDENCY_ROOT}')"`;
         await Bun.$`rm ${zip}`;
     }
 
     return resolve(import.meta.dir, lib);
 }
 
+/**
+ * Copy a dependency's runtime DLLs next to the executable.
+ *
+ * **The `optional/` folder is not optional to us.** It holds the codec DLLs —
+ * `libpng16-16.dll` and the TIFF, WebP and AVIF libraries — and SDL3_image
+ * links none of them statically. Without them the library loads, `IMG_Load`
+ * runs, and every PNG fails at run time with a message about an unsupported
+ * format. They are copied wholesale rather than picked from, because the set
+ * that matters is the set of formats somebody might reach for.
+ */
+async function copyRuntimeLibraries(dep: NativeDependency, lib: string): Promise<void> {
+    await Bun.write(`bin/${dep.name}.dll`, Bun.file(`${lib}/${dep.name}.dll`));
+
+    const optional = join(lib, "optional");
+    let codecs: string[] = [];
+    try {
+        codecs = (await readdir(optional)).filter((name) => name.endsWith(".dll"));
+    } catch {
+        // No `optional/` folder. SDL3 itself has none; this is not an error.
+        return;
+    }
+
+    for (const codec of codecs) {
+        await Bun.write(`bin/${codec}`, Bun.file(join(optional, codec)));
+    }
+
+    if (codecs.length > 0) {
+        console.log(`deps: ${dep.name} codecs -> bin/ (${codecs.join(", ")})`);
+    }
+}
+
 await buildShaders();
 
-const sdl3Lib = process.platform === "win32" ? await ensureSdl3Devel() : null;
+const windows = process.platform === "win32";
+const libraryDirectories = windows
+    ? await Promise.all(DEPENDENCIES.map((dep) => ensureDevelPackage(dep)))
+    : [];
 
 const result = await compile({
     entry: "./src/main.ts",
@@ -320,7 +388,11 @@ const result = await compile({
     optLevel: "O2",
     debugInfo: true,
 
-    nativeLibs: sdl3Lib === null ? [systemLib("SDL3")] : [systemLib("SDL3", { search: [sdl3Lib] })],
+    nativeLibs: DEPENDENCIES.map((dep, index) =>
+        windows
+            ? systemLib(dep.name, { search: [libraryDirectories[index]!] })
+            : systemLib(dep.name, { pkgConfig: dep.pkgConfig }),
+    ),
 
     outDir: "./build",
     root: import.meta.dir,
@@ -333,6 +405,8 @@ if (!result.ok) {
 
 console.log(`built ${result.output}`);
 
-if (sdl3Lib !== null) {
-    await Bun.write("bin/SDL3.dll", Bun.file(`${sdl3Lib}/SDL3.dll`));
+if (windows) {
+    for (const [index, dep] of DEPENDENCIES.entries()) {
+        await copyRuntimeLibraries(dep, libraryDirectories[index]!);
+    }
 }

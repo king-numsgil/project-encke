@@ -14,6 +14,7 @@ import {
     SDL_Quit,
     SDL_SetMemoryFunctions,
 } from "./bindings/SDL3";
+import { IMG_Version } from "./bindings/SDL3_image";
 import { parseOptions, printUsage } from "./app/options.ts";
 import { run } from "./app/run.ts";
 
@@ -35,7 +36,11 @@ export function main(args: string[]): i32 {
         return 2;
     }
 
+    // Both versions, because a mismatched DLL beside the executable is the
+    // failure this catches — SDL3_image has no init call to fail, so the first
+    // sign of a wrong one would otherwise be an image that will not decode.
     console.log(`SDL ${SDL_GetVersion()} (${stringFromCString(SDL_GetRevision())})`);
+    console.log(`SDL_image ${IMG_Version()}`);
 
     if (!SDL_Init(SDL_InitFlags.VIDEO)) {
         console.log(`main: SDL_Init failed : ${stringFromCString(SDL_GetError())}`);
