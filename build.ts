@@ -291,8 +291,8 @@ function renderManifest(compiled: readonly { entry: EntryPoint; counts: Counts }
  *
  * Every one of these releases has the same shape — `<name>-<version>/lib/x64`
  * holding the import library, the DLL, and sometimes an `optional/` folder of
- * codec DLLs — so one routine serves all of them and adding SDL3_ttf or
- * SDL3_mixer later is a line in the list below.
+ * codec DLLs — so one routine serves all of them and adding SDL3_mixer later is
+ * a line in the list below.
  */
 interface NativeDependency {
     /** The repository under `libsdl-org`. Not derivable: SDL3 lives in `SDL`, SDL3_image in `SDL_image`. */
@@ -307,6 +307,7 @@ interface NativeDependency {
 const DEPENDENCIES: readonly NativeDependency[] = [
     { repo: "SDL", name: "SDL3", version: "3.4.14", pkgConfig: "sdl3" },
     { repo: "SDL_image", name: "SDL3_image", version: "3.4.4", pkgConfig: "sdl3-image" },
+    { repo: "SDL_ttf", name: "SDL3_ttf", version: "3.2.2", pkgConfig: "sdl3-ttf" },
 ];
 
 const DEPENDENCY_ROOT = "build/sdl3";
