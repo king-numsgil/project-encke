@@ -23,12 +23,30 @@ export class GpuMesh {
     private vertices: Pointer<SDL_GPUBuffer> | null;
     private indices: Pointer<SDL_GPUBuffer> | null;
 
+    /**
+     * The two binding structs {@link draw} hands to SDL, built once at upload.
+     *
+     * Both are `{ buffer, offset }` over a handle fixed at upload and an offset
+     * that is always zero, so there is nothing per-frame in either of them.
+     * Building them inside `draw` instead cost a malloc and a free *per draw
+     * call* — and a mesh is drawn once per cascade, once per spot tile, once in
+     * the pre-pass and once in the forward pass, so the scene's draw count is
+     * ten times its instance count and every one of them paid twice.
+     *
+     * Same reasoning as the renderer's uniform scratch: a block that is refilled
+     * rather than reallocated, because there is never a second live value of it.
+     */
+    private vertexBinding: Pointer<SDL_GPUBufferBinding> | null;
+    private indexBinding: Pointer<SDL_GPUBufferBinding> | null;
+
     /** Indices to draw. Zero until {@link upload} has succeeded. */
     indexCount: u32;
 
     constructor() {
         this.vertices = null;
         this.indices = null;
+        this.vertexBinding = null;
+        this.indexBinding = null;
         this.indexCount = 0;
     }
 
@@ -108,40 +126,45 @@ export class GpuMesh {
 
         this.vertices = vertexBuffer;
         this.indices = indexBuffer;
+        // Allocated last, so none of the failure paths above has one to release.
+        this.vertexBinding = alloc<SDL_GPUBufferBinding>({
+            buffer: vertexBuffer,
+            offset: 0,
+        });
+        this.indexBinding = alloc<SDL_GPUBufferBinding>({
+            buffer: indexBuffer,
+            offset: 0,
+        });
         this.indexCount = cast<u32>(mesh.indices.length);
         return true;
     }
 
     /** Bind and draw one instance. The pipeline is the caller's. */
     draw(pass: Pointer<SDL_GPURenderPass>): void {
-        const vertices = this.vertices;
-        const indices = this.indices;
-        if (vertices === null || indices === null) {
+        const vertexBinding = this.vertexBinding;
+        const indexBinding = this.indexBinding;
+        if (vertexBinding === null || indexBinding === null) {
             return;
         }
 
-        const vertexBinding = alloc<SDL_GPUBufferBinding>({
-            buffer: vertices,
-            offset: 0,
-        });
         SDL_BindGPUVertexBuffers(pass, 0, vertexBinding, 1);
-        vertexBinding.free();
-
-        const indexBinding = alloc<SDL_GPUBufferBinding>({
-            buffer: indices,
-            offset: 0,
-        });
         SDL_BindGPUIndexBuffer(pass, indexBinding, SDL_GPUIndexElementSize._32BIT);
-        indexBinding.free();
-
         SDL_DrawGPUIndexedPrimitives(pass, this.indexCount, 1, 0, 0, 0);
     }
 
     release(device: Pointer<SDL_GPUDevice>): void {
         releaseBuffer(device, this.vertices);
         releaseBuffer(device, this.indices);
+        if (this.vertexBinding !== null) {
+            this.vertexBinding.free();
+        }
+        if (this.indexBinding !== null) {
+            this.indexBinding.free();
+        }
         this.vertices = null;
         this.indices = null;
+        this.vertexBinding = null;
+        this.indexBinding = null;
         this.indexCount = 0;
     }
 }
