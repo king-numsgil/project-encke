@@ -62,18 +62,30 @@ fn linear_depth(depth: f32, near: f32, far: f32) -> f32 {
 }
 
 /**
- * Undo the projection: a view-space position from a depth sample and a UV.
+ * Undo the projection: a view-space position from a UV and the positive
+ * view-space distance {@link linear_depth} returns.
  *
  * `uv` is the ordinary texture convention with `v = 0` at the *top* of the
  * image, which is the row the rasteriser writes first. SDL_gpu's Vulkan backend
  * flips its own viewport so that clip `+Y` is up on screen, which is what makes
  * the `1 - 2v` here the right sign — established by rendering a triangle and
  * looking at it, per `tools/shadercc/README.md`, not by reasoning about it.
+ *
+ * **This assumes a symmetric perspective projection**, which is the only kind
+ * `fmat4.perspective` builds and the only kind this renderer has. The general
+ * form is `inv_proj * ndc` followed by a perspective divide, and for a
+ * symmetric projection that whole 4x4 multiply collapses to two divides:
+ * `inv_proj` is diagonal apart from the z row, so `view.xy` comes out as
+ * `ndc.xy * distance` over the projection's own x and y scales, and `view.z` is
+ * just the negated distance. A caller with an off-centre or sheared projection
+ * would need the matrix back — `cluster_build.wgsl` still uses that form, since
+ * it works from `ndc.z = 0` where there is no linear distance to start from.
  */
-fn view_position_from_depth(uv: vec2<f32>, depth: f32, inv_proj: mat4x4<f32>) -> vec3<f32> {
-    let ndc = vec4<f32>(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0, depth, 1.0);
-    let view = inv_proj * ndc;
-    return view.xyz / view.w;
+fn view_position_from_linear(uv: vec2<f32>, view_z: f32, proj: mat4x4<f32>) -> vec3<f32> {
+    let ndc = vec2<f32>(uv.x * 2.0 - 1.0, 1.0 - uv.y * 2.0);
+    // `proj[0][0]` is `1 / (tan(fovY / 2) * aspect)` and `proj[1][1]` is
+    // `1 / tan(fovY / 2)` — the two scales the projection applied on the way in.
+    return vec3<f32>(ndc * view_z / vec2<f32>(proj[0][0], proj[1][1]), -view_z);
 }
 
 /** The UV a view-space position projects to, and its depth, packed as `xy` + `z`. */

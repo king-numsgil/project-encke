@@ -35,12 +35,21 @@ const TAP_COUNT : u32 = 12u;
 const SPIRAL_TURNS : f32 = 7.0;
 const TAU : f32 = 6.28318530718;
 
-/** View-space position of a full-resolution depth texel, clamped to the image. */
+/**
+ * View-space position of a full-resolution depth texel, clamped to the image.
+ *
+ * Reconstructed from the *linear* distance rather than by multiplying the NDC
+ * position through `inv_proj`. This runs seventeen times per pixel — once for
+ * the centre, four times for the reconstructed normal, and once per tap — so a
+ * 4x4 multiply here was the single largest piece of arithmetic in the pass.
+ * See `view_position_from_linear` for what makes the collapse legal.
+ */
 fn load_view_position(coord : vec2<i32>, size : vec2<i32>) -> vec3<f32> {
     let clamped = clamp(coord, vec2<i32>(0), size - vec2<i32>(1));
     let depth = textureLoad(depth_texture, clamped, 0);
     let uv = (vec2<f32>(clamped) + vec2<f32>(0.5)) / vec2<f32>(size);
-    return view_position_from_depth(uv, depth, frame.inv_proj);
+    let view_z = linear_depth(depth, frame.cluster_z.z, frame.cluster_z.w);
+    return view_position_from_linear(uv, view_z, frame.proj);
 }
 
 /**
@@ -153,7 +162,11 @@ fn fs_main(in : FullscreenOut) -> @location(0) vec4<f32> {
 
         let tap_uv = (vec2<f32>(clamp(tap_coord, vec2<i32>(0), depth_size - vec2<i32>(1))) + vec2<f32>(0.5))
             / frame.screen.xy;
-        let tap_view = view_position_from_depth(tap_uv, tap_depth, frame.inv_proj);
+        // Not `load_view_position`: the depth is already in hand from the early
+        // out above, and loading it a second time is the one thing this loop
+        // cannot afford.
+        let tap_z = linear_depth(tap_depth, frame.cluster_z.z, frame.cluster_z.w);
+        let tap_view = view_position_from_linear(tap_uv, tap_z, frame.proj);
 
         // Alchemy's estimator: how far the tap rises above the tangent plane,
         // divided by how far away it is.
