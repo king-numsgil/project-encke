@@ -171210,20 +171210,42 @@ class ModuleBuilder {
     return id;
   }
   struct(options) {
+    const id = this.declareStruct(options);
+    this.defineStruct(id, { fields: options.fields });
+    return id;
+  }
+  declareStruct(options) {
     const id = StructId(this.#structs.length);
-    const fields = options.fields.map((field) => ({
-      name: this.sym(field.name),
-      ty: field.ty,
-      span: field.span ?? SYNTHETIC
-    }));
     this.#structs.push({
       name: this.sym(options.name),
-      fields,
+      fields: [],
       cCompatible: options.cCompatible ?? false,
       union: options.union ?? false,
       span: options.span ?? SYNTHETIC
     });
     return id;
+  }
+  defineStruct(id, options) {
+    const def = this.#structs[id];
+    if (def === undefined) {
+      throw new Error(`struct ${id} was never declared`);
+    }
+    def.fields = options.fields.map((field) => ({
+      name: this.sym(field.name),
+      ty: field.ty,
+      span: field.span ?? SYNTHETIC
+    }));
+    let settled = false;
+    while (!settled) {
+      settled = true;
+      for (const ty of this.#types) {
+        const category = this.#categoryOf(ty.kind);
+        if (category !== ty.category) {
+          ty.category = category;
+          settled = false;
+        }
+      }
+    }
   }
   declareClass(options) {
     const id = ClassId(this.#classes.length);
@@ -172040,6 +172062,18 @@ var CODES = {
     explanation: "`reify<U>()` attaches a pointee type to an erased pointer. tsc lets it " + "be written on any pointer, because it is declared on `CorePointer<T>` " + 'and there is no way to say "only when `T` is erased" in the ' + `declaration — so the compiler is what says it.
 
 ` + "There is deliberately no unchecked cast between two concrete pointee " + "types. `p.reify<Other>()` on a `Pointer<Rect>` is C++'s " + "`reinterpret_cast`, and the rule is that it has to be *visible*: write " + "`p.erase().reify<Other>()`, and the erasure is there in the source at " + "the site that depends on it rather than hidden in a one-token method " + "call that looks like a conversion."
+  },
+  GF0307: {
+    title: "a value cannot contain itself",
+    explanation: "Fields are laid out **inline**, which is what makes a Goblin struct the " + "same bytes a C compiler would produce for the same declaration. So a " + "field of the type it is declared in would have to hold a whole one of " + "those, which holds a whole one of those: a size that is its own size and " + "then larger, and no arrangement of bytes has it. C refuses the same " + "declaration for the same reason — a struct is an incomplete type inside " + `its own definition.
+
+` + "A `Pointer<T>` is the shape that works, and it is what C writes:\n\n" + `    interface Node { value: i32; next: Pointer<Node> | null; }
+
+` + "A pointer is one machine word whatever is behind it, so the type has a " + "size again — and the cycle is then in the *program*, where a linked " + "list's cycle belongs, rather than in the layout. A `T[]` works for the " + `same reason: it is a handle to a buffer elsewhere.
+
+` + "`FixedArray<Node, 4>` is refused as well, and is worth naming " + "separately: it holds its elements inline, so it is four whole ones " + `rather than an address.
+
+` + "A class is the same rule at a different site. Its fields are laid out " + "inline too, so a class that reaches itself by value — directly, through " + "another class, or through a struct or a fixed array — has no size " + "either. What it *may* hold is `Pointer<Node>`, and also `Node[]`, which " + "a struct cannot: releasing a class runs its destructor, which is a " + "function that can call itself, where a struct's drop is written out at " + "every site that needs one."
   },
   GF9001: {
     title: "the backend could not decode the MIR",
@@ -172910,6 +172944,60 @@ class ErasureError extends Error {
     this.name = "ErasureError";
   }
 }
+
+class Erasure {
+  #answers = new Map;
+  #openedAt = new Map;
+  #indirections = 0;
+  #buffers = 0;
+  through(erasing) {
+    this.#indirections += 1;
+    try {
+      return erasing();
+    } finally {
+      this.#indirections -= 1;
+    }
+  }
+  buffer(erasing) {
+    this.#buffers += 1;
+    try {
+      return this.through(erasing);
+    } finally {
+      this.#buffers -= 1;
+    }
+  }
+  aggregate(type, answer, fill) {
+    this.#answers.set(type, answer);
+    this.#openedAt.set(type, { indirections: this.#indirections, buffers: this.#buffers });
+    try {
+      fill();
+    } finally {
+      this.#openedAt.delete(type);
+    }
+    return answer;
+  }
+  answered(type) {
+    const answer = this.#answers.get(type);
+    if (answer === undefined) {
+      return null;
+    }
+    const opened = this.#openedAt.get(type);
+    if (opened === undefined) {
+      return answer;
+    }
+    const name = renderType(answer);
+    const crossed = this.#indirections - opened.indirections;
+    if (crossed === 0) {
+      throw new ErasureError(`\`${name}\` contains itself by value. Fields are laid out inline — that ` + "is what makes the bytes match C's — so a value of this type would have " + `to be as large as itself and then larger. Hold a \`Pointer<${name}>\` ` + "instead, which is one machine word whatever is behind it, and is how C " + "writes the same shape.", "GF0307");
+    }
+    if (crossed === this.#buffers - opened.buffers) {
+      throw new ErasureError(`\`${name}\` holds more of itself in a \`${name}[]\`, and copying or ` + "releasing one of those is a loop over the elements that the compiler " + "writes inline — so the code for the copy would have to contain the code " + `for the copy, and there is no end to it.
+
+` + "This is a gap rather than a rule: it wants the copy and the drop to be " + "*functions* that call themselves, which is how `std::vector<T>` inside " + `\`T\` works in C++. Until then, an array of \`Pointer<${name}>\` holds ` + "the same shape with the freeing written out, and a `class` works today " + "because its destructor is already a function rather than something " + "spliced in at each site.", "GF0001");
+    }
+    return answer;
+  }
+}
 function brandedProperty(checker, type, brand) {
   for (const property of checker.getPropertiesOfType(type)) {
     const declaration = property.declarations?.[0];
@@ -172943,10 +173031,14 @@ function isReferenceType(checker, type) {
 function isCStringType(checker, type) {
   return brandedProperty(checker, type, "CStringBrand") !== null;
 }
-function erase(checker, type) {
+function erase(checker, type, state = new Erasure) {
   const nullable = nullableOf(checker, type);
   if (nullable !== null) {
-    return erase(checker, nullable);
+    return erase(checker, nullable, state);
+  }
+  const answered = state.answered(type);
+  if (answered !== null) {
+    return answered;
   }
   const flags = type.getFlags();
   if (flags & (import_typescript4.default.TypeFlags.Void | import_typescript4.default.TypeFlags.Undefined)) {
@@ -172955,11 +173047,11 @@ function erase(checker, type) {
   if (flags & import_typescript4.default.TypeFlags.BooleanLike) {
     return { kind: "bool" };
   }
-  const fixed = fixedArrayOf(checker, type);
+  const fixed = fixedArrayOf(checker, type, state);
   if (fixed !== null) {
     return fixed;
   }
-  const wrapper = eraseWrapper(checker, type);
+  const wrapper = eraseWrapper(checker, type, state);
   if (wrapper !== null) {
     return wrapper;
   }
@@ -172997,21 +173089,21 @@ function erase(checker, type) {
     if (element === undefined) {
       throw new ErasureError("this array has no element type.", "GF0001");
     }
-    return { kind: "array", element: erase(checker, element) };
+    return { kind: "array", element: state.buffer(() => erase(checker, element, state)) };
   }
   if (brandedProperty(checker, type, "LocalFnBrand") !== null) {
-    return { kind: "localfn", ...eraseSignature(checker, type, "a `LocalFn`") };
+    return { kind: "localfn", ...eraseSignature(checker, type, "a `LocalFn`", state) };
   }
   const calls = checker.getSignaturesOfType(type, import_typescript4.default.SignatureKind.Call);
   if (calls.length > 0 && checker.getPropertiesOfType(type).length === 0) {
-    return { kind: "fnptr", ...eraseSignature(checker, type, "a function pointer") };
+    return { kind: "fnptr", ...eraseSignature(checker, type, "a function pointer", state) };
   }
   if (flags & import_typescript4.default.TypeFlags.Object) {
-    return eraseObject(checker, type);
+    return eraseObject(checker, type, state);
   }
   throw new ErasureError(`\`${checker.typeToString(type)}\` has no machine representation yet.`, "GF0001");
 }
-function eraseSignature(checker, type, what) {
+function eraseSignature(checker, type, what, state) {
   const calls = checker.getSignaturesOfType(type, import_typescript4.default.SignatureKind.Call);
   if (calls.length === 0) {
     throw new ErasureError(`${what} needs a call signature, and this type has none.`, "GF0001");
@@ -173032,32 +173124,18 @@ function eraseSignature(checker, type, what) {
       if (declaration.questionToken || declaration.dotDotDotToken) {
         throw new ErasureError("an optional or rest parameter has no C spelling, so it cannot be part " + "of this signature.", "GF0001");
       }
-      return erase(checker, checker.getTypeOfSymbolAtLocation(parameter, declaration));
+      return state.through(() => erase(checker, checker.getTypeOfSymbolAtLocation(parameter, declaration), state));
     }),
-    returns: erase(checker, checker.getReturnTypeOfSignature(signature2))
+    returns: state.through(() => erase(checker, checker.getReturnTypeOfSignature(signature2), state))
   };
 }
-function eraseWrapper(checker, type) {
+function eraseWrapper(checker, type, state) {
   if (isReferenceType(checker, type)) {
     const referent = referentOf(checker, type);
     if (referent !== null) {
-      if (checker.isArrayType(referent)) {
-        return { kind: "reference", referent: erase(checker, referent) };
-      }
-      if (linalgTypeOf(referent) !== null) {
-        return { kind: "reference", referent: erase(checker, referent) };
-      }
-      const contract = contractOf(checker, referent);
-      if (contract !== null) {
-        return contract;
-      }
-      const opaqueReferent = ambientClassNameOf(referent);
-      if (opaqueReferent !== null) {
-        throw new ErasureError(`\`${opaqueReferent}\` is declared elsewhere, so this build does not ` + `know its layout and a \`Reference<${opaqueReferent}>\` has nothing ` + `to read through. Use \`Pointer<${opaqueReferent}>\`, which is an ` + "address and nothing more.", "GF0302");
-      }
-      const className = classNameOf(referent);
-      if (className !== null) {
-        return { kind: "reference", referent: { kind: "class", name: className } };
+      const answer = state.through(() => eraseReferent(checker, referent, state));
+      if (answer !== null) {
+        return answer;
       }
     }
     throw new ErasureError("a `Reference<T>` cannot be written as a type yet, except for an " + "interface with methods. The compiler makes references — `this` inside " + "a method is one — but a parameter or a binding cannot be declared as " + "one. Pass the value itself for now; it is copied.", "GF0001");
@@ -173072,7 +173150,28 @@ function eraseWrapper(checker, type) {
   if (pointee.getFlags() & import_typescript4.default.TypeFlags.Unknown) {
     return { kind: "pointer", pointee: { kind: "void" } };
   }
-  return { kind: "pointer", pointee: erase(checker, pointee) };
+  return { kind: "pointer", pointee: state.through(() => erase(checker, pointee, state)) };
+}
+function eraseReferent(checker, referent, state) {
+  if (checker.isArrayType(referent)) {
+    return { kind: "reference", referent: erase(checker, referent, state) };
+  }
+  if (linalgTypeOf(referent) !== null) {
+    return { kind: "reference", referent: erase(checker, referent, state) };
+  }
+  const contract = contractOf(checker, referent, state);
+  if (contract !== null) {
+    return contract;
+  }
+  const opaqueReferent = ambientClassNameOf(referent);
+  if (opaqueReferent !== null) {
+    throw new ErasureError(`\`${opaqueReferent}\` is declared elsewhere, so this build does not ` + `know its layout and a \`Reference<${opaqueReferent}>\` has nothing ` + `to read through. Use \`Pointer<${opaqueReferent}>\`, which is an ` + "address and nothing more.", "GF0302");
+  }
+  const className = classNameOf(referent);
+  if (className !== null) {
+    return { kind: "reference", referent: { kind: "class", name: className } };
+  }
+  return null;
 }
 function classNameOf(type) {
   const symbol = type.getSymbol();
@@ -173171,7 +173270,7 @@ function referentOf(checker, type) {
   }
   return checker.getNonNullableType(checker.getTypeOfSymbol(brand));
 }
-function contractOf(checker, type) {
+function contractOf(checker, type, state = new Erasure) {
   const properties = checker.getPropertiesOfType(type);
   const methods = properties.filter((property) => property.declarations?.some(import_typescript4.default.isMethodSignature));
   if (methods.length === 0) {
@@ -173183,24 +173282,23 @@ function contractOf(checker, type) {
     throw new ErasureError(`\`${name}\` declares both methods and the data member \`${data?.name}\`. ` + "An interface is either a *shape* — data only, laid out as a struct — or " + "a *contract* — methods only, dispatched through an itable. One that is " + "both would have to be a layout and a dispatch table at once. Split it, " + "or make the data a method that returns it.", "GF0002");
   }
   const sorted = [...methods].sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
-  return {
-    kind: "interface",
-    name,
-    methods: sorted.map((method) => {
+  const dispatched = [];
+  return state.aggregate(type, { kind: "interface", name, methods: dispatched }, () => {
+    for (const method of sorted) {
       const declaration = method.declarations?.find(import_typescript4.default.isMethodSignature);
       const signature2 = declaration === undefined ? undefined : checker.getSignatureFromDeclaration(declaration);
       if (declaration === undefined || signature2 === undefined) {
         throw new ErasureError(`tsc could not give \`${name}.${method.name}\` a signature.`, "GF0001");
       }
-      return {
+      dispatched.push({
         name: method.name,
-        params: declaration.parameters.map((parameter) => erase(checker, checker.getTypeAtLocation(parameter))),
-        returns: erase(checker, checker.getReturnTypeOfSignature(signature2))
-      };
-    })
-  };
+        params: declaration.parameters.map((parameter) => state.through(() => erase(checker, checker.getTypeAtLocation(parameter), state))),
+        returns: state.through(() => erase(checker, checker.getReturnTypeOfSignature(signature2), state))
+      });
+    }
+  });
 }
-function fixedArrayOf(checker, type) {
+function fixedArrayOf(checker, type, state) {
   const brand = brandedProperty(checker, type, "FixedLengthBrand");
   if (!brand) {
     return null;
@@ -173216,9 +173314,9 @@ function fixedArrayOf(checker, type) {
   if (element === undefined) {
     throw new ErasureError("this `FixedArray` has no element type.", "GF0001");
   }
-  return { kind: "fixedArray", element: erase(checker, element), length: length.value };
+  return { kind: "fixedArray", element: erase(checker, element, state), length: length.value };
 }
-function eraseObject(checker, type) {
+function eraseObject(checker, type, state) {
   const isUnion = brandedProperty(checker, type, "UnionBrand") !== null;
   const properties = checker.getPropertiesOfType(type).filter((property) => !isBrand(property));
   if (properties.length === 0) {
@@ -173226,23 +173324,28 @@ function eraseObject(checker, type) {
   }
   const name = structNameOf(checker, type);
   const fields = [];
-  for (const property of properties) {
-    const declaration = property.declarations?.[0];
-    if (declaration !== undefined && import_typescript4.default.isMethodSignature(declaration)) {
-      contractOf(checker, type);
-      throw new ErasureError(`\`${name}\` declares the method \`${property.name}()\`, which makes it a ` + "*contract* rather than a plain shape — it has no layout, so it cannot " + `be a value, a field or a by-value parameter. Write \`Reference<${name}>\`, ` + `which is the two-word pair a contract is held through.
+  const answer = isUnion ? { kind: "struct", name, fields, union: true } : { kind: "struct", name, fields };
+  return state.aggregate(type, answer, () => {
+    for (const property of properties) {
+      eraseField(checker, type, name, property, fields, state);
+    }
+  });
+}
+function eraseField(checker, type, name, property, fields, state) {
+  const declaration = property.declarations?.[0];
+  if (declaration !== undefined && import_typescript4.default.isMethodSignature(declaration)) {
+    contractOf(checker, type);
+    throw new ErasureError(`\`${name}\` declares the method \`${property.name}()\`, which makes it a ` + "*contract* rather than a plain shape — it has no layout, so it cannot " + `be a value, a field or a by-value parameter. Write \`Reference<${name}>\`, ` + `which is the two-word pair a contract is held through.
 
 ` + "If dispatch was not what you wanted, a function-typed *property* — " + `\`${property.name}: () => …\` rather than \`${property.name}()\` — is an ` + "ordinary field holding a function pointer, and leaves this a struct.", "GF0002");
-    }
-    if ((property.flags & import_typescript4.default.SymbolFlags.Optional) !== 0) {
-      throw new ErasureError(`\`${name}.${property.name}\` is optional. There is no \`undefined\` ` + "here for it to be, and no space in the layout for it not to be.", "GF0002");
-    }
-    fields.push({
-      name: property.name,
-      type: erase(checker, checker.getTypeOfSymbol(property))
-    });
   }
-  return isUnion ? { kind: "struct", name, fields, union: true } : { kind: "struct", name, fields };
+  if ((property.flags & import_typescript4.default.SymbolFlags.Optional) !== 0) {
+    throw new ErasureError(`\`${name}.${property.name}\` is optional. There is no \`undefined\` ` + "here for it to be, and no space in the layout for it not to be.", "GF0002");
+  }
+  fields.push({
+    name: property.name,
+    type: erase(checker, checker.getTypeOfSymbol(property), state)
+  });
 }
 var DEFAULT_ENUM_WIDTH = "i32";
 var ENUM_UNDERLYING = "Underlying";
@@ -173873,6 +173976,8 @@ function emitHeader(module, options) {
 function emitStructs(module) {
   const order = [];
   const seen = new Set;
+  const open = new Set;
+  const recursive = new Set;
   const fnPtrs = new Set;
   const visit = (ty2) => {
     const kind = module.types[ty2]?.kind;
@@ -173881,12 +173986,17 @@ function emitStructs(module) {
     }
     if (kind.kind === "Struct") {
       if (seen.has(kind.value)) {
+        if (open.has(kind.value)) {
+          recursive.add(kind.value);
+        }
         return;
       }
       seen.add(kind.value);
+      open.add(kind.value);
       for (const field of module.structs[kind.value]?.fields ?? []) {
         visit(field.ty);
       }
+      open.delete(kind.value);
       order.push(kind.value);
       return;
     }
@@ -173922,16 +174032,26 @@ function emitStructs(module) {
   }
   const out = [];
   for (const id of order) {
+    if (!recursive.has(id)) {
+      continue;
+    }
+    const name = identifier(sym2(module, module.structs[id]?.name ?? 0));
+    out.push(`typedef struct ${name} ${name};`);
+  }
+  if (out.length > 0) {
+    out.push("");
+  }
+  for (const id of order) {
     const def = module.structs[id];
     if (def === undefined) {
       continue;
     }
     const name = identifier(sym2(module, def.name));
-    out.push(`typedef struct ${name} {`);
+    out.push(recursive.has(id) ? `struct ${name} {` : `typedef struct ${name} {`);
     for (const field of def.fields) {
       out.push(`    ${member(module, field.ty, identifier(sym2(module, field.name)))};`);
     }
-    out.push(`} ${name};`);
+    out.push(recursive.has(id) ? "};" : `} ${name};`);
     out.push("");
   }
   for (const sig of [...fnPtrs].sort((a, b) => a - b)) {
@@ -181746,6 +181866,7 @@ class Lowerer {
       refuse: (node, message) => this.error(node, "GF0002", message),
       erase: (at, type) => this.erase(at, type)
     });
+    this.#refuseInlineCycles();
     for (const [name, info] of this.#classes) {
       const id = this.#mir.declareClass({
         name,
@@ -181875,6 +181996,36 @@ class Lowerer {
       }
     }
     return bodies;
+  }
+  #refuseInlineCycles() {
+    const reaches = (type, target, seen) => {
+      switch (type.kind) {
+        case "class": {
+          if (type.name === target) {
+            return true;
+          }
+          if (seen.has(type.name)) {
+            return false;
+          }
+          seen.add(type.name);
+          const other = this.#classes.get(type.name);
+          return other !== undefined && other.fields.some((field) => reaches(field.type, target, seen));
+        }
+        case "struct":
+          return type.fields.some((field) => reaches(field.type, target, seen));
+        case "fixedArray":
+          return reaches(type.element, target, seen);
+        default:
+          return false;
+      }
+    };
+    for (const info of this.#classes.values()) {
+      const field = info.fields.find((candidate) => reaches(candidate.type, info.name, new Set));
+      if (field === undefined) {
+        continue;
+      }
+      this.error(field.declaration, "GF0307", `\`${info.name}.${field.name}\` is a \`${renderType(field.type)}\`, so the ` + `layout of \`${info.name}\` would have to contain itself — as large as ` + "itself and then larger. A field is laid out inline, which is what makes " + "the bytes match C's, and an object's own storage is not somewhere it can " + `be. Hold a \`Pointer<${info.name}>\`, which is one machine word whatever ` + `is behind it, or \`${info.name}[]\`, which is a handle to a buffer ` + "elsewhere.");
+    }
   }
   #contractFrom(expression) {
     try {
@@ -182293,16 +182444,15 @@ class Lowerer {
         }
       }
     }
-    const id = this.#mir.struct({
-      name: type.name,
+    const id = this.#mir.declareStruct({ name: type.name, union: type.union === true });
+    const ty2 = this.#mir.ty({ kind: "Struct", value: id });
+    this.#structs.set(type.name, ty2);
+    this.#mir.defineStruct(id, {
       fields: type.fields.map((field) => ({
         name: field.name,
         ty: this.tyOf(field.type, at)
-      })),
-      union: type.union === true
+      }))
     });
-    const ty2 = this.#mir.ty({ kind: "Struct", value: id });
-    this.#structs.set(type.name, ty2);
     return ty2;
   }
   #interfaceTy(type, at) {
