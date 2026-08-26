@@ -28,6 +28,40 @@ export function createLinearClamp(device: Pointer<SDL_GPUDevice>): Pointer<SDL_G
     return create(device, SDL_GPUFilter.LINEAR, false, "linear-clamp");
 }
 
+/**
+ * Trilinear, repeating, anisotropic. What surface maps are sampled with.
+ *
+ * Three things the other samplers here do not need. **Repeat**, because a
+ * material tiles across a surface and clamping would smear the last row of
+ * texels across everything past `uv = 1`. **Mipmap filtering**, because a 1K map
+ * on a distant crate otherwise crawls as the camera moves. **Anisotropy**,
+ * because mipmapping alone blurs a surface seen at a grazing angle — which is
+ * every floor — and 8x is the usual point of diminishing returns.
+ */
+export function createMaterialSampler(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUSampler> | null {
+    const info = alloc<SDL_GPUSamplerCreateInfo>({
+        min_filter: SDL_GPUFilter.LINEAR,
+        mag_filter: SDL_GPUFilter.LINEAR,
+        mipmap_mode: SDL_GPUSamplerMipmapMode.LINEAR,
+        address_mode_u: SDL_GPUSamplerAddressMode.REPEAT,
+        address_mode_v: SDL_GPUSamplerAddressMode.REPEAT,
+        address_mode_w: SDL_GPUSamplerAddressMode.REPEAT,
+        enable_anisotropy: true,
+        max_anisotropy: 8.0,
+        // Without a max LOD the sampler stops at level 0 and the mip chain that
+        // `loadTexture` went to the trouble of generating is never read.
+        min_lod: 0.0,
+        max_lod: 1000.0,
+    });
+    const sampler = SDL_CreateGPUSampler(device, info);
+    info.free();
+
+    if (sampler === null) {
+        console.log(`sampler: 'material' failed : ${stringFromCString(SDL_GetError())}`);
+    }
+    return sampler;
+}
+
 /** Point, clamped. For `textureLoad` slots and anything that must not be filtered. */
 export function createNearestClamp(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUSampler> | null {
     return create(device, SDL_GPUFilter.NEAREST, false, "nearest-clamp");

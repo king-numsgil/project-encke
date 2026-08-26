@@ -82,7 +82,7 @@ export function run(options: Reference<Options>): i32 {
         console.log("run: capture target failed — no screenshot will be written");
     }
 
-    const scene = buildTestScene(device, options.lights);
+    const scene = buildTestScene(device, renderer.fallbacks, options.lights);
 
     const camera = new Camera();
     camera.fovY = cameraFovY();

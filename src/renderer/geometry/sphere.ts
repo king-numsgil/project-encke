@@ -39,7 +39,30 @@ export function makeSphere(radius: f32, segments: u32, rings: u32): MeshData {
             const ny = cosPolar;
             const nz = fcos(azimuth) * sinPolar;
 
-            mesh.addVertex(nx * radius, ny * radius, nz * radius, nx, ny, nz, u, v);
+            // The tangent is the derivative of position with respect to `u`,
+            // with the constant factors dropped since it is normalised anyway:
+            // differentiating `(sin a * sin p, cos p, cos a * sin p)` by the
+            // azimuth leaves `(cos a, 0, -sin a)`. It stays unit length at every
+            // latitude because the `sin p` falls out of both surviving terms.
+            //
+            // Handedness is -1 everywhere, and that is derived rather than
+            // guessed: `cross(normal, tangent)` works out to
+            // `(-cos p * sin a, sin p, -cos p * cos a)`, whose dot with the
+            // v-derivative is exactly `-(cos^2 p + sin^2 p)`, or -1.
+            mesh.addVertex(
+                nx * radius,
+                ny * radius,
+                nz * radius,
+                nx,
+                ny,
+                nz,
+                u,
+                v,
+                fcos(azimuth),
+                0.0,
+                -fsin(azimuth),
+                -1.0,
+            );
         }
     }
 

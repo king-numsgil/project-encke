@@ -4,18 +4,24 @@
 // the vertex pipeline reads and splitting it into three arrays would only mean
 // three uploads and three attribute fetches from three cache lines.
 //
-// No tangents. Phase 1 has no textures at all, so there is no normal map to
-// build a basis for; adding the channel now would be four floats per vertex
-// carried by nothing.
+// Tangents are here because normal mapping needs a basis to interpret a tangent
+// space map in, and there is nowhere cheaper to compute one: a generator knows
+// its own UV layout exactly, where the fragment shader would have to recover it
+// from screen-space derivatives every frame.
+//
+// `tangent.w` is a **handedness sign**, not a fourth axis. The bitangent is
+// `w * cross(normal, tangent)`, so one float stands in for three — and it has to
+// be a sign rather than assumed, because a UV layout that mirrors across a seam
+// flips it.
 
-/** Floats per vertex: `position.xyz`, `normal.xyz`, `uv`. */
+/** Floats per vertex: `position.xyz`, `normal.xyz`, `uv`, `tangent.xyzw`. */
 export function vertexFloats(): u32 {
-    return 8;
+    return 12;
 }
 
 /** Bytes per vertex. The vertex buffer's pitch. */
 export function vertexStride(): u32 {
-    return 32;
+    return 48;
 }
 
 export class MeshData {
@@ -41,7 +47,12 @@ export class MeshData {
         return cast<u32>(this.indices.length);
     }
 
-    /** Append one vertex, and hand back its index for the triangle calls. */
+    /**
+     * Append one vertex, and hand back its index for the triangle calls.
+     *
+     * `tx, ty, tz` is the direction of increasing `u` across the surface, and
+     * `tw` is the bitangent's handedness — see the note at the top of this file.
+     */
     addVertex(
         px: f32,
         py: f32,
@@ -51,6 +62,10 @@ export class MeshData {
         nz: f32,
         u: f32,
         v: f32,
+        tx: f32,
+        ty: f32,
+        tz: f32,
+        tw: f32,
     ): u32 {
         const index = this.vertexCount();
         this.vertices.push(px);
@@ -61,6 +76,10 @@ export class MeshData {
         this.vertices.push(nz);
         this.vertices.push(u);
         this.vertices.push(v);
+        this.vertices.push(tx);
+        this.vertices.push(ty);
+        this.vertices.push(tz);
+        this.vertices.push(tw);
         return index;
     }
 

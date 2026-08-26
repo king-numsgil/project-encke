@@ -165,7 +165,7 @@ export function forwardFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUSh
         "shaders/out/forward.fs_main.spv",
         "fs_main",
         SDL_GPUShaderStage.FRAGMENT,
-        3, // samplers
+        7, // samplers
         0, // storage textures
         3, // storage buffers
         3, // uniform buffers

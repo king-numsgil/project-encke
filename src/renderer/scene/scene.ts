@@ -13,6 +13,7 @@
 
 import { fmat4, fvec3 } from "std/linalg";
 import type { SDL_GPUDevice } from "../../bindings/SDL3";
+import { Fallbacks, MaterialTextures } from "../assets/material_set.ts";
 import { GpuMesh } from "../geometry/mesh.ts";
 import { Light } from "./light.ts";
 import { Material } from "./material.ts";
@@ -33,6 +34,17 @@ export class Instance {
 export class Scene {
     meshes: GpuMesh[];
     materials: Material[];
+
+    /**
+     * The maps for each material, parallel to {@link materials}.
+     *
+     * A separate array rather than a field on `Material`, for the same reason
+     * everything else here is parallel: `Material` is scene data that the shadow
+     * and depth passes never look at, while these are GPU handles the forward
+     * pass rebinds per draw. `addMaterial` keeps the two in step, so an index
+     * into one is always valid in the other.
+     */
+    textures: MaterialTextures[];
     instances: Instance[];
     lights: Light[];
 
@@ -56,6 +68,7 @@ export class Scene {
     constructor() {
         this.meshes = [];
         this.materials = [];
+        this.textures = [];
         this.instances = [];
         this.lights = [];
         this.sunDirection = new fvec3(0.0, 1.0, 0.0);
@@ -69,8 +82,26 @@ export class Scene {
         return this.meshes.length - 1;
     }
 
-    addMaterial(material: Material): usize {
+    /**
+     * Register an untextured material.
+     *
+     * Its map slots point at the shared fallbacks, so it shades exactly as it
+     * would have before textures existed and the forward pass needs no branch
+     * to tell the two kinds apart.
+     */
+    addMaterial(material: Material, fallbacks: Reference<Fallbacks>): usize {
+        const maps = new MaterialTextures();
+        maps.useFallbacks(fallbacks);
+
         this.materials.push(material);
+        this.textures.push(maps);
+        return this.materials.length - 1;
+    }
+
+    /** Register a material with its own maps, already loaded. */
+    addTexturedMaterial(material: Material, maps: MaterialTextures): usize {
+        this.materials.push(material);
+        this.textures.push(maps);
         return this.materials.length - 1;
     }
 
@@ -89,6 +120,11 @@ export class Scene {
     release(device: Pointer<SDL_GPUDevice>): void {
         for (let i: usize = 0; i < this.meshes.length; i++) {
             this.meshes[i].release(device);
+        }
+        // Each set releases only what it loaded; the shared fallbacks are the
+        // renderer's and outlive the scene.
+        for (let i: usize = 0; i < this.textures.length; i++) {
+            this.textures[i].release(device);
         }
     }
 }

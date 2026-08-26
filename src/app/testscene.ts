@@ -21,7 +21,8 @@ import { makeBox } from "../renderer/geometry/box.ts";
 import { GpuMesh } from "../renderer/geometry/mesh.ts";
 import { warnIfPaperThin } from "../renderer/geometry/meshdata.ts";
 import { makeSphere } from "../renderer/geometry/sphere.ts";
-import { makeMaterial, makeMetal } from "../renderer/scene/material.ts";
+import { Fallbacks, MaterialTextures } from "../renderer/assets/material_set.ts";
+import { Material, makeMaterial, makeMetal } from "../renderer/scene/material.ts";
 import { makePointLight, makeSpotLight } from "../renderer/scene/light.ts";
 import { Scene } from "../renderer/scene/scene.ts";
 
@@ -31,7 +32,24 @@ function minimumThickness(): f32 {
     return 0.05;
 }
 
-export function buildTestScene(device: Pointer<SDL_GPUDevice>, pointLights: u32): Scene {
+/** Load one folder of maps and register it as a material. */
+function addTextured(
+    scene: Reference<Scene>,
+    device: Pointer<SDL_GPUDevice>,
+    fallbacks: Reference<Fallbacks>,
+    folder: string,
+    material: Material,
+): usize {
+    const maps = new MaterialTextures();
+    maps.load(device, folder, fallbacks, folder);
+    return scene.addTexturedMaterial(material, maps);
+}
+
+export function buildTestScene(
+    device: Pointer<SDL_GPUDevice>,
+    fallbacks: Reference<Fallbacks>,
+    pointLights: u32,
+): Scene {
     const scene = new Scene();
 
     scene.sunDirection = new fvec3(-0.45, 0.8, 0.4);
@@ -77,12 +95,43 @@ export function buildTestScene(device: Pointer<SDL_GPUDevice>, pointLights: u32)
     const crate = scene.addMesh(crateMesh);
     const sphere = scene.addMesh(sphereMesh);
 
-    // -- materials --
-    const concrete = scene.addMaterial(makeMaterial(new fvec3(0.32, 0.31, 0.30), 0.85));
-    const paint = scene.addMaterial(makeMaterial(new fvec3(0.55, 0.18, 0.14), 0.55));
-    const timber = scene.addMaterial(makeMaterial(new fvec3(0.38, 0.26, 0.15), 0.7));
-    const steel = scene.addMaterial(makeMetal(new fvec3(0.56, 0.57, 0.58), 0.35));
-    const copper = scene.addMaterial(makeMetal(new fvec3(0.95, 0.64, 0.54), 0.2));
+    // -- untextured materials --
+    //
+    // These take the shared 1x1 fallbacks, so they shade exactly as they did
+    // before any of this existed. That is the whole point of the fallback
+    // scheme: textured and untextured take one code path.
+    const concrete = scene.addMaterial(makeMaterial(new fvec3(0.32, 0.31, 0.30), 0.85), fallbacks);
+    const paint = scene.addMaterial(makeMaterial(new fvec3(0.55, 0.18, 0.14), 0.55), fallbacks);
+    const steel = scene.addMaterial(makeMetal(new fvec3(0.56, 0.57, 0.58), 0.35), fallbacks);
+    const copper = scene.addMaterial(makeMetal(new fvec3(0.95, 0.64, 0.54), 0.2), fallbacks);
+
+    // -- textured materials, from assets/materials --
+    //
+    // The numeric parameters are multipliers on top of the maps, so albedo is
+    // white and roughness is 1: the map alone decides. Metalness stays a
+    // parameter because these sets carry no metalness map worth reading — the
+    // plates are metal everywhere and the brick and planks are metal nowhere.
+    const bricks = addTextured(
+        scene,
+        device,
+        fallbacks,
+        "assets/materials/bricks",
+        makeMaterial(fvec3.one(), 1.0),
+    );
+    const planks = addTextured(
+        scene,
+        device,
+        fallbacks,
+        "assets/materials/planks",
+        makeMaterial(fvec3.one(), 1.0),
+    );
+    const plates = addTextured(
+        scene,
+        device,
+        fallbacks,
+        "assets/materials/metal",
+        makeMetal(fvec3.one(), 1.0),
+    );
 
     // -- the floor --
     scene.add(floor, concrete, fmat4.fromTranslation(new fvec3(0.0, -0.2, 0.0)));
@@ -105,7 +154,12 @@ export function buildTestScene(device: Pointer<SDL_GPUDevice>, pointLights: u32)
         const position = new fvec3(fcos(angle) * radius, 0.8, fsin(angle) * radius);
 
         const transform = fmat4.fromTranslation(position).mul(fmat4.fromRotationY(angle));
-        scene.add(crate, i % 3 === 0 ? timber : paint, transform);
+
+        // The crates are what the maps are here to show, cycling through all
+        // three so a single screenshot has a dielectric with strong relief, a
+        // dielectric with fine grain, and a metal.
+        const material = i % 3 === 0 ? bricks : (i % 3 === 1 ? planks : plates);
+        scene.add(crate, material, transform);
     }
 
     // -- spheres, sweeping roughness across the metals --
@@ -115,6 +169,7 @@ export function buildTestScene(device: Pointer<SDL_GPUDevice>, pointLights: u32)
             i % 2 === 0
                 ? makeMetal(new fvec3(0.56, 0.57, 0.58), 0.05 + t * 0.7)
                 : makeMaterial(new fvec3(0.2, 0.35, 0.5), 0.05 + t * 0.7),
+            fallbacks,
         );
         const position = new fvec3(-10.5 + cast<f32>(i) * 3.0, 1.0, -12.0);
         scene.add(sphere, material, fmat4.fromTranslation(position));

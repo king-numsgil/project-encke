@@ -47,7 +47,14 @@ import {
     type SsaoUniform,
     type TonemapUniform,
 } from "./frame/uniforms.ts";
-import { createLinearClamp, createNearestClamp, createShadowCompare, releaseSampler } from "./gpu/sampler.ts";
+import { Fallbacks } from "./assets/material_set.ts";
+import {
+    createLinearClamp,
+    createMaterialSampler,
+    createNearestClamp,
+    createShadowCompare,
+    releaseSampler,
+} from "./gpu/sampler.ts";
 import { createColorTarget, releaseTexture } from "./gpu/texture.ts";
 import { ClusterPasses } from "./passes/clusters.ts";
 import { DepthPrepass } from "./passes/depth_prepass.ts";
@@ -90,6 +97,15 @@ export class Renderer {
     private linearSampler: Pointer<SDL_GPUSampler> | null;
     private nearestSampler: Pointer<SDL_GPUSampler> | null;
     private shadowSampler: Pointer<SDL_GPUSampler> | null;
+    private materialSampler: Pointer<SDL_GPUSampler> | null;
+
+    /**
+     * The 1x1 stand-ins for maps a material does not have.
+     *
+     * Owned by the renderer rather than by any scene, because they are constants
+     * shared by every material and outlive whatever is being drawn.
+     */
+    fallbacks: Fallbacks;
 
     private inputs: ForwardInputs;
 
@@ -122,6 +138,8 @@ export class Renderer {
         this.linearSampler = null;
         this.nearestSampler = null;
         this.shadowSampler = null;
+        this.materialSampler = null;
+        this.fallbacks = new Fallbacks();
 
         this.targets = new Targets();
         this.clusters = new ClusterBuffers();
@@ -171,7 +189,17 @@ export class Renderer {
         this.linearSampler = createLinearClamp(device);
         this.nearestSampler = createNearestClamp(device);
         this.shadowSampler = createShadowCompare(device);
-        if (this.linearSampler === null || this.nearestSampler === null || this.shadowSampler === null) {
+        this.materialSampler = createMaterialSampler(device);
+        if (
+            this.linearSampler === null ||
+            this.nearestSampler === null ||
+            this.shadowSampler === null ||
+            this.materialSampler === null
+        ) {
+            return false;
+        }
+
+        if (!this.fallbacks.create(device)) {
             return false;
         }
 
@@ -231,6 +259,7 @@ export class Renderer {
         this.inputs.occlusion = this.targets.occlusionBlurred;
         this.inputs.shadowSampler = this.shadowSampler;
         this.inputs.occlusionSampler = this.linearSampler;
+        this.inputs.materialSampler = this.materialSampler;
     }
 
     render(
@@ -428,9 +457,12 @@ export class Renderer {
         releaseSampler(device, this.linearSampler);
         releaseSampler(device, this.nearestSampler);
         releaseSampler(device, this.shadowSampler);
+        releaseSampler(device, this.materialSampler);
         this.linearSampler = null;
         this.nearestSampler = null;
         this.shadowSampler = null;
+        this.materialSampler = null;
+        this.fallbacks.release(device);
 
         // Written out rather than through a helper: a generic function is not
         // something this compiler supports yet, and `Pointer<T>.free()` has no

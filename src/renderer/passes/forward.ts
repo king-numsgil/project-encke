@@ -65,12 +65,16 @@ export class ForwardInputs {
     shadowSampler: Pointer<SDL_GPUSampler> | null;
     occlusionSampler: Pointer<SDL_GPUSampler> | null;
 
+    /** Repeating, mipmapped, anisotropic. What the material maps are sampled with. */
+    materialSampler: Pointer<SDL_GPUSampler> | null;
+
     constructor() {
         this.cascadeAtlas = null;
         this.spotAtlas = null;
         this.occlusion = null;
         this.shadowSampler = null;
         this.occlusionSampler = null;
+        this.materialSampler = null;
     }
 }
 
@@ -124,6 +128,7 @@ export class ForwardPass {
         const occlusion = inputs.occlusion;
         const shadowSampler = inputs.shadowSampler;
         const occlusionSampler = inputs.occlusionSampler;
+        const materialSampler = inputs.materialSampler;
 
         if (
             pipeline === null ||
@@ -134,7 +139,8 @@ export class ForwardPass {
             spotAtlas === null ||
             occlusion === null ||
             shadowSampler === null ||
-            occlusionSampler === null
+            occlusionSampler === null ||
+            materialSampler === null
         ) {
             return;
         }
@@ -194,16 +200,32 @@ export class ForwardPass {
         SDL_PushGPUFragmentUniformData(cmd, 0, frame, frameBytes);
         SDL_PushGPUFragmentUniformData(cmd, 1, shadows, shadowBytes);
 
+        // Rebound per draw, at slots 3..6 — the four material maps. Allocated
+        // once outside the loop and refilled, since the shape never changes.
+        const maps = allocArray<SDL_GPUTextureSamplerBinding>(4);
+
         for (let i: usize = 0; i < world.instances.length; i++) {
             fillObject(object, world.instances[i].transform);
             SDL_PushGPUVertexUniformData(cmd, 1, object, objectBytes);
 
-            fillMaterial(material, world.materials[world.instances[i].material]);
+            const which = world.instances[i].material;
+            fillMaterial(material, world.materials[which]);
             SDL_PushGPUFragmentUniformData(cmd, 2, material, materialBytes);
+
+            maps[0].texture = world.textures[which].color;
+            maps[0].sampler = materialSampler;
+            maps[1].texture = world.textures[which].normal;
+            maps[1].sampler = materialSampler;
+            maps[2].texture = world.textures[which].roughness;
+            maps[2].sampler = materialSampler;
+            maps[3].texture = world.textures[which].occlusion;
+            maps[3].sampler = materialSampler;
+            SDL_BindGPUFragmentSamplers(pass, 3, maps, 4);
 
             world.meshes[world.instances[i].mesh].draw(pass);
         }
 
+        maps.freeArray();
         SDL_EndGPURenderPass(pass);
     }
 

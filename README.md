@@ -84,7 +84,28 @@ culling workgroups).
 
 Cook-Torrance, metallic-roughness, direct lighting only. No ray tracing, no SSR,
 no IBL — indirect light is one flat ambient constant, which is the largest single
-cheat in the model and a deliberate one.
+cheat in the model and a deliberate one. That constant feeds `diffuse + f0`
+rather than `diffuse` alone, because a metal has no diffuse lobe and would
+otherwise be solid black everywhere a punctual highlight does not land.
+
+### Materials
+
+Four maps per material — colour, normal, roughness, occlusion — in a folder
+under `assets/materials/`, loaded by filename. Any of them may be absent: a
+missing map binds a 1x1 texture that is the identity for its channel, so an
+untextured material takes exactly the same shader path with no branch and no
+flag. Maps multiply the numeric parameters rather than replacing them, which is
+the glTF convention and what makes that work.
+
+**Only the colour map is sRGB.** The other three carry data, not light, and are
+uploaded as `UNORM` so no transfer curve is applied to them. Every map gets a
+full mip chain and an anisotropic repeating sampler; without mips a 1K map on a
+distant crate crawls as the camera moves.
+
+Normal mapping needs a tangent basis, so vertices carry `tangent.xyzw` where `w`
+is the bitangent's handedness. The generators compute it — they know their own
+UV layout exactly, where the fragment shader would have to recover it from
+screen-space derivatives every frame.
 
 ### Shadows
 

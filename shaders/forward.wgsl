@@ -8,12 +8,16 @@
 // each kind by ascending `@binding` and hands SDL that order; a sampler shares
 // the slot of the texture at its own rank. So:
 //
-//     SDL slot 0,1,2  textures     shadow_atlas, spot_atlas, occlusion
-//                     + samplers   shadow_sampler, spot_sampler, occlusion_sampler
+//     SDL slot 0..2   textures     shadow_atlas, spot_atlas, occlusion
+//     SDL slot 3..6   textures     color_map, normal_map, roughness_map, ao_map
+//                     + samplers   one per texture, at matching rank
 //     SDL slot 0,1,2  storage      lights, light_count, light_index
 //     SDL slot 0,1,2  uniforms     frame, shadows, material
 //
 // Reordering the `@binding` numbers within a kind silently rebinds the shader.
+//
+// Slots 0-2 are bound once per pass; **3-6 are rebound per draw**, because they
+// are the material's. That split is why the material maps come last.
 
 //!include "frame.wgsl"
 //!include "cluster.wgsl"
@@ -51,6 +55,8 @@ struct VertexOut {
     @location(1) view_pos : vec3<f32>,
     @location(2) normal : vec3<f32>,
     @location(3) uv : vec2<f32>,
+    /** `xyz` world-space tangent, `w` the bitangent's handedness. See `meshdata.ts`. */
+    @location(4) tangent : vec4<f32>,
 }
 
 // -- vertex stage (set 1 uniforms) -------------------------------------------
@@ -63,6 +69,7 @@ fn vs_main(
     @location(0) position : vec3<f32>,
     @location(1) normal : vec3<f32>,
     @location(2) uv : vec2<f32>,
+    @location(3) tangent : vec4<f32>,
 ) -> VertexOut {
     let world = object.model * vec4<f32>(position, 1.0);
 
@@ -81,6 +88,11 @@ fn vs_main(
     out.view_pos = (frame.view * world).xyz;
     out.normal = basis * normal;
     out.uv = uv;
+    // The tangent goes through the same basis as the normal, and the handedness
+    // rides along untouched — it is a sign, not a direction, so a transform
+    // would be meaningless. A mirroring transform flips which side the bitangent
+    // falls on, but that is already encoded in `w` by whoever built the mesh.
+    out.tangent = vec4<f32>(basis * tangent.xyz, tangent.w);
     return out;
 }
 
@@ -90,13 +102,26 @@ fn vs_main(
 @group(2) @binding(1) var spot_atlas : texture_depth_2d;
 @group(2) @binding(2) var occlusion : texture_2d<f32>;
 
-@group(2) @binding(3) var shadow_sampler : sampler_comparison;
-@group(2) @binding(4) var spot_sampler : sampler_comparison;
-@group(2) @binding(5) var occlusion_sampler : sampler;
+// The material's own maps, rebound per draw. A material with no map for a
+// channel binds a 1x1 fallback that is the identity for it, so there is no
+// branch here and an untextured surface shades exactly as it did before
+// textures existed — see `renderer/assets/material_set.ts`.
+@group(2) @binding(3) var color_map : texture_2d<f32>;
+@group(2) @binding(4) var normal_map : texture_2d<f32>;
+@group(2) @binding(5) var roughness_map : texture_2d<f32>;
+@group(2) @binding(6) var ao_map : texture_2d<f32>;
 
-@group(2) @binding(6) var<storage, read> lights : array<Light>;
-@group(2) @binding(7) var<storage, read> light_count : array<u32>;
-@group(2) @binding(8) var<storage, read> light_index : array<u32>;
+@group(2) @binding(7) var shadow_sampler : sampler_comparison;
+@group(2) @binding(8) var spot_sampler : sampler_comparison;
+@group(2) @binding(9) var occlusion_sampler : sampler;
+@group(2) @binding(10) var color_sampler : sampler;
+@group(2) @binding(11) var normal_sampler : sampler;
+@group(2) @binding(12) var roughness_sampler : sampler;
+@group(2) @binding(13) var ao_sampler : sampler;
+
+@group(2) @binding(14) var<storage, read> lights : array<Light>;
+@group(2) @binding(15) var<storage, read> light_count : array<u32>;
+@group(2) @binding(16) var<storage, read> light_index : array<u32>;
 
 @group(3) @binding(0) var<uniform> frame_fs : Frame;
 @group(3) @binding(1) var<uniform> shadows : Shadows;
@@ -153,19 +178,46 @@ fn debug_view(
     return vec4<f32>(1.0, 0.0, 1.0, 1.0);
 }
 
+/**
+ * The shading normal, with the material's normal map applied.
+ *
+ * Gram-Schmidt on the tangent first: both it and the normal are interpolated
+ * across the triangle and interpolation does not preserve the right angle
+ * between them, so re-orthogonalising is what stops the basis skewing towards
+ * the middle of a face.
+ */
+fn shading_normal(in : VertexOut) -> vec3<f32> {
+    let geometric = normalize(in.normal);
+    let tangent = normalize(in.tangent.xyz - geometric * dot(geometric, in.tangent.xyz));
+    let bitangent = cross(geometric, tangent) * in.tangent.w;
+
+    let sampled = textureSample(normal_map, normal_sampler, in.uv).xyz * 2.0 - vec3<f32>(1.0);
+    let basis = mat3x3<f32>(tangent, bitangent, geometric);
+    return normalize(basis * sampled);
+}
+
 @fragment
 fn fs_main(in : VertexOut) -> @location(0) vec4<f32> {
-    let normal = normalize(in.normal);
+    let normal = shading_normal(in);
     let view_dir = normalize(frame_fs.camera_pos.xyz - in.world_pos);
 
     // View space is right-handed, so a point in front of the camera has a
     // negative z and the distance the cluster grid is indexed by is its negation.
     let view_z = -in.view_pos.z;
 
+    // Maps modulate the numeric parameters rather than replacing them, which is
+    // the glTF convention and is what makes the 1x1 white fallbacks work: an
+    // absent map multiplies by one and the parameter stands alone.
+    //
+    // The colour map is sampled through an `_SRGB` texture format, so what
+    // arrives here is already linear and no conversion belongs in the shader.
+    let albedo = material.albedo.rgb * textureSample(color_map, color_sampler, in.uv).rgb;
+    let roughness = material.params.y * textureSample(roughness_map, roughness_sampler, in.uv).g;
+
     let surface = make_surface(
-        material.albedo.rgb,
+        albedo,
         material.params.x,
-        material.params.y,
+        roughness,
         normal,
         view_dir,
     );
@@ -255,12 +307,25 @@ fn fs_main(in : VertexOut) -> @location(0) vec4<f32> {
     }
 
     // -- ambient, occluded --
+    //
+    // Two occlusion terms, multiplied. The screen-space one catches contact
+    // between separate objects, which a texture cannot know about; the baked map
+    // catches the surface's own crevices, which SSAO cannot resolve at this
+    // scale. They answer different questions and neither subsumes the other.
     let ao_uv = in.position.xy * frame_fs.screen.zw;
-    let raw_ao = textureSample(occlusion, occlusion_sampler, ao_uv).r;
-    let ao = mix(1.0, raw_ao, material.params.z);
+    let screen_ao = textureSample(occlusion, occlusion_sampler, ao_uv).r;
+    let baked_ao = textureSample(ao_map, ao_sampler, in.uv).r;
+    let ao = mix(1.0, screen_ao * baked_ao, material.params.z);
 
-    let ambient = frame_fs.sun_color.a * surface.diffuse * ao;
-    color = color + ambient + material.emissive.rgb;
+    // `diffuse + f0`, not `diffuse` alone. A metal has no diffuse lobe, so an
+    // ambient term built only from it leaves every metal surface lit by nothing
+    // but punctual highlights — which renders as solid black between them, and
+    // looks like a bug rather than like physics. Adding `f0` stands in for the
+    // environment reflection there is no probe to compute: crude, but a rough
+    // metal's specular response to uniform surroundings really is close to `f0`,
+    // and it costs one add. Dielectrics gain 0.04 of ambient, which is invisible.
+    let indirect = frame_fs.sun_color.a * (surface.diffuse + surface.f0) * ao;
+    color = color + indirect + material.emissive.rgb;
 
     return vec4<f32>(color, 1.0);
 }

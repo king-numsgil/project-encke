@@ -68,6 +68,14 @@ function meshAttributes(count: u32): Pointer<SDL_GPUVertexAttribute> {
         attributes[2].offset = 24;
     }
 
+    if (count > 3) {
+        // `xyz` tangent, `w` bitangent handedness. See `meshdata.ts`.
+        attributes[3].location = 3;
+        attributes[3].buffer_slot = 0;
+        attributes[3].format = SDL_GPUVertexElementFormat.FLOAT4;
+        attributes[3].offset = 32;
+    }
+
     return attributes;
 }
 
@@ -161,7 +169,7 @@ export function createForwardPipeline(
     depthFormat: SDL_GPUTextureFormat,
     name: string,
 ): Pointer<SDL_GPUGraphicsPipeline> | null {
-    const attributes = meshAttributes(3);
+    const attributes = meshAttributes(4);
     const buffers = meshBufferDescription();
 
     const colorTarget = alloc<SDL_GPUColorTargetDescription>({
@@ -175,7 +183,7 @@ export function createForwardPipeline(
             vertex_buffer_descriptions: buffers,
             num_vertex_buffers: 1,
             vertex_attributes: attributes,
-            num_vertex_attributes: 3,
+            num_vertex_attributes: 4,
         },
         rasterizer_state: {
             cull_mode: SDL_GPUCullMode.BACK,
