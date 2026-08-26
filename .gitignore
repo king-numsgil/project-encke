@@ -7,6 +7,16 @@ out
 dist
 *.tgz
 
+# Rendered images. `--screenshot` and the debug views produce these constantly
+# and none of them are worth keeping, so the default is to ignore them wherever
+# they land. Anything genuinely meant to be tracked goes in assets/.
+#
+# The negation works because only the *files* are excluded above, never the
+# assets/ directory itself — git cannot re-include a file whose parent directory
+# is ignored.
+*.png
+!assets/**/*.png
+
 # code coverage
 coverage
 *.lcov

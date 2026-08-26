@@ -180,6 +180,19 @@ impl Counts {
         c
     }
 
+    /// `num_samplers`, for either create-info.
+    ///
+    /// SDL counts *texture-sampler pairs*, not sampler objects — each one is a
+    /// single `VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER` — so the number it
+    /// wants is how many sampled textures the entry point binds. Reporting the
+    /// sampler count instead agrees only when every texture has exactly one, and
+    /// disagrees silently otherwise: a `textureLoad` on a texture with no
+    /// sampler would under-report by one and shift every storage binding in the
+    /// set down by one along with it.
+    pub fn sdl_samplers(&self) -> u32 {
+        self.sampled_textures
+    }
+
     /// `SDL_GPUShaderCreateInfo.num_storage_textures`.
     pub fn graphics_storage_textures(&self) -> u32 {
         self.readonly_storage_textures + self.readwrite_storage_textures
@@ -189,6 +202,89 @@ impl Counts {
     pub fn graphics_storage_buffers(&self) -> u32 {
         self.readonly_storage_buffers + self.readwrite_storage_buffers
     }
+}
+
+/// Where one resource actually lands: the descriptor set and binding the
+/// SPIR-V is decorated with.
+#[derive(Copy, Clone, Debug)]
+pub struct Placement {
+    /// Index into the slice passed to [`assign`].
+    pub resource: usize,
+    pub set: u32,
+    pub binding: u32,
+}
+
+/// Assign every resource its SDL descriptor set and binding.
+///
+/// One function, used by both the SPIR-V back end and the report, so that what
+/// is printed is what is emitted. They were separate once and the printed
+/// columns were the author's own `@group`/`@binding` under a heading claiming
+/// they were SDL's — which is a good way to not notice a wrong layout.
+///
+/// Samplers are placed last and *onto* a texture's slot rather than after it;
+/// the long version of why is the note at the bottom of this file.
+pub fn assign(stage: ShaderStage, resources: &[Resource]) -> Result<Vec<Placement>> {
+    use ResourceKind::*;
+
+    // SPIR-V has one binding number space per set, so the order this walk visits
+    // the kinds in is the order SDL will see them in.
+    const ORDER: [ResourceKind; 6] = [
+        SampledTexture,
+        ReadOnlyStorageTexture,
+        ReadWriteStorageTexture,
+        ReadOnlyStorageBuffer,
+        ReadWriteStorageBuffer,
+        UniformBuffer,
+    ];
+
+    let mut out: Vec<Placement> = Vec::with_capacity(resources.len());
+    let mut next = std::collections::HashMap::<u32, u32>::new();
+    let mut texture_slots: Vec<Placement> = Vec::new();
+
+    for kind in ORDER {
+        for (index, r) in resources.iter().enumerate().filter(|(_, r)| r.kind == kind) {
+            let set = descriptor_set(stage, r.kind)?;
+            let slot = next.entry(set).or_insert(0);
+            let placement = Placement {
+                resource: index,
+                set,
+                binding: *slot,
+            };
+
+            if kind == SampledTexture {
+                texture_slots.push(placement);
+            }
+            out.push(placement);
+            *slot += 1;
+        }
+    }
+
+    let samplers: Vec<usize> = resources
+        .iter()
+        .enumerate()
+        .filter(|(_, r)| r.kind == Sampler)
+        .map(|(i, _)| i)
+        .collect();
+
+    if samplers.len() > texture_slots.len() {
+        bail!(
+            "this entry point binds {} sampler(s) but only {} sampled texture(s); \
+             SDL has one combined slot per texture, so a sampler with no texture \
+             to pair with has nowhere to go",
+            samplers.len(),
+            texture_slots.len()
+        );
+    }
+
+    for (rank, index) in samplers.into_iter().enumerate() {
+        out.push(Placement {
+            resource: index,
+            set: texture_slots[rank].set,
+            binding: texture_slots[rank].binding,
+        });
+    }
+
+    Ok(out)
 }
 
 /// The descriptor set SDL expects a resource of this kind to be in, for a
@@ -217,21 +313,34 @@ pub fn descriptor_set(stage: ShaderStage, kind: ResourceKind) -> Result<u32> {
     })
 }
 
-// A note on samplers in SPIR-V, since the obvious reading of SDL's docs is
-// wrong and this is where someone would come looking.
+// A note on samplers in SPIR-V, since SDL's docs do not answer the question and
+// this is where someone would come looking.
 //
 // SDL's SPIR-V section lists "sampled textures, followed by storage textures,
-// followed by storage buffers" and never mentions samplers, while its DXBC/DXIL
-// and MSL sections both call out a separate sampler index. That reads as a
-// *combined* image sampler — and `SDL_GPUTextureSamplerBinding` pairing a
-// texture with a sampler in one struct reads the same way.
+// followed by storage buffers" and never mentions samplers at all. The reason is
+// that there is nothing to mention: the Vulkan backend declares each texture
+// slot as a single `VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER` and emits no
+// sampler descriptor anywhere. `SDL_gpu_vulkan.c` builds every "category 1" set
+// as three consecutive runs —
 //
-// It is not what the Vulkan backend does. A WGSL shader declaring a
-// `texture_2d<f32>` and a `sampler` as two globals, compiled here to two
-// descriptors at consecutive bindings in the stage's set, samples correctly —
-// checked by rendering a compute-generated checkerboard through one and
-// comparing the result against the generator's own arithmetic, texel by texel.
+//     [0, samplerCount)                          COMBINED_IMAGE_SAMPLER
+//     [samplerCount, +storageTextureCount)       SAMPLED_IMAGE
+//     [.., +storageBufferCount)                  STORAGE_BUFFER
 //
-// So there is no caveat to report, and this file used to carry a warning that
-// said otherwise.
+// — and `samplerCount` is `num_samplers` from the create-info.
+//
+// WGSL's model is separate: a `texture_2d<f32>` and a `sampler` are two globals
+// and Naga emits two variables. Vulkan allows precisely this against a combined
+// descriptor, on one condition — both variables must carry the *same* descriptor
+// set and the *same* binding number. That is what `backends.rs` now does, and it
+// is why `Sampler` is absent from its binding order rather than last in it.
+//
+// This file used to claim the question had been settled empirically by the
+// checkerboard test in `triangle.wgsl`. It had not. That shader binds one
+// sampled texture, one sampler and no storage resources, and under those
+// conditions the correct layout and the incorrect one put the *texture* at the
+// same binding — so the image sampled correctly either way and the sampler was
+// reading a descriptor outside SDL's layout, which NVIDIA tolerates. Any shader
+// with two textures, or with one texture beside a storage buffer, would have
+// shown it.
 

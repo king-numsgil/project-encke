@@ -12,7 +12,7 @@
         "noImplicitOverride": true,
         "noFallthroughCasesInSwitch": true,
         "noUncheckedIndexedAccess": false,
-        "strictPropertyInitialization": false,
+        "strictPropertyInitialization": true,
         "isolatedModules": true,
         "verbatimModuleSyntax": true,
         "noEmit": true

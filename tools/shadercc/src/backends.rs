@@ -12,7 +12,7 @@ use naga::back::spv;
 use naga::valid::ModuleInfo;
 use naga::{Module, ShaderStage};
 
-use crate::sdl::{self, Resource, ResourceKind};
+use crate::sdl::{self, Resource};
 
 /// SPIR-V for one entry point, as bytes.
 ///
@@ -46,46 +46,26 @@ pub fn spirv(
         flags |= spv::WriterFlags::DEBUG;
     }
 
-    // Descriptor set from the kind and the stage; binding from the position
-    // within that set.
-    //
-    // SPIR-V has one binding number space per set, so the order this walk
-    // visits the kinds in is the order SDL will see. It is spelled out rather
-    // than taken from the sorted list because samplers have to come *last*:
-    // SDL's SPIR-V enumeration is "sampled textures, storage textures, storage
-    // buffers" with no sampler slot named, so putting them after keeps the
-    // three SDL does name at the indices it names them at. Samplers landing at
-    // the end of the set works — see the note in `sdl.rs`.
-    use ResourceKind::*;
-    const SPIRV_ORDER: [ResourceKind; 7] = [
-        SampledTexture,
-        ReadOnlyStorageTexture,
-        ReadWriteStorageTexture,
-        ReadOnlyStorageBuffer,
-        ReadWriteStorageBuffer,
-        UniformBuffer,
-        Sampler,
-    ];
-
+    // The placement is `sdl::assign`'s, so that what the report prints is what
+    // the bytecode is decorated with. A sampler shares its texture's set *and
+    // binding* — SDL declares one `VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER`
+    // per texture and no sampler descriptor at all, and Vulkan reaches a
+    // combined descriptor through separate image and sampler variables only when
+    // both name the same set and binding.
     let mut binding_map = spv::BindingMap::default();
-    let mut next = std::collections::HashMap::<u32, u32>::new();
-    for kind in SPIRV_ORDER {
-        for r in resources.iter().filter(|r| r.kind == kind) {
-            let set = sdl::descriptor_set(stage, r.kind)?;
-            let slot = next.entry(set).or_insert(0);
-            binding_map.insert(
-                naga::ResourceBinding {
-                    group: r.group,
-                    binding: r.binding,
-                },
-                spv::BindingInfo {
-                    descriptor_set: set,
-                    binding: *slot,
-                    binding_array_size: None,
-                },
-            );
-            *slot += 1;
-        }
+    for placement in sdl::assign(stage, resources)? {
+        let r = &resources[placement.resource];
+        binding_map.insert(
+            naga::ResourceBinding {
+                group: r.group,
+                binding: r.binding,
+            },
+            spv::BindingInfo {
+                descriptor_set: placement.set,
+                binding: placement.binding,
+                binding_array_size: None,
+            },
+        );
     }
 
     let options = spv::Options {

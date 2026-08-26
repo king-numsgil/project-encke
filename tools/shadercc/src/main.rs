@@ -95,8 +95,9 @@ fn run() -> Result<()> {
 
     let resources = sdl::classify(&module, &info, entry_index)?;
     let counts = sdl::Counts::of(&resources);
+    let placements = sdl::assign(stage, &resources)?;
 
-    report(&entry_name, stage, &resources, &counts);
+    report(&entry_name, stage, &resources, &placements, &counts);
 
     if args.dry_run {
         return Ok(());
@@ -190,20 +191,35 @@ fn stage_name(stage: ShaderStage) -> &'static str {
 }
 
 /// Print the resource layout and the create-info numbers.
-fn report(entry: &str, stage: ShaderStage, resources: &[sdl::Resource], counts: &sdl::Counts) {
+///
+/// The set and binding shown are the ones the bytecode is *decorated with*, not
+/// the ones the author wrote — those are shown beside them, because seeing both
+/// is the only way to check that a resource ended up where SDL will look. A
+/// sampler deliberately repeats its texture's slot; that is not a misprint.
+fn report(
+    entry: &str,
+    stage: ShaderStage,
+    resources: &[sdl::Resource],
+    placements: &[sdl::Placement],
+    counts: &sdl::Counts,
+) {
     println!("entry point `{entry}` ({})", stage_name(stage));
 
     if resources.is_empty() {
         println!("  no bound resources");
     } else {
-        println!("  resources, in SDL's binding order:");
-        for r in resources {
+        println!("  resources, as SDL will bind them:");
+        println!("    set  binding  kind                          name (authored at)");
+        for p in placements {
+            let r = &resources[p.resource];
             println!(
-                "    @group({}) @binding({})  {:<28} {}",
-                r.group,
-                r.binding,
+                "    {:<4} {:<8} {:<29} {} (@group({}) @binding({}))",
+                p.set,
+                p.binding,
                 r.kind.label(),
-                r.name
+                r.name,
+                r.group,
+                r.binding
             );
         }
     }
@@ -211,7 +227,7 @@ fn report(entry: &str, stage: ShaderStage, resources: &[sdl::Resource], counts: 
     println!();
     if stage == ShaderStage::Compute {
         println!("  SDL_GPUComputePipelineCreateInfo:");
-        println!("    num_samplers                   = {}", counts.samplers);
+        println!("    num_samplers                   = {}", counts.sdl_samplers());
         println!(
             "    num_readonly_storage_textures  = {}",
             counts.readonly_storage_textures
@@ -234,7 +250,7 @@ fn report(entry: &str, stage: ShaderStage, resources: &[sdl::Resource], counts: 
         );
     } else {
         println!("  SDL_GPUShaderCreateInfo:");
-        println!("    num_samplers         = {}", counts.samplers);
+        println!("    num_samplers         = {}", counts.sdl_samplers());
         println!(
             "    num_storage_textures = {}",
             counts.graphics_storage_textures()

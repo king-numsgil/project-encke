@@ -1546,10 +1546,17 @@ export declare function SDL_PushGPUComputeUniformData(
 // Render passes.
 // ---------------------------------------------------------------------------
 
-/** `null` for `depth_stencil_target_info` means no depth-stencil attachment. */
+/**
+ * `null` for `depth_stencil_target_info` means no depth-stencil attachment.
+ *
+ * `color_target_infos` may be `null` too, but only with `num_color_targets` of
+ * zero — which is a depth-only pass, and how the pre-pass and both shadow passes
+ * are recorded. SDL rejects the other combination by name rather than crashing
+ * on it.
+ */
 export declare function SDL_BeginGPURenderPass(
     command_buffer: Pointer<SDL_GPUCommandBuffer>,
-    color_target_infos: Pointer<SDL_GPUColorTargetInfo>,
+    color_target_infos: Pointer<SDL_GPUColorTargetInfo> | null,
     num_color_targets: u32,
     depth_stencil_target_info: Pointer<SDL_GPUDepthStencilTargetInfo> | null,
 ): Pointer<SDL_GPURenderPass> | null;

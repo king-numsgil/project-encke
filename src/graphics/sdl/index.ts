@@ -24,3 +24,4 @@ export * from "./platform.ts";
 export * from "./iostream.ts";
 export * from "./stdinc.ts";
 export * from "./time.ts";
+export * from "./timer.ts";

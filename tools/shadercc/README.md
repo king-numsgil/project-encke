@@ -89,12 +89,30 @@ compute              set 0 : textures, read-only storage
                      set 2 : uniform buffers
 ```
 
-Samplers get a descriptor of their own, placed after the resources SDL's docs
-enumerate. SDL's SPIR-V section never mentions samplers while its DXIL and MSL
-sections give them an index each, which reads as a *combined* image sampler —
-but the Vulkan backend does not require one. Verified by rendering a
-compute-generated checkerboard through a WGSL `texture_2d<f32>` + `sampler` pair
-and checking the result against the generator's arithmetic, texel by texel.
+**A sampler shares its texture's binding.** SDL's SPIR-V section never mentions
+samplers, and the reason is that it has no sampler descriptor to mention: the
+Vulkan backend declares each texture slot as one
+`VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER` holding both halves, then counts
+storage textures and storage buffers up from `num_samplers`. WGSL's model is
+separate — a `texture_2d<f32>` and a `sampler` are two globals — and Vulkan
+allows exactly that against a combined descriptor on one condition: both
+variables must name the same descriptor set *and the same binding number*. So
+the i-th sampler, by ascending `@binding`, is placed on the i-th sampled
+texture's slot.
+
+That makes `num_samplers` a count of **pairs**, so every sampled texture needs
+exactly one sampler even if the shader only ever calls `textureLoad` on it —
+an unsampled texture would otherwise shift every storage binding in the set down
+by one. Binding more samplers than textures is refused rather than misplaced.
+
+This is a corrected reading. Earlier versions gave samplers a descriptor of
+their own after the enumerated resources, and cited the checkerboard test in
+`triangle.wgsl` as confirmation. That test cannot confirm it: one texture, one
+sampler and no storage resources put the *texture* at binding 0 under either
+layout, so the image sampled correctly while the sampler read a descriptor
+outside SDL's set — undefined, and tolerated by the driver it was tried on. Two
+textures in one stage, or one texture beside a storage buffer, is where it
+shows.
 
 ## The Y flip
 
