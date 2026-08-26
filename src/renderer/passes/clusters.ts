@@ -34,7 +34,7 @@ import {
     type SDL_GPUTextureSamplerBinding,
     SDL_PushGPUComputeUniformData,
     SDL_ReleaseGPUComputePipeline,
-} from "../../graphics/sdl/index.ts";
+} from "../../bindings/SDL3";
 import {
     clusterCount,
     clusterLinearWorkgroup,

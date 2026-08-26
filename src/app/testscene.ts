@@ -16,7 +16,7 @@
 
 import { fvec3, fmat4 } from "std/linalg";
 import { fcos, fpi, fsin } from "std/math";
-import type { SDL_GPUDevice } from "../graphics/sdl/index.ts";
+import type { SDL_GPUDevice } from "../bindings/SDL3";
 import { makeBox } from "../renderer/geometry/box.ts";
 import { GpuMesh } from "../renderer/geometry/mesh.ts";
 import { warnIfPaperThin } from "../renderer/geometry/meshdata.ts";

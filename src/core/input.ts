@@ -12,7 +12,7 @@ import {
     type SDL_Scancode,
     SDL_SetWindowRelativeMouseMode,
     type SDL_Window,
-} from "../graphics/sdl/index.ts";
+} from "../bindings/SDL3";
 
 export class Input {
     /**

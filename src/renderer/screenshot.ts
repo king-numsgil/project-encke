@@ -34,7 +34,7 @@ import {
     SDL_SubmitGPUCommandBuffer,
     SDL_UnmapGPUTransferBuffer,
     SDL_WaitForGPUIdle,
-} from "../graphics/sdl/index.ts";
+} from "../bindings/SDL3";
 
 /**
  * Download `texture` and write it out.

@@ -13,7 +13,7 @@ import {
     type SDL_GPUDevice,
     type SDL_GPUTexture,
     SDL_GPUTextureFormat,
-} from "../../graphics/sdl/index.ts";
+} from "../../bindings/SDL3";
 import {
     cascadeAtlasHeight,
     cascadeAtlasWidth,

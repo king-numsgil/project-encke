@@ -15,7 +15,7 @@ import {
     SDL_GPUTextureUsageFlags,
     SDL_ReleaseGPUTexture,
     SDL_SetGPUTextureName,
-} from "../../graphics/sdl/index.ts";
+} from "../../bindings/SDL3";
 
 /**
  * A colour target that a later pass will sample.

@@ -15,7 +15,7 @@ import {
     type SDL_GPUSamplerCreateInfo,
     SDL_GPUSamplerMipmapMode,
     SDL_ReleaseGPUSampler,
-} from "../../graphics/sdl/index.ts";
+} from "../../bindings/SDL3";
 
 /**
  * Bilinear, clamped.

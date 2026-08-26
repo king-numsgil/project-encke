@@ -32,7 +32,7 @@ import {
     type SDL_GPUSampler,
     type SDL_GPUTexture,
     SDL_GPUTextureFormat,
-} from "../graphics/sdl/index.ts";
+} from "../bindings/SDL3";
 import { cameraFar, cameraNear, shadowDistance } from "./config.ts";
 import { ClusterBuffers } from "./cluster/buffers.ts";
 import { Targets } from "./frame/targets.ts";

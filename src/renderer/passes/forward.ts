@@ -42,7 +42,7 @@ import {
     SDL_PushGPUVertexUniformData,
     SDL_ReleaseGPUGraphicsPipeline,
     SDL_ReleaseGPUShader,
-} from "../../graphics/sdl/index.ts";
+} from "../../bindings/SDL3";
 import type { ClusterBuffers } from "../cluster/buffers.ts";
 import {
     fillObject,

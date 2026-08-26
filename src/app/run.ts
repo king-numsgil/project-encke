@@ -25,7 +25,7 @@ import {
     SDL_WaitAndAcquireGPUSwapchainTexture,
     SDL_WaitForGPUFences,
     SDL_WaitForGPUIdle,
-} from "../graphics/sdl/index.ts";
+} from "../bindings/SDL3";
 import { Clock, Stopwatch } from "../core/clock.ts";
 import { Input } from "../core/input.ts";
 import { cameraFar, cameraFovY, cameraNear } from "../renderer/config.ts";

@@ -33,7 +33,7 @@ import {
     SDL_PushGPUFragmentUniformData,
     SDL_ReleaseGPUGraphicsPipeline,
     SDL_ReleaseGPUShader,
-} from "../../graphics/sdl/index.ts";
+} from "../../bindings/SDL3";
 import { ssaoBias, ssaoIntensity, ssaoMaxRadiusPixels, ssaoRadius } from "../config.ts";
 import type { FrameUniform, SsaoUniform } from "../frame/uniforms.ts";
 import { createFullscreenPipeline } from "../gpu/pipeline.ts";

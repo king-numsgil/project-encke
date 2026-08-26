@@ -7,7 +7,7 @@
 // The counters are `u64`. Goblin refuses to mix that with an `f64` implicitly —
 // neither type holds the other — so every conversion to seconds is written out.
 
-import { SDL_GetPerformanceCounter, SDL_GetPerformanceFrequency } from "../graphics/sdl/index.ts";
+import { SDL_GetPerformanceCounter, SDL_GetPerformanceFrequency } from "../bindings/SDL3";
 
 export class Clock {
     private frequency: f64;

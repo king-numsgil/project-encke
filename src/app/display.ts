@@ -32,7 +32,7 @@ import {
     type SDL_Window,
     SDL_WindowFlags,
     SDL_WindowSupportsGPUPresentMode,
-} from "../graphics/sdl/index.ts";
+} from "../bindings/SDL3";
 import { presentModeName } from "./options.ts";
 
 export class Display {

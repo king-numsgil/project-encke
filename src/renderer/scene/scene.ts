@@ -12,7 +12,7 @@
 // lie about which work is actually being measured.
 
 import { fmat4, fvec3 } from "std/linalg";
-import type { SDL_GPUDevice } from "../../graphics/sdl/index.ts";
+import type { SDL_GPUDevice } from "../../bindings/SDL3";
 import { GpuMesh } from "../geometry/mesh.ts";
 import { Light } from "./light.ts";
 import { Material } from "./material.ts";

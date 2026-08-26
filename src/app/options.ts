@@ -11,7 +11,7 @@
 //     encke --screenshot out.png
 //     encke --width 2560 --height 1440
 
-import { SDL_GPUPresentMode } from "../graphics/sdl/index.ts";
+import { SDL_GPUPresentMode } from "../bindings/SDL3";
 
 export class Options {
     width: i32;

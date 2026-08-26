@@ -22,7 +22,7 @@ import {
     SDL_GPUBufferUsageFlags,
     type SDL_GPUCopyPass,
     type SDL_GPUDevice,
-} from "../../graphics/sdl/index.ts";
+} from "../../bindings/SDL3";
 import { clusterCount, maxLights, maxLightsPerCluster } from "../config.ts";
 import { createBuffer, releaseBuffer, Staging } from "../gpu/buffer.ts";
 import { lightStride, writeLight } from "../scene/light.ts";

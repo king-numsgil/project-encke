@@ -30,7 +30,7 @@ import {
     SDL_PushGPUVertexUniformData,
     SDL_ReleaseGPUGraphicsPipeline,
     SDL_ReleaseGPUShader,
-} from "../../graphics/sdl/index.ts";
+} from "../../bindings/SDL3";
 import { fillObject, type FrameUniform, type ObjectUniform } from "../frame/uniforms.ts";
 import { createDepthOnlyPipeline } from "../gpu/pipeline.ts";
 import type { Scene } from "../scene/scene.ts";

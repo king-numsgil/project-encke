@@ -51,7 +51,7 @@ import {
     SDL_ReleaseGPUShader,
     SDL_SetGPUScissor,
     SDL_SetGPUViewport,
-} from "../../graphics/sdl/index.ts";
+} from "../../bindings/SDL3";
 import { cascadeCount, shadowConstantBias, shadowSlopeBias, spotShadowSize } from "../config.ts";
 import type { ShadowUniform, ShadowViewUniform } from "../frame/uniforms.ts";
 import { createDepthOnlyPipeline } from "../gpu/pipeline.ts";

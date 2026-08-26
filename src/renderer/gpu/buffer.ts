@@ -42,7 +42,7 @@ import {
     SDL_UnmapGPUTransferBuffer,
     SDL_UploadToGPUBuffer,
     SDL_WaitForGPUIdle,
-} from "../../graphics/sdl/index.ts";
+} from "../../bindings/SDL3";
 
 /**
  * A device-local buffer.

@@ -15,7 +15,7 @@ import {
     type SDL_GPUDevice,
     SDL_GPUIndexElementSize,
     type SDL_GPURenderPass,
-} from "../../graphics/sdl/index.ts";
+} from "../../bindings/SDL3";
 import { createBuffer, releaseBuffer, Staging } from "../gpu/buffer.ts";
 import { type MeshData, vertexStride } from "./meshdata.ts";
 

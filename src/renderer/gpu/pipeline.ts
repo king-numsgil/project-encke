@@ -29,7 +29,7 @@ import {
     type SDL_GPUVertexBufferDescription,
     SDL_GPUVertexElementFormat,
     SDL_GPUVertexInputRate,
-} from "../../graphics/sdl/index.ts";
+} from "../../bindings/SDL3";
 import { vertexStride } from "../geometry/meshdata.ts";
 
 /**

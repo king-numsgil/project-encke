@@ -13,7 +13,7 @@ import {
     SDL_InitFlags,
     SDL_Quit,
     SDL_SetMemoryFunctions,
-} from "./graphics/sdl";
+} from "./bindings/SDL3";
 import { parseOptions, printUsage } from "./app/options.ts";
 import { run } from "./app/run.ts";
 

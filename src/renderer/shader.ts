@@ -20,7 +20,7 @@ import {
     SDL_GPUShaderFormat,
     SDL_GPUShaderStage,
     SDL_LoadFile,
-} from "../graphics/sdl/index.ts";
+} from "../bindings/SDL3";
 
 /**
  * A graphics shader, with the counts SDL cannot work out for itself.
