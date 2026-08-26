@@ -1,6 +1,6 @@
-// The frame graph, such as it is: eight stages in a fixed order.
+// The frame graph, such as it is: nine stages in a fixed order.
 //
-//     1  upload lights          copy pass
+//     1  upload lights, overlay  copy pass
 //     2  sun cascades           depth, into a 6144x2048 atlas
 //     3  spot shadows           depth, into a 2048x2048 atlas
 //     4  depth pre-pass         depth, full resolution
@@ -8,6 +8,7 @@
 //     6  SSAO + blur            colour, half resolution
 //     7  forward                colour, HDR, depth tested EQUAL
 //     8  tonemap                colour, into the swapchain
+//     9  overlay                colour, blended over the swapchain
 //
 // The dependencies that fix that order, and they are not all obvious:
 //
@@ -18,6 +19,11 @@
 //     has to be the number that was actually uploaded.
 //   * **5 and 6 before 7** — the forward pass reads both results.
 //   * **2 and 3 anywhere before 7** — the shadow atlases have no other consumer.
+//   * **8 before 9** — the overlay is on top, and it is drawn after the tonemap
+//     rather than before it so that a filmic curve is not applied to a colour
+//     somebody chose by eye. See `passes/ui.ts`.
+//   * **1 before 9** — the overlay's vertices are uploaded on the same copy pass
+//     the lights are, so a frame costs one copy pass rather than two.
 //
 // SDL inserts the resource transitions between passes, so nothing here issues a
 // barrier. What it will not do is reorder them, which is why this reads top to
@@ -33,12 +39,13 @@ import {
     type SDL_GPUTexture,
     SDL_GPUTextureFormat,
 } from "../bindings/SDL3";
-import { cameraFar, cameraNear, shadowDistance } from "./config.ts";
+import { cameraFar, cameraNear, shadowDistance, uiMonoFontPath, uiSansFontPath } from "./config.ts";
 import { ClusterBuffers } from "./cluster/buffers.ts";
 import { Targets } from "./frame/targets.ts";
 import {
     fillFrame,
     fillShadowParams,
+    fillUi,
     type FrameUniform,
     type MaterialUniform,
     type ObjectUniform,
@@ -46,6 +53,7 @@ import {
     type ShadowViewUniform,
     type SsaoUniform,
     type TonemapUniform,
+    type UiUniform,
 } from "./frame/uniforms.ts";
 import { Fallbacks } from "./assets/material_set.ts";
 import {
@@ -62,10 +70,13 @@ import { ForwardInputs, ForwardPass } from "./passes/forward.ts";
 import { ShadowPasses } from "./passes/shadows.ts";
 import { SsaoPass } from "./passes/ssao.ts";
 import { TonemapPass } from "./passes/tonemap.ts";
+import { UiPass } from "./passes/ui.ts";
 import type { Camera } from "./scene/camera.ts";
 import { computeCascades } from "./scene/cascades.ts";
 import type { Scene } from "./scene/scene.ts";
 import { assignSpotShadows } from "./scene/spotslots.ts";
+import { UiAtlas } from "./ui/atlas.ts";
+import type { UiDrawList } from "./ui/draw.ts";
 
 /** The depth format for the scene buffer and both shadow atlases. */
 function depthFormat(): SDL_GPUTextureFormat {
@@ -82,6 +93,7 @@ export class Renderer {
     private ssaoPass: SsaoPass;
     private forwardPass: ForwardPass;
     private tonemapPass: TonemapPass;
+    private uiPass: UiPass;
 
     // Uniform scratch, allocated once and refilled per frame. Pushing a uniform
     // copies it into the command buffer, so one block per kind is enough — there
@@ -93,6 +105,7 @@ export class Renderer {
     private shadowView: Pointer<ShadowViewUniform> | null;
     private ssaoParams: Pointer<SsaoUniform> | null;
     private tonemapParams: Pointer<TonemapUniform> | null;
+    private uiParams: Pointer<UiUniform> | null;
 
     private linearSampler: Pointer<SDL_GPUSampler> | null;
     private nearestSampler: Pointer<SDL_GPUSampler> | null;
@@ -106,6 +119,16 @@ export class Renderer {
      * shared by every material and outlive whatever is being drawn.
      */
     fallbacks: Fallbacks;
+
+    /**
+     * The overlay's glyph and shape atlas.
+     *
+     * Public because the draw list is built by whoever is drawing — every
+     * primitive in `ui/draw.ts` needs the atlas to find its UVs, and the renderer
+     * has no opinion about what the overlay says. Owned here because it is a GPU
+     * texture with the same lifetime as everything else in this class.
+     */
+    uiAtlas: UiAtlas;
 
     private inputs: ForwardInputs;
 
@@ -134,6 +157,7 @@ export class Renderer {
         this.shadowView = null;
         this.ssaoParams = null;
         this.tonemapParams = null;
+        this.uiParams = null;
 
         this.linearSampler = null;
         this.nearestSampler = null;
@@ -149,6 +173,8 @@ export class Renderer {
         this.ssaoPass = new SsaoPass();
         this.forwardPass = new ForwardPass();
         this.tonemapPass = new TonemapPass();
+        this.uiPass = new UiPass();
+        this.uiAtlas = new UiAtlas();
         this.inputs = new ForwardInputs();
         this.capture = null;
         this.captureFormat = SDL_GPUTextureFormat.INVALID;
@@ -185,6 +211,7 @@ export class Renderer {
         this.shadowView = alloc<ShadowViewUniform>();
         this.ssaoParams = alloc<SsaoUniform>();
         this.tonemapParams = alloc<TonemapUniform>();
+        this.uiParams = alloc<UiUniform>();
 
         this.linearSampler = createLinearClamp(device);
         this.nearestSampler = createNearestClamp(device);
@@ -234,6 +261,17 @@ export class Renderer {
         if (!this.tonemapPass.create(device, swapchainFormat)) {
             return false;
         }
+        if (!this.uiPass.create(device, swapchainFormat)) {
+            return false;
+        }
+
+        // The order decides the font indices — see `uiFontSans` in `ui/atlas.ts`.
+        // A missing font file is not fatal: the atlas registers the face with no
+        // glyphs, so the overlay loses its text and keeps its graph.
+        const fonts: string[] = [uiSansFontPath(), uiMonoFontPath()];
+        if (!this.uiAtlas.build(device, fonts)) {
+            return false;
+        }
 
         this.swapchainIsSrgb = swapchainIsSrgb;
         this.setDebugView(this.debug);
@@ -262,12 +300,19 @@ export class Renderer {
         this.inputs.materialSampler = this.materialSampler;
     }
 
+    /**
+     * Record a frame.
+     *
+     * `ui` is this frame's overlay, already built against {@link uiAtlas}. An
+     * empty list costs one branch and no pass.
+     */
     render(
         cmd: Pointer<SDL_GPUCommandBuffer>,
         swapchain: Pointer<SDL_GPUTexture>,
         scene: Reference<Scene>,
         camera: Reference<Camera>,
         elapsed: f32,
+        ui: Reference<UiDrawList>,
     ): void {
         const frame = this.frame;
         const object = this.object;
@@ -276,6 +321,7 @@ export class Renderer {
         const shadowView = this.shadowView;
         const ssaoParams = this.ssaoParams;
         const tonemapParams = this.tonemapParams;
+        const uiParams = this.uiParams;
 
         const sceneTarget = this.targets.scene;
         const depth = this.targets.depth;
@@ -294,6 +340,7 @@ export class Renderer {
             shadowView === null ||
             ssaoParams === null ||
             tonemapParams === null ||
+            uiParams === null ||
             sceneTarget === null ||
             depth === null ||
             occlusion === null ||
@@ -317,6 +364,7 @@ export class Renderer {
         const shadowViewBytes = cast<u32>(sizeOf<ShadowViewUniform>());
         const ssaoBytes = cast<u32>(sizeOf<SsaoUniform>());
         const tonemapBytes = cast<u32>(sizeOf<TonemapUniform>());
+        const uiBytes = cast<u32>(sizeOf<UiUniform>());
 
         // Built once and used twice: the light upload transforms every light
         // through it, and `fillFrame` hands the same matrix to every shader. Two
@@ -330,7 +378,7 @@ export class Renderer {
         computeCascades(shadows, camera, aspect, scene.sunDirection);
         fillShadowParams(shadows);
 
-        // -- 1. lights --
+        // -- 1. lights, and this frame's overlay --
         let lightCount: u32 = 0;
         const copyPass = SDL_BeginGPUCopyPass(cmd);
         if (copyPass === null) {
@@ -338,6 +386,7 @@ export class Renderer {
             return;
         }
         lightCount = this.clusters.uploadLights(copyPass, scene.lights, spots.slots, view);
+        this.uiPass.upload(copyPass, ui);
         SDL_EndGPUCopyPass(copyPass);
 
         fillFrame(
@@ -413,6 +462,18 @@ export class Renderer {
 
         // -- 8. present --
         this.tonemapPass.record(cmd, swapchain, sceneTarget, linear, tonemapParams, tonemapBytes);
+
+        // -- 9. overlay --
+        //
+        // Sized to the render targets rather than to the window, so that the
+        // overlay lands in the same place in a `--screenshot` capture as it does
+        // on screen. They are the same number today and would stop being one the
+        // moment a render scale arrives.
+        const atlas = this.uiAtlas.handle();
+        if (atlas !== null) {
+            fillUi(uiParams, width, height, this.swapchainIsSrgb);
+            this.uiPass.record(cmd, swapchain, atlas, linear, uiParams, uiBytes);
+        }
     }
 
     /**
@@ -449,6 +510,8 @@ export class Renderer {
     }
 
     release(device: Pointer<SDL_GPUDevice>): void {
+        this.uiAtlas.release(device);
+        this.uiPass.release(device);
         this.tonemapPass.release(device);
         this.forwardPass.release(device);
         this.ssaoPass.release(device);
@@ -473,7 +536,7 @@ export class Renderer {
 
         // Written out rather than through a helper: a generic function is not
         // something this compiler supports yet, and `Pointer<T>.free()` has no
-        // non-generic spelling that would take all seven.
+        // non-generic spelling that would take all eight.
         if (this.frame !== null) {
             this.frame.free();
         }
@@ -495,6 +558,9 @@ export class Renderer {
         if (this.tonemapParams !== null) {
             this.tonemapParams.free();
         }
+        if (this.uiParams !== null) {
+            this.uiParams.free();
+        }
 
         this.frame = null;
         this.object = null;
@@ -503,5 +569,6 @@ export class Renderer {
         this.shadowView = null;
         this.ssaoParams = null;
         this.tonemapParams = null;
+        this.uiParams = null;
     }
 }

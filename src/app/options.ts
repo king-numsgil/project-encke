@@ -45,6 +45,16 @@ export class Options {
      */
     debug: u32;
 
+    /**
+     * Whether the debug overlay starts visible. F1 toggles it either way.
+     *
+     * Off for a `--bench` run, set in {@link parseOptions} rather than here: the
+     * overlay is a draw call and a few hundred triangles, which is nothing, but a
+     * benchmark that measures something other than the renderer is a benchmark
+     * with an argument in it.
+     */
+    overlay: boolean;
+
     /** `--help` was passed; the caller should print usage and stop. */
     help: boolean;
 
@@ -73,6 +83,7 @@ export class Options {
         this.lights = 160;
         this.debug = 0;
         this.bench = false;
+        this.overlay = true;
         this.help = false;
         this.invalid = false;
     }
@@ -208,6 +219,17 @@ export function parseOptions(args: string[]): Options {
             } else {
                 options.bench = true;
                 options.frames = cast<u32>(value);
+                // See the note on `Options.overlay`. An explicit `--overlay on`
+                // after `--bench` still wins, because this only fires here.
+                options.overlay = false;
+            }
+            i += 2;
+        } else if (flag === "--overlay" && hasValue) {
+            if (args[i + 1] !== "on" && args[i + 1] !== "off") {
+                console.log(`options: --overlay wants on or off, got '${args[i + 1]}'`);
+                options.invalid = true;
+            } else {
+                options.overlay = args[i + 1] === "on";
             }
             i += 2;
         } else {
@@ -231,10 +253,25 @@ export function printUsage(): void {
     console.log("  --frames N           stop after N frames");
     console.log("  --bench N            run N frames and report frame timing");
     console.log("  --debug VIEW         off (default), clusters, ao, cascades");
+    console.log("  --overlay on|off     debug HUD, on by default and off under --bench (F1 toggles)");
     console.log("  --help               this");
     console.log("");
     console.log("  Benchmarks must use the present mode the build ships in — present()");
     console.log("  costs differ enough between modes to mask everything else.");
+}
+
+/** The view's name, for the overlay. The inverse of {@link debugViewFrom}. */
+export function debugViewName(view: u32): string {
+    if (view === 1) {
+        return "clusters";
+    }
+    if (view === 2) {
+        return "ao";
+    }
+    if (view === 3) {
+        return "cascades";
+    }
+    return "off";
 }
 
 /** The mode's name, for logs and for the benchmark header. */

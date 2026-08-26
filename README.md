@@ -22,9 +22,11 @@ bun run execute      # bin/encke
 --frames N           stop after N frames
 --bench N            run N frames and report frame timing
 --debug VIEW         off (default), clusters, ao, cascades
+--overlay on|off     debug HUD, on by default and off under --bench
 ```
 
 WASD to fly, right mouse to look, shift to hurry, space and control for height.
+F1 toggles the overlay.
 
 **A benchmark must run in the present mode the build ships in.** `present()`
 costs wildly different amounts under VSYNC, IMMEDIATE and MAILBOX; a VSYNC
@@ -35,7 +37,7 @@ underneath it. `--bench` prints the mode it ran in for that reason.
 
 | # | pass | target |
 |---|---|---|
-| 1 | upload lights | copy pass |
+| 1 | upload lights and overlay vertices | copy pass |
 | 2 | sun cascades | depth, 6144x2048 atlas |
 | 3 | spot shadows | depth, 2048x2048 atlas |
 | 4 | opaque depth pre-pass | depth, full res |
@@ -43,6 +45,7 @@ underneath it. `--bench` prints the mode it ran in for that reason.
 | 6 | SSAO + blur | colour, half res |
 | 7 | forward shading | colour, HDR, depth tested `EQUAL` |
 | 8 | tonemap | colour, swapchain |
+| 9 | overlay | colour, blended over the swapchain |
 
 The orderings that matter are documented at the top of `src/renderer/renderer.ts`.
 
@@ -147,6 +150,37 @@ This is a content rule the renderer cannot enforce, only report:
 `warnIfPaperThin` logs any mesh thinner than a threshold on any axis. A floor is
 a very flat box and never a quad; there is deliberately no plane primitive.
 
+### Overlay
+
+An immediate-mode debug HUD — rectangles, circles, lines and text — in
+`src/renderer/ui/`. There is no widget tree and no retained state: the list is
+cleared and rebuilt every frame from whatever the numbers currently are, which is
+all a debug readout ever needs.
+
+**The whole overlay is one draw call.** Every primitive is a quad sampling one
+atlas: shapes point at a block of solid white texels, text at its glyph's cell,
+and a circle at a pre-rasterised antialiased disc. So there is a single pipeline,
+no state changes between primitives, and the fragment shader is a multiply.
+
+The glyphs are **baked once at startup** by SDL_ttf rather than streamed through
+its GPU text engine. That engine is the right tool for text that is not known
+ahead of time; a debug overlay's text is printable ASCII in two faces, decided at
+build time, and baking it means no retained `TTF_Text` per string, no second
+texture to break the batch on, and layout the draw list controls. `Inter` sets
+the labels, `JetBrains Mono` everything numeric — a proportional `1` is narrower
+than a `0`, so a readout counting up in one would reflow on every frame.
+
+It draws **after** the tonemap, not before: a filmic curve applied to a colour
+somebody chose by eye does not give back that colour. Colours are therefore
+authored sRGB-encoded and decoded in the vertex shader only where the swapchain
+format encodes on write.
+
+Cost is within measurement noise of not drawing it at 1600x900 — the vertex and
+index buffers, and the CPU block the draw list builds into, are all allocated
+once at the ceilings in `config.ts` rather than grown per frame. It is still off
+by default under `--bench`, because a benchmark that measures something other
+than the renderer is a benchmark with an argument in it.
+
 ### Profiling
 
 **SDL_gpu has no timestamp query API** — it is an open issue upstream, not a gap
@@ -155,10 +189,18 @@ instrumenting will produce it. What is available is a fence: submit, wait, and
 take one whole-frame number on the CPU. That serialises the pipeline, so the
 fence is only taken under `--bench`; an ordinary frame submits and moves on.
 
+The overlay's own frame-time graph is a different measurement and deliberately
+so: it is the wall clock between two `Clock.tick` calls — the interval the window
+is actually being repainted at — which costs nothing to collect and is the number
+a HUD should show.
+
 ## Layout
 
 ```
 build.ts                    shaders -> SPIR-V -> manifest, then the program
+assets/
+  fonts/                    the overlay's two faces, and their licences
+  materials/                PBR maps, one folder per material
 shaders/
   include/                  frame, cluster, light, pbr, shadow, fullscreen
   *.wgsl                    one file per pass
@@ -168,6 +210,7 @@ src/
   core/                     clock, input
   bindings/SDL3/            SDL3 bindings
   bindings/SDL3_image/      SDL3_image bindings
+  bindings/SDL3_ttf/        SDL3_ttf bindings
   renderer/
     config.ts               every tunable, mirrored against a shader
     renderer.ts             the frame graph
@@ -177,6 +220,7 @@ src/
     gpu/                    buffer, texture, sampler, pipeline helpers
     passes/                 one file per pass
     scene/                  camera, lights, materials, cascade fitting
+    ui/                     overlay atlas, draw list, debug HUD
 tools/
   shadercc/                 WGSL -> SPIR-V, in SDL's binding layout
   goblin-forge/             the compiler
@@ -186,8 +230,8 @@ tools/
 
 On Windows `build.ts` fetches the prebuilt `-VC` packages from libsdl-org's
 releases into `build/sdl3/` and copies their DLLs beside the executable. Adding
-SDL3_ttf or SDL3_mixer later is one line in `DEPENDENCIES`. Elsewhere the same
-list resolves through pkg-config instead.
+SDL3_mixer later is one line in `DEPENDENCIES`. Elsewhere the same list resolves
+through pkg-config instead.
 
 SDL3_image's `optional/` folder is **not** optional here: it holds the codec
 DLLs, including `libpng16-16.dll`, and none of them are linked statically.
@@ -195,10 +239,17 @@ Without them the library still loads and `IMG_Load` still runs — every PNG jus
 fails at run time with a message about an unsupported format. The whole folder
 is copied.
 
-SDL3_image has no `IMG_Init`; decoders come up on first use. The
-`SDL_Renderer` entry points (`IMG_LoadTexture*`) are deliberately unbound —
-they belong to SDL's 2D renderer, which is a different and incompatible API
-from SDL_gpu. `IMG_LoadGPUTexture*` are the equivalents this project uses.
+SDL3_image has no `IMG_Init`; decoders come up on first use. SDL3_ttf does have
+`TTF_Init`, and nothing in it works before that call succeeds.
+
+The `SDL_Renderer` entry points are deliberately unbound in both —
+`IMG_LoadTexture*` in one, `TTF_*RendererTextEngine` and `TTF_DrawRendererText`
+in the other. They belong to SDL's 2D renderer, which is a different and
+incompatible API from SDL_gpu. `IMG_LoadGPUTexture*` and
+`TTF_CreateGPUTextEngine` are the equivalents this project uses.
+`SDL3_ttf/SDL_textengine.h` is unbound too, for a different reason: it declares
+no functions, only the vtable and draw-operation union needed to implement a
+text engine of your own.
 
 ### Shaders are compiled, reflected and generated
 

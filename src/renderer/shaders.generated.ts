@@ -339,3 +339,31 @@ export function triangleFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUS
         1, // uniform buffers
     );
 }
+
+/** `ui.wgsl` :: `vs_main` — vertex. */
+export function uiVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
+    return loadShader(
+        device,
+        "shaders/out/ui.vs_main.spv",
+        "vs_main",
+        SDL_GPUShaderStage.VERTEX,
+        0, // samplers
+        0, // storage textures
+        0, // storage buffers
+        1, // uniform buffers
+    );
+}
+
+/** `ui.wgsl` :: `fs_main` — fragment. */
+export function uiFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
+    return loadShader(
+        device,
+        "shaders/out/ui.fs_main.spv",
+        "fs_main",
+        SDL_GPUShaderStage.FRAGMENT,
+        1, // samplers
+        0, // storage textures
+        0, // storage buffers
+        0, // uniform buffers
+    );
+}

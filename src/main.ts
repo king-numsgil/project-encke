@@ -15,6 +15,7 @@ import {
     SDL_SetMemoryFunctions,
 } from "./bindings/SDL3";
 import { IMG_Version } from "./bindings/SDL3_image";
+import { TTF_Init, TTF_Quit, TTF_Version } from "./bindings/SDL3_ttf";
 import { parseOptions, printUsage } from "./app/options.ts";
 import { run } from "./app/run.ts";
 
@@ -36,19 +37,29 @@ export function main(args: string[]): i32 {
         return 2;
     }
 
-    // Both versions, because a mismatched DLL beside the executable is the
+    // All three versions, because a mismatched DLL beside the executable is the
     // failure this catches — SDL3_image has no init call to fail, so the first
     // sign of a wrong one would otherwise be an image that will not decode.
     console.log(`SDL ${SDL_GetVersion()} (${stringFromCString(SDL_GetRevision())})`);
     console.log(`SDL_image ${IMG_Version()}`);
+    console.log(`SDL_ttf ${TTF_Version()}`);
 
     if (!SDL_Init(SDL_InitFlags.VIDEO)) {
         console.log(`main: SDL_Init failed : ${stringFromCString(SDL_GetError())}`);
         return -1;
     }
 
+    // SDL_ttf, unlike SDL3_image, has to be brought up before anything in it
+    // works — the overlay's glyph atlas is baked during renderer creation. Not
+    // fatal: the atlas registers empty faces and the overlay loses its text,
+    // which is a worse HUD rather than no renderer.
+    if (!TTF_Init()) {
+        console.log(`main: TTF_Init failed, the overlay will have no text : ${stringFromCString(SDL_GetError())}`);
+    }
+
     const status = run(options);
 
+    TTF_Quit();
     SDL_Quit();
     return status;
 }

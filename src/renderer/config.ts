@@ -274,3 +274,88 @@ export function cameraFar(): f32 {
 export function exposure(): f32 {
     return 1.0;
 }
+
+// ---------------------------------------------------------------------------
+// The overlay. Mirrors nothing in WGSL — `shaders/ui.wgsl` takes its numbers
+// from the uniform block — but the atlas geometry below is shared between
+// `renderer/ui/atlas.ts` and the UVs every quad is built from.
+// ---------------------------------------------------------------------------
+
+/**
+ * Atlas width in pixels. The shelf packer wraps here; the height is whatever the
+ * shelves came to, so this is the only dimension that is a decision.
+ *
+ * 512 fits both fonts' printable ASCII in four shelves with room beside the
+ * disc. Wider would waste the tail of the last shelf, narrower would add one.
+ */
+export function uiAtlasWidth(): u32 {
+    return 512;
+}
+
+/**
+ * Transparent border around every atlas cell, in texels.
+ *
+ * One texel, and it is not optional: the atlas is sampled **linearly** so that
+ * the disc has smooth edges, and a linear tap at a cell's edge reaches half a
+ * texel past it. Without the gap that half texel is the neighbouring glyph.
+ */
+export function uiAtlasPadding(): u32 {
+    return 1;
+}
+
+/**
+ * Edge length of the baked disc, in texels.
+ *
+ * A circle is drawn as one quad sampling this, so 64 is the size above which a
+ * circle starts to look soft. Debug circles are plot markers and status dots —
+ * well under that — and the payoff is two triangles instead of thirty-two.
+ */
+export function uiDiscSize(): u32 {
+    return 64;
+}
+
+/** Point size both overlay fonts are baked at. */
+export function uiFontSize(): f32 {
+    return 13.0;
+}
+
+/**
+ * The proportional face, for labels.
+ *
+ * Baked first, so it is `uiFontSans()` — index 0 — in the atlas.
+ */
+export function uiSansFontPath(): string {
+    return "assets/fonts/Inter-Regular.ttf";
+}
+
+/**
+ * The monospaced face, for anything numeric.
+ *
+ * Every digit the same width is not a preference here: a proportional `1` is
+ * narrower than a `0`, so a readout counting up reflows on every frame and the
+ * whole line jitters. Baked second — `uiFontMono()`, index 1.
+ */
+export function uiMonoFontPath(): string {
+    return "assets/fonts/JetBrainsMono-Regular.ttf";
+}
+
+/**
+ * Vertex ceiling for one frame's overlay.
+ *
+ * The buffers are allocated once at this size rather than grown, because a
+ * growable per-frame buffer means a device-idle in the middle of a frame. A
+ * draw list that runs out says so once and stops adding — see `ui/draw.ts`.
+ */
+export function uiMaxVertices(): u32 {
+    return 16384;
+}
+
+/** Index ceiling. Six per quad, so this is {@link uiMaxVertices} times 1.5. */
+export function uiMaxIndices(): u32 {
+    return 24576;
+}
+
+/** Frame-time samples the overlay graph plots. */
+export function uiGraphSamples(): u32 {
+    return 180;
+}

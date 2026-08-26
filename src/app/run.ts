@@ -33,8 +33,10 @@ import { Profiler } from "../renderer/profiler.ts";
 import { Renderer } from "../renderer/renderer.ts";
 import { Camera } from "../renderer/scene/camera.ts";
 import { saveTexturePng } from "../renderer/screenshot.ts";
+import { UiDrawList } from "../renderer/ui/draw.ts";
+import { Overlay, OverlayInfo } from "../renderer/ui/overlay.ts";
 import { Display } from "./display.ts";
-import { type Options, presentModeName } from "./options.ts";
+import { debugViewName, type Options, presentModeName } from "./options.ts";
 import { buildTestScene, populateLights } from "./testscene.ts";
 
 /** Metres per second the camera flies at. Shift multiplies it. */
@@ -102,6 +104,20 @@ export function run(options: Reference<Options>): i32 {
     const profiler = new Profiler();
     profiler.begin(options.bench ? cast<usize>(options.frames) : 0);
 
+    // The overlay's own history, kept whether or not it is on screen — see the
+    // note at the top of `renderer/ui/overlay.ts` for why it does not read the
+    // profiler's numbers instead.
+    const overlay = new Overlay();
+    overlay.visible = options.overlay;
+
+    const overlayInfo = new OverlayInfo();
+    overlayInfo.lights = options.lights;
+    overlayInfo.present = presentModeName(display.presentMode);
+    overlayInfo.debug = debugViewName(options.debug);
+
+    const ui = new UiDrawList();
+    ui.create();
+
     const stopwatch = new Stopwatch();
     const event = alloc<SDL_Event>();
     const swapchain = allocArray<Pointer<SDL_GPUTexture>>(1);
@@ -119,12 +135,18 @@ export function run(options: Reference<Options>): i32 {
             if (event.type === SDL_EventType.KeyDown && event.key.scancode === SDL_Scancode.ESCAPE) {
                 running = false;
             }
+            // On the event rather than on `Input.down`, which is a level and
+            // would toggle once per frame for as long as the key is held.
+            if (event.type === SDL_EventType.KeyDown && event.key.scancode === SDL_Scancode.F1) {
+                overlay.visible = !overlay.visible;
+            }
         }
 
         const delta = clock.tick();
         input.poll();
         driveCamera(camera, input, delta);
         populateLights(scene, clock.elapsed, options.lights);
+        overlay.record(delta);
 
         if (display.readSize()) {
             // The window changed size, so the targets and the cluster bounds are
@@ -158,6 +180,14 @@ export function run(options: Reference<Options>): i32 {
         // have settled, early enough that an unattended run finishes quickly.
         const capturing = options.screenshot.length > 0 && !captured && frame >= 4;
 
+        // Built here rather than inside the renderer: what the overlay says is
+        // the application's business, and the renderer's is turning a draw list
+        // into triangles. Rebuilt from scratch every frame — see `ui/draw.ts`.
+        ui.clear();
+        overlayInfo.width = display.width;
+        overlayInfo.height = display.height;
+        overlay.build(ui, renderer.uiAtlas, overlayInfo);
+
         // A null texture with a successful acquire is the ordinary "window is
         // minimised" answer. Nothing to draw into, so the command buffer is
         // submitted empty rather than cancelled — cancelling is not allowed once
@@ -169,7 +199,7 @@ export function run(options: Reference<Options>): i32 {
                 // Tonemap into a texture that can actually be downloaded, then
                 // hand the same pixels to the swapchain so the window still
                 // shows the frame that was captured.
-                renderer.render(cmd, capture, scene, camera, clock.elapsed);
+                renderer.render(cmd, capture, scene, camera, clock.elapsed, ui);
 
                 const blit = alloc<SDL_GPUBlitInfo>({
                     source: { texture: capture, w: display.width, h: display.height },
@@ -180,7 +210,7 @@ export function run(options: Reference<Options>): i32 {
                 SDL_BlitGPUTexture(cmd, blit);
                 blit.free();
             } else {
-                renderer.render(cmd, swapchain[0], scene, camera, clock.elapsed);
+                renderer.render(cmd, swapchain[0], scene, camera, clock.elapsed, ui);
             }
         }
 
@@ -232,6 +262,7 @@ export function run(options: Reference<Options>): i32 {
         profiler.report(presentModeName(display.presentMode));
     }
 
+    ui.release();
     fences.freeArray();
     swapchain.freeArray();
     event.free();

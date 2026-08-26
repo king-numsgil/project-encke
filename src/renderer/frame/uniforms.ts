@@ -132,6 +132,14 @@ export interface TonemapUniform {
     settings: fvec4;
 }
 
+/** Mirrors `struct Ui` in `shaders/ui.wgsl`. 32 bytes. */
+export interface UiUniform {
+    /** `xy`: pixels-to-clip scale, `zw`: its offset. */
+    transform: fvec4;
+    /** `x`: 1 when the swapchain encodes sRGB itself. */
+    flags: fvec4;
+}
+
 /**
  * The two constants that turn a view-space distance into a cluster slice.
  *
@@ -227,6 +235,27 @@ export function fillFrame(
 export function fillObject(object: Pointer<ObjectUniform>, transform: fmat4): void {
     object.model = transform;
     object.normal = transform.inverse().transpose();
+}
+
+/**
+ * Fill the overlay block.
+ *
+ * The transform takes a pixel position with `y` down and the origin at the
+ * top-left to clip space: `x` maps `[0, w]` to `[-1, 1]`, and `y` maps `[0, h]`
+ * to `[1, -1]` — the sign flip is what puts `y = 0` at the top. Clip `+Y` is up
+ * on screen here because SDL_gpu's Vulkan backend flips its own viewport.
+ */
+export function fillUi(
+    ui: Pointer<UiUniform>,
+    width: u32,
+    height: u32,
+    swapchainIsSrgb: boolean,
+): void {
+    const w = cast<f32>(width);
+    const h = cast<f32>(height);
+
+    ui.transform = new fvec4(2.0 / w, -2.0 / h, -1.0, 1.0);
+    ui.flags = new fvec4(swapchainIsSrgb ? 1.0 : 0.0, 0.0, 0.0, 0.0);
 }
 
 /** The scalars every shadow lookup shares. */
