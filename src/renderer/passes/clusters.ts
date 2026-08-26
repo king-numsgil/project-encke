@@ -107,9 +107,15 @@ export class ClusterPasses {
         const active = buffers.active;
         const lightCount = buffers.lightCount;
         const lightIndex = buffers.lightIndex;
-        const lights = buffers.lights;
+        const cullLights = buffers.cullLights;
 
-        if (bounds === null || active === null || lightCount === null || lightIndex === null || lights === null) {
+        if (
+            bounds === null ||
+            active === null ||
+            lightCount === null ||
+            lightIndex === null ||
+            cullLights === null
+        ) {
             return;
         }
 
@@ -120,7 +126,7 @@ export class ClusterPasses {
 
         this.recordClear(cmd, active);
         this.recordMark(cmd, active, depth, depthSampler, frame, frameBytes, width, height);
-        this.recordCull(cmd, bounds, lights, active, lightCount, lightIndex, frame, frameBytes);
+        this.recordCull(cmd, bounds, cullLights, active, lightCount, lightIndex, frame, frameBytes);
     }
 
     private recordBuild(
@@ -221,7 +227,7 @@ export class ClusterPasses {
     private recordCull(
         cmd: Pointer<SDL_GPUCommandBuffer>,
         bounds: Pointer<SDL_GPUBuffer>,
-        lights: Pointer<SDL_GPUBuffer>,
+        cullLights: Pointer<SDL_GPUBuffer>,
         active: Pointer<SDL_GPUBuffer>,
         lightCount: Pointer<SDL_GPUBuffer>,
         lightIndex: Pointer<SDL_GPUBuffer>,
@@ -248,10 +254,10 @@ export class ClusterPasses {
         }
 
         // Slot order is the shader's `@binding` order within the read-only
-        // storage kind: bounds, lights, cluster_active.
+        // storage kind: bounds, cull_lights, cluster_active.
         const reads = allocArray<Pointer<SDL_GPUBuffer>>(3);
         reads[0] = bounds;
-        reads[1] = lights;
+        reads[1] = cullLights;
         reads[2] = active;
         SDL_BindGPUComputeStorageBuffers(pass, 0, reads, 3);
         reads.freeArray();

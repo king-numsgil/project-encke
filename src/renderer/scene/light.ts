@@ -5,7 +5,7 @@
 // time. Two types would mean two culling loops and two per-cluster lists for no
 // gain — see the note at the top of `shaders/include/light.wgsl`.
 
-import { fvec3 } from "std/linalg";
+import { fvec3, fvec4 } from "std/linalg";
 import { fcos } from "std/math";
 
 /** Matches `LIGHT_POINT` / `LIGHT_SPOT` in `shaders/include/light.wgsl`. */
@@ -20,6 +20,15 @@ export function lightKindSpot(): u32 {
 /** Bytes one light occupies in the storage buffer. Four `vec4` rows. */
 export function lightStride(): u32 {
     return 64;
+}
+
+/**
+ * Bytes one light occupies in the culling buffer. One `vec4`.
+ *
+ * Mirrors `cull_lights` in `shaders/cluster_cull.wgsl`.
+ */
+export function cullLightStride(): u32 {
+    return 16;
 }
 
 export class Light {
@@ -159,4 +168,30 @@ export function writeLight(
     words[base + 13] = shadowSlot < 0 ? 0xffffffff : cast<u32>(shadowSlot);
     floats[base + 14] = 0.0;
     floats[base + 15] = 0.0;
+}
+
+/**
+ * Pack the sixteen bytes culling actually reads: view-space position and range.
+ *
+ * Culling tests a bounding sphere against a froxel's view-space AABB, so those
+ * two numbers are the whole of its input — the other forty-eight bytes of
+ * `struct Light` are the shading pass's. Reading the wide struct in the cull
+ * loop meant pulling all sixty-four across for sixteen, in the innermost loop
+ * of the frame.
+ *
+ * **The position is in view space, transformed here.** It used to be
+ * transformed in the shader, once per cluster — but the result does not depend
+ * on the cluster, so every workgroup past the first was recomputing an answer
+ * some other workgroup already had. There are at most 384 lights and thousands
+ * of clusters, so the transform belongs on whichever side runs it once, and
+ * this is the side that already walks every light every frame.
+ *
+ * `at` is a flat index into the float view of the staging block, not a light
+ * index: the culling region sits past the shading region in one mapping.
+ */
+export function writeCullLight(floats: Pointer<f32>, at: usize, viewPosition: fvec4, range: f32): void {
+    floats[at + 0] = viewPosition.x;
+    floats[at + 1] = viewPosition.y;
+    floats[at + 2] = viewPosition.z;
+    floats[at + 3] = range;
 }

@@ -18,7 +18,6 @@
 
 //!include "frame.wgsl"
 //!include "cluster.wgsl"
-//!include "light.wgsl"
 
 struct ClusterBounds {
     min_view : vec4<f32>,
@@ -37,7 +36,23 @@ struct ClusterBounds {
 const SORT_WIDTH : u32 = 128u;
 
 @group(0) @binding(0) var<storage, read> bounds : array<ClusterBounds>;
-@group(0) @binding(1) var<storage, read> lights : array<Light>;
+
+/**
+ * The lights, as `vec4(view_position, range)` — not `struct Light`.
+ *
+ * Sixteen bytes rather than sixty-four, because those two numbers are the whole
+ * of what a sphere-versus-AABB test reads; colour, cone angles and the shadow
+ * slot belong to shading and are never touched here. This loop runs
+ * `light_count` times for every cluster a fragment landed in, so it is the
+ * innermost loop in the frame and the one place the width of a struct load
+ * actually shows.
+ *
+ * **Already in view space**, transformed once on the CPU in
+ * `ClusterBuffers.uploadLights`. It used to be `frame.view * light.position`
+ * right here, which recomputed the same few hundred results in every one of
+ * thousands of workgroups.
+ */
+@group(0) @binding(1) var<storage, read> cull_lights : array<vec4<f32>>;
 @group(0) @binding(2) var<storage, read> cluster_active : array<u32>;
 
 @group(1) @binding(0) var<storage, read_write> light_count : array<u32>;
@@ -119,14 +134,15 @@ fn cs_main(
 
     let total = frame.grid.w;
     for (var i = lane; i < total; i = i + SORT_WIDTH) {
-        let light = lights[i];
-        let view_pos = (frame.view * vec4<f32>(light.position, 1.0)).xyz;
+        let light = cull_lights[i];
+        let view_pos = light.xyz;
+        let range = light.w;
 
         // Sphere against the froxel's AABB. A spotlight is culled by its
         // bounding sphere too — the cone test is a handful of instructions in
         // the shading loop, where it runs for the few clusters that kept the
         // light, rather than here where it would run for all of them.
-        if aabb_distance_sq(view_pos, lo, hi) > light.range * light.range {
+        if aabb_distance_sq(view_pos, lo, hi) > range * range {
             continue;
         }
 

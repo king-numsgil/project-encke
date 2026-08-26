@@ -318,6 +318,13 @@ export class Renderer {
         const ssaoBytes = cast<u32>(sizeOf<SsaoUniform>());
         const tonemapBytes = cast<u32>(sizeOf<TonemapUniform>());
 
+        // Built once and used twice: the light upload transforms every light
+        // through it, and `fillFrame` hands the same matrix to every shader. Two
+        // calls to `camera.view()` would agree today, but culling places lights
+        // in froxels this matrix defines, so "agree today" is not the property
+        // wanted — being the same matrix is.
+        const view = camera.view();
+
         // -- shadow bookkeeping, before anything is recorded --
         const spots = assignSpotShadows(scene.lights, shadows, camera.position);
         computeCascades(shadows, camera, aspect, scene.sunDirection);
@@ -330,12 +337,12 @@ export class Renderer {
             console.log(`renderer: copy pass failed : ${stringFromCString(SDL_GetError())}`);
             return;
         }
-        lightCount = this.clusters.uploadLights(copyPass, scene.lights, spots.slots);
+        lightCount = this.clusters.uploadLights(copyPass, scene.lights, spots.slots, view);
         SDL_EndGPUCopyPass(copyPass);
 
         fillFrame(
             frame,
-            camera.view(),
+            view,
             camera.projection(aspect),
             camera.position,
             scene.sunDirection,
