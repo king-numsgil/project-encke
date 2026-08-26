@@ -4,8 +4,8 @@
 // report, parsed back out of it, so they cannot drift from the shader — SDL
 // takes these on trust and a wrong one samples zeroes with no error anywhere.
 
-import { SDL_GPUShaderStage } from "../bindings/SDL3";
-import type { SDL_GPUComputePipeline, SDL_GPUDevice, SDL_GPUShader } from "../bindings/SDL3";
+import { SDL_GPUShaderStage } from "../bindings/SDL3/index.ts";
+import type { SDL_GPUComputePipeline, SDL_GPUDevice, SDL_GPUShader } from "../bindings/SDL3/index.ts";
 import { loadComputePipeline, loadShader } from "./shader.ts";
 
 /** `blur.wgsl` :: `blur_main` — compute, 8x8x1. */

@@ -226,8 +226,8 @@ function renderManifest(compiled: readonly { entry: EntryPoint; counts: Counts }
         "// report, parsed back out of it, so they cannot drift from the shader — SDL",
         "// takes these on trust and a wrong one samples zeroes with no error anywhere.",
         "",
-        'import { SDL_GPUShaderStage } from "../graphics/sdl/index.ts";',
-        'import type { SDL_GPUComputePipeline, SDL_GPUDevice, SDL_GPUShader } from "../graphics/sdl/index.ts";',
+        'import { SDL_GPUShaderStage } from "../bindings/SDL3/index.ts";',
+        'import type { SDL_GPUComputePipeline, SDL_GPUDevice, SDL_GPUShader } from "../bindings/SDL3/index.ts";',
         'import { loadComputePipeline, loadShader } from "./shader.ts";',
         "",
     ];
