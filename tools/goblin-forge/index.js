@@ -169575,8 +169575,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-android-arm64");
         const bindingPackageVersion = require2("@goblin-forge/backend-android-arm64/package.json").version;
-        if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169591,8 +169591,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-android-arm-eabi");
         const bindingPackageVersion = require2("@goblin-forge/backend-android-arm-eabi/package.json").version;
-        if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169612,8 +169612,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-win32-x64-gnu");
           const bindingPackageVersion = require2("@goblin-forge/backend-win32-x64-gnu/package.json").version;
-          if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169628,8 +169628,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-win32-x64-msvc");
           const bindingPackageVersion = require2("@goblin-forge/backend-win32-x64-msvc/package.json").version;
-          if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169645,8 +169645,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-win32-ia32-msvc");
         const bindingPackageVersion = require2("@goblin-forge/backend-win32-ia32-msvc/package.json").version;
-        if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169661,8 +169661,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-win32-arm64-msvc");
         const bindingPackageVersion = require2("@goblin-forge/backend-win32-arm64-msvc/package.json").version;
-        if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169680,8 +169680,8 @@ function requireNative() {
     try {
       const binding = require2("@goblin-forge/backend-darwin-universal");
       const bindingPackageVersion = require2("@goblin-forge/backend-darwin-universal/package.json").version;
-      if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-        throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+      if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+        throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
       }
       return binding;
     } catch (e) {
@@ -169696,8 +169696,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-darwin-x64");
         const bindingPackageVersion = require2("@goblin-forge/backend-darwin-x64/package.json").version;
-        if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169712,8 +169712,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-darwin-arm64");
         const bindingPackageVersion = require2("@goblin-forge/backend-darwin-arm64/package.json").version;
-        if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169732,8 +169732,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-freebsd-x64");
         const bindingPackageVersion = require2("@goblin-forge/backend-freebsd-x64/package.json").version;
-        if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169748,8 +169748,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-freebsd-arm64");
         const bindingPackageVersion = require2("@goblin-forge/backend-freebsd-arm64/package.json").version;
-        if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169769,8 +169769,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-x64-musl");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-x64-musl/package.json").version;
-          if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169785,8 +169785,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-x64-gnu");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-x64-gnu/package.json").version;
-          if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169803,8 +169803,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-arm64-musl");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-arm64-musl/package.json").version;
-          if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169819,8 +169819,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-arm64-gnu");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-arm64-gnu/package.json").version;
-          if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169837,8 +169837,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-arm-musleabihf");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-arm-musleabihf/package.json").version;
-          if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169853,8 +169853,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-arm-gnueabihf");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-arm-gnueabihf/package.json").version;
-          if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169871,8 +169871,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-loong64-musl");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-loong64-musl/package.json").version;
-          if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169887,8 +169887,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-loong64-gnu");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-loong64-gnu/package.json").version;
-          if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169905,8 +169905,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-riscv64-musl");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-riscv64-musl/package.json").version;
-          if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169921,8 +169921,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-riscv64-gnu");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-riscv64-gnu/package.json").version;
-          if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169938,8 +169938,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-linux-ppc64-gnu");
         const bindingPackageVersion = require2("@goblin-forge/backend-linux-ppc64-gnu/package.json").version;
-        if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169954,8 +169954,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-linux-s390x-gnu");
         const bindingPackageVersion = require2("@goblin-forge/backend-linux-s390x-gnu/package.json").version;
-        if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169974,8 +169974,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-openharmony-arm64");
         const bindingPackageVersion = require2("@goblin-forge/backend-openharmony-arm64/package.json").version;
-        if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169990,8 +169990,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-openharmony-x64");
         const bindingPackageVersion = require2("@goblin-forge/backend-openharmony-x64/package.json").version;
-        if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -170006,8 +170006,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-openharmony-arm");
         const bindingPackageVersion = require2("@goblin-forge/backend-openharmony-arm/package.json").version;
-        if (bindingPackageVersion !== "0.1.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -170114,8 +170114,8 @@ if (!nativeBinding || forceWasi) {
       if (!candidateFailed) {
         if (process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
           const bindingPackageVersion = require2("@goblin-forge/backend-wasm32-wasi/package.json").version;
-          if (bindingPackageVersion !== "0.1.0") {
-            throw new Error(`WASI binding package version mismatch, expected 0.1.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.0") {
+            throw new Error(`WASI binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
         }
         wasiBinding = require2("@goblin-forge/backend-wasm32-wasi");
@@ -172075,6 +172075,47 @@ var CODES = {
 
 ` + "A class is the same rule at a different site. Its fields are laid out " + "inline too, so a class that reaches itself by value — directly, through " + "another class, or through a struct or a fixed array — has no size " + "either. What it *may* hold is `Pointer<Node>`, and also `Node[]`, which " + "a struct cannot: releasing a class runs its destructor, which is a " + "function that can call itself, where a struct's drop is written out at " + "every site that needs one."
   },
+  GF0308: {
+    title: "two types cross the boundary under one C name",
+    explanation: "Inside this compiler two types are told apart by their whole shape, so " + "two files may each declare an `interface Pair` and they are simply two " + 'types. A C header has only the name, and C has no way to say "the other ' + '`Pair`" — so both would be declared, `typedef struct Pair` twice with ' + `different bodies, and every signature would name whichever came first.
+
+` + "It takes both of them actually crossing: a type used only inside the " + `library never reaches the header and never conflicts with anything.
+
+` + "Rename one. A generic is not the usual cause — `Pair<i32>` and " + "`Pair<u8>` carry their arguments in the name and stay apart on their " + "own — so this is normally two declarations that genuinely share a name."
+  },
+  GF0402: {
+    title: "instantiating this generic never ends",
+    explanation: "A generic is compiled **once for each set of type arguments it is used " + "with**, and the copies share nothing but a source declaration. So a " + "generic that calls itself with *larger* type arguments asks for a new " + `copy every time, and there is no last one:
+
+` + `    function f<T>(x: T): void { f<Pair<T>>({a: x, b: x}); }
+
+` + "tsc accepts that, because at the declaration there is only ever one `T` " + `to check. It is the compiling that has no end.
+
+` + "Recursion in a generic is fine as long as the type arguments stop " + "growing: a call that passes on the same `T` it was given reuses the " + "copy it is already inside. What cannot work is a chain that builds a " + `new type at each step.
+
+` + "C++ and Rust report the same thing the same way, and for the same " + "reason. The limit is arbitrary; the alternative is the compiler running " + "out of stack and telling you nothing."
+  },
+  GF0403: {
+    title: "a generic function with no body",
+    explanation: "A function declared without a body names a symbol that some other " + "library defines, and the declaration is the only thing the two sides " + "share. A generic has no single symbol: it is compiled once per set of " + "type arguments, which needs a body to compile, and the library on the " + `other side was built by a compiler that never saw this call.
+
+` + "This is a rule rather than a gap, and it is C's rule as well — there is " + "no way to declare `std::vector<T>` to a C compiler either.\n\n" + `Declare the concrete signatures you actually call:
+
+` + `    declare function sort_i32(xs: Pointer<i32>, n: usize): void;
+
+` + "A Goblin library is a different case: its generics travel as source and " + "are instantiated in whoever uses them, the way a C++ template travels " + "in a header."
+  },
+  GF0404: {
+    title: "a generic call does not determine its type arguments",
+    explanation: "A generic is compiled once for each set of type arguments it is used " + "with, so every call has to settle them. Most do it without saying " + "anything — `first(xs)` where `xs` is an `i32[]` determines `T` — and the " + `ones that reach here are the ones where nothing at the call does.
+
+` + `The usual shape is a type parameter that appears in no argument:
+
+` + `    function sizeOfIt<T>(): usize { return sizeOf<T>(); }
+` + "    sizeOfIt();        // nothing here says what `T` is\n" + `    sizeOfIt<i32>();   // this does
+
+` + "Note what this is *not* about. `identity(1)` fails, but for the older " + "and more basic reason: `1` is a plain `number` with no width, so `T` is " + "determined and has no machine type. That is `GF0161`, and the fix is to " + "give the literal a width rather than to annotate the call."
+  },
   GF9001: {
     title: "the backend could not decode the MIR",
     explanation: "The frontend produced a buffer the backend could not read. This is a " + "compiler bug; please report it with the program that triggered it."
@@ -172746,176 +172787,6 @@ function inLinalgModule(node) {
   }
   return false;
 }
-// ../checker/src/widths.ts
-var EXACT_INTEGER_BITS = {
-  f32: 24,
-  f64: 53
-};
-var WIDTHS = {
-  i8: { name: "i8", bits: 8, signed: true, float: false },
-  i16: { name: "i16", bits: 16, signed: true, float: false },
-  i32: { name: "i32", bits: 32, signed: true, float: false },
-  i64: { name: "i64", bits: 64, signed: true, float: false },
-  u8: { name: "u8", bits: 8, signed: false, float: false },
-  u16: { name: "u16", bits: 16, signed: false, float: false },
-  u32: { name: "u32", bits: 32, signed: false, float: false },
-  u64: { name: "u64", bits: 64, signed: false, float: false },
-  f32: { name: "f32", bits: 32, signed: true, float: true },
-  f64: { name: "f64", bits: 64, signed: true, float: true },
-  isize: { name: "isize", bits: null, signed: true, float: false },
-  usize: { name: "usize", bits: null, signed: false, float: false }
-};
-var ASSUMED_POINTER_BITS = 64;
-function effectiveBits(info) {
-  return info.bits ?? ASSUMED_POINTER_BITS;
-}
-function fits(from, to) {
-  if (from.kind !== "scalar" || to.kind !== "scalar") {
-    return sameType(from, to);
-  }
-  return fitsScalar(from.name, to.name);
-}
-function fitsScalar(from, to) {
-  if (from === to) {
-    return true;
-  }
-  const source = WIDTHS[from];
-  const target = WIDTHS[to];
-  if (source.bits === null || target.bits === null) {
-    return false;
-  }
-  if (source.float) {
-    return target.float && target.bits > source.bits;
-  }
-  if (target.float) {
-    const exact = EXACT_INTEGER_BITS[target.name];
-    return (source.signed ? source.bits - 1 : source.bits) <= exact;
-  }
-  if (source.signed === target.signed) {
-    return target.bits >= source.bits;
-  }
-  if (!source.signed && target.signed) {
-    return target.bits > source.bits;
-  }
-  return false;
-}
-function sameType(a, b) {
-  if (a.kind !== b.kind) {
-    return false;
-  }
-  switch (a.kind) {
-    case "scalar":
-      return a.name === b.name;
-    case "array":
-      return sameType(a.element, b.element);
-    case "pointer":
-      return sameType(a.pointee, b.pointee);
-    case "reference":
-      return sameType(a.referent, b.referent);
-    case "fixedArray": {
-      const other = b;
-      return a.length === other.length && sameType(a.element, other.element);
-    }
-    case "struct": {
-      const other = b;
-      return a.name === other.name;
-    }
-    case "class":
-    case "interface": {
-      const other = b;
-      return a.name === other.name;
-    }
-    case "fnptr":
-    case "localfn": {
-      const other = b;
-      return a.params.length === other.params.length && sameType(a.returns, other.returns) && a.params.every((param, index) => sameType(param, other.params[index]));
-    }
-    default:
-      return true;
-  }
-}
-function commonType(a, b) {
-  if (fits(a, b)) {
-    return b;
-  }
-  if (fits(b, a)) {
-    return a;
-  }
-  return null;
-}
-var OPERATORS = {
-  "+": { integerOnly: false, shift: false, comparison: false, ordered: false },
-  "-": { integerOnly: false, shift: false, comparison: false, ordered: false },
-  "*": { integerOnly: false, shift: false, comparison: false, ordered: false },
-  "/": { integerOnly: false, shift: false, comparison: false, ordered: false },
-  "%": { integerOnly: true, shift: false, comparison: false, ordered: false },
-  "&": { integerOnly: true, shift: false, comparison: false, ordered: false },
-  "|": { integerOnly: true, shift: false, comparison: false, ordered: false },
-  "^": { integerOnly: true, shift: false, comparison: false, ordered: false },
-  "<<": { integerOnly: true, shift: true, comparison: false, ordered: false },
-  ">>": { integerOnly: true, shift: true, comparison: false, ordered: false },
-  "<": { integerOnly: false, shift: false, comparison: true, ordered: true },
-  "<=": { integerOnly: false, shift: false, comparison: true, ordered: true },
-  ">": { integerOnly: false, shift: false, comparison: true, ordered: true },
-  ">=": { integerOnly: false, shift: false, comparison: true, ordered: true },
-  "===": { integerOnly: false, shift: false, comparison: true, ordered: false },
-  "!==": { integerOnly: false, shift: false, comparison: true, ordered: false }
-};
-function isMachineComparable(type) {
-  switch (type.kind) {
-    case "scalar":
-    case "bool":
-    case "pointer":
-    case "reference":
-    case "cstring":
-    case "fnptr":
-      return true;
-    default:
-      return false;
-  }
-}
-function isFloatType(type) {
-  return type.kind === "scalar" && WIDTHS[type.name].float;
-}
-function isIntegerType(type) {
-  return type.kind === "scalar" && !WIDTHS[type.name].float;
-}
-function rangeOf(name) {
-  const info = WIDTHS[name];
-  if (info.float) {
-    return null;
-  }
-  const span = 1n << BigInt(effectiveBits(info));
-  return info.signed ? { min: -(span >> 1n), max: (span >> 1n) - 1n } : { min: 0n, max: span - 1n };
-}
-function checkLiteral(name, value, explicitRadix) {
-  const range = rangeOf(name);
-  if (range === null) {
-    return { ok: true };
-  }
-  const info = WIDTHS[name];
-  const span = 1n << BigInt(effectiveBits(info));
-  if (value >= range.min && value <= range.max) {
-    return { ok: true, bits: value < 0n ? value + span : value, range };
-  }
-  if (info.signed && explicitRadix && value >= 0n && value < span) {
-    return { ok: true, bits: value, range };
-  }
-  return { ok: false, range };
-}
-function hasExplicitRadix(text) {
-  return /^[+-]?0[xob]/i.test(text);
-}
-function literalDigits(text) {
-  return text.replace(/_/g, "");
-}
-function isIntegerLiteral(text) {
-  const digits = literalDigits(text);
-  if (hasExplicitRadix(digits)) {
-    return true;
-  }
-  return /^[+-]?\d+$/.test(digits);
-}
 // ../checker/src/types.ts
 var import_typescript4 = __toESM(require_typescript(), 1);
 var SCALARS = [
@@ -172933,6 +172804,7 @@ var SCALARS = [
   "usize"
 ];
 var SCALAR_SET = new Set(SCALARS);
+var NO_BINDINGS = new Map;
 
 class ErasureError extends Error {
   code;
@@ -172946,6 +172818,10 @@ class ErasureError extends Error {
 }
 
 class Erasure {
+  bindings;
+  constructor(bindings = NO_BINDINGS) {
+    this.bindings = bindings;
+  }
   #answers = new Map;
   #openedAt = new Map;
   #indirections = 0;
@@ -173031,6 +172907,32 @@ function isReferenceType(checker, type) {
 function isCStringType(checker, type) {
   return brandedProperty(checker, type, "CStringBrand") !== null;
 }
+function typeParameterSymbolOf(type) {
+  if ((type.getFlags() & import_typescript4.default.TypeFlags.TypeParameter) !== 0) {
+    return type.symbol?.declarations?.some(import_typescript4.default.isTypeParameterDeclaration) === true ? type.symbol : undefined;
+  }
+  if ((type.getFlags() & import_typescript4.default.TypeFlags.Substitution) !== 0) {
+    return typeParameterSymbolOf(type.baseType);
+  }
+  if (!type.isUnionOrIntersection()) {
+    return;
+  }
+  let found;
+  for (const part of type.types) {
+    if (isEmptyObjectType(part)) {
+      continue;
+    }
+    const symbol = typeParameterSymbolOf(part);
+    if (symbol === undefined || found !== undefined && found !== symbol) {
+      return;
+    }
+    found = symbol;
+  }
+  return found;
+}
+function isEmptyObjectType(type) {
+  return (type.getFlags() & import_typescript4.default.TypeFlags.Object) !== 0 && type.getProperties().length === 0 && type.getCallSignatures().length === 0 && type.getConstructSignatures().length === 0 && type.getStringIndexType() === undefined && type.getNumberIndexType() === undefined;
+}
 function erase(checker, type, state = new Erasure) {
   const nullable = nullableOf(checker, type);
   if (nullable !== null) {
@@ -173041,6 +172943,14 @@ function erase(checker, type, state = new Erasure) {
     return answered;
   }
   const flags = type.getFlags();
+  const parameter = typeParameterSymbolOf(type);
+  if (parameter !== undefined) {
+    const bound = state.bindings.get(parameter);
+    if (bound === undefined) {
+      throw new ErasureError(`\`${checker.typeToString(type)}\` is a type parameter, and nothing here ` + "says what it is. A generic is compiled once for each set of type " + "arguments it is used with, so there is no code to write until some " + "call decides.", "GF0001");
+    }
+    return bound;
+  }
   if (flags & (import_typescript4.default.TypeFlags.Void | import_typescript4.default.TypeFlags.Undefined)) {
     return { kind: "void" };
   }
@@ -173080,9 +172990,9 @@ function erase(checker, type, state = new Erasure) {
   if (opaqueName !== null) {
     return { kind: "opaque", name: opaqueName };
   }
-  const className = classNameOf(type);
-  if (className !== null) {
-    return { kind: "class", name: className };
+  const asClass = classOf(checker, type, state);
+  if (asClass !== null) {
+    return asClass.args === undefined ? { kind: "class", name: asClass.name } : { kind: "class", name: asClass.name, args: asClass.args };
   }
   if (checker.isArrayType(type)) {
     const element = checker.getIndexTypeOfType(type, import_typescript4.default.IndexKind.Number);
@@ -173100,6 +173010,11 @@ function erase(checker, type, state = new Erasure) {
   }
   if (flags & import_typescript4.default.TypeFlags.Object) {
     return eraseObject(checker, type, state);
+  }
+  if (flags & import_typescript4.default.TypeFlags.Conditional) {
+    throw new ErasureError(`\`${checker.typeToString(type)}\` is a conditional type whose condition ` + "still mentions a type parameter, and it stays unresolved here. A generic " + "is compiled once per set of type arguments by substituting *machine* " + "types, and a conditional needs TypeScript's own types put back and the " + `whole thing re-evaluated — which tsc offers no way to ask for.
+
+` + "Write the concrete types out: an overload per case, or a plain type " + "parameter with the choice made at the call.", "GF0001");
   }
   throw new ErasureError(`\`${checker.typeToString(type)}\` has no machine representation yet.`, "GF0001");
 }
@@ -173138,7 +173053,7 @@ function eraseWrapper(checker, type, state) {
         return answer;
       }
     }
-    throw new ErasureError("a `Reference<T>` cannot be written as a type yet, except for an " + "interface with methods. The compiler makes references — `this` inside " + "a method is one — but a parameter or a binding cannot be declared as " + "one. Pass the value itself for now; it is copied.", "GF0001");
+    throw new ErasureError("this `Reference<T>` has no `T` to read through. A reference is an " + "address, so what it points at needs a layout and a size — `void` has " + "neither, and a type parameter has neither until some call says what " + "it is.", "GF0001");
   }
   if (!isPointerType(checker, type)) {
     return null;
@@ -173153,11 +173068,19 @@ function eraseWrapper(checker, type, state) {
   return { kind: "pointer", pointee: state.through(() => erase(checker, pointee, state)) };
 }
 function eraseReferent(checker, referent, state) {
+  const parameter = typeParameterSymbolOf(referent);
+  if (parameter !== undefined) {
+    const bound = state.bindings.get(parameter);
+    return bound === undefined ? null : referenceTo(bound);
+  }
   if (checker.isArrayType(referent)) {
     return { kind: "reference", referent: erase(checker, referent, state) };
   }
   if (linalgTypeOf(referent) !== null) {
     return { kind: "reference", referent: erase(checker, referent, state) };
+  }
+  if (referent.getFlags() & import_typescript4.default.TypeFlags.StringLike) {
+    throw new ErasureError("a `Reference<string>` is not lowered yet. Copying a `string` clones its " + "buffer, so borrowing one is worth doing and this is a gap rather than a " + "rule — but nothing reads a `string` back through a reference yet. Pass " + "the `string`; the clone is one allocation.", "GF0001");
   }
   const contract = contractOf(checker, referent, state);
   if (contract !== null) {
@@ -173167,19 +173090,47 @@ function eraseReferent(checker, referent, state) {
   if (opaqueReferent !== null) {
     throw new ErasureError(`\`${opaqueReferent}\` is declared elsewhere, so this build does not ` + `know its layout and a \`Reference<${opaqueReferent}>\` has nothing ` + `to read through. Use \`Pointer<${opaqueReferent}>\`, which is an ` + "address and nothing more.", "GF0302");
   }
-  const className = classNameOf(referent);
-  if (className !== null) {
-    return { kind: "reference", referent: { kind: "class", name: className } };
+  const asClass = classOf(checker, referent, state);
+  if (asClass !== null) {
+    return { kind: "reference", referent: erase(checker, referent, state) };
   }
-  return null;
+  const value = erase(checker, referent, state);
+  if (COPY_IS_FREE.has(value.kind)) {
+    throw new ErasureError(`\`${renderType(value)}\` is one machine word and copying it is one ` + "instruction, so a reference to it is slower than the value it borrows. " + "Pass it by value. If the point was to let the callee *write* it, that " + `is \`Pointer<${renderType(value)}>\`, which is what C uses for the same ` + "job.", "GF0002");
+  }
+  return value.kind === "void" ? null : referenceTo(value);
+}
+var COPY_IS_FREE = new Set([
+  "scalar",
+  "bool",
+  "pointer",
+  "fnptr",
+  "localfn",
+  "cstring"
+]);
+function referenceTo(referent) {
+  return referent.kind === "interface" ? referent : { kind: "reference", referent };
 }
 function classNameOf(type) {
-  const symbol = type.getSymbol();
-  if (symbol === undefined) {
+  return classDeclarationOf(type)?.name?.text ?? null;
+}
+function classDeclarationOf(type) {
+  return type.getSymbol()?.declarations?.find(import_typescript4.default.isClassDeclaration);
+}
+function classOf(checker, type, state) {
+  const declaration = classDeclarationOf(type);
+  const name = declaration?.name?.text;
+  if (declaration === undefined || name === undefined) {
     return null;
   }
-  const declaration = symbol.declarations?.find(import_typescript4.default.isClassDeclaration);
-  return declaration?.name?.text ?? null;
+  if (declaration.typeParameters === undefined || declaration.typeParameters.length === 0) {
+    return { name };
+  }
+  const parameters = declaration.typeParameters;
+  const written = checker.getTypeArguments(type);
+  const supplied = written.length === parameters.length ? written : parameters.map((parameter) => checker.getTypeAtLocation(parameter.name));
+  const args = supplied.map((argument) => state.through(() => erase(checker, argument, state)));
+  return { name: `${name}<${args.map(renderType).join(", ")}>`, args };
 }
 function linalgTypeOf(type) {
   const symbol = type.getSymbol();
@@ -173276,7 +173227,7 @@ function contractOf(checker, type, state = new Erasure) {
   if (methods.length === 0) {
     return null;
   }
-  const name = structNameOf(checker, type);
+  const name = structNameOf(checker, type, state);
   if (methods.length !== properties.length) {
     const data = properties.find((property) => !methods.includes(property));
     throw new ErasureError(`\`${name}\` declares both methods and the data member \`${data?.name}\`. ` + "An interface is either a *shape* — data only, laid out as a struct — or " + "a *contract* — methods only, dispatched through an itable. One that is " + "both would have to be a layout and a dispatch table at once. Split it, " + "or make the data a method that returns it.", "GF0002");
@@ -173286,13 +173237,16 @@ function contractOf(checker, type, state = new Erasure) {
   return state.aggregate(type, { kind: "interface", name, methods: dispatched }, () => {
     for (const method of sorted) {
       const declaration = method.declarations?.find(import_typescript4.default.isMethodSignature);
-      const signature2 = declaration === undefined ? undefined : checker.getSignatureFromDeclaration(declaration);
+      const signature2 = declaration === undefined ? undefined : checker.getSignaturesOfType(checker.getTypeOfSymbolAtLocation(method, declaration), import_typescript4.default.SignatureKind.Call)[0];
       if (declaration === undefined || signature2 === undefined) {
         throw new ErasureError(`tsc could not give \`${name}.${method.name}\` a signature.`, "GF0001");
       }
       dispatched.push({
         name: method.name,
-        params: declaration.parameters.map((parameter) => state.through(() => erase(checker, checker.getTypeAtLocation(parameter), state))),
+        params: signature2.getParameters().map((parameter) => {
+          const at = parameter.valueDeclaration ?? declaration;
+          return state.through(() => erase(checker, checker.getTypeOfSymbolAtLocation(parameter, at), state));
+        }),
         returns: state.through(() => erase(checker, checker.getReturnTypeOfSignature(signature2), state))
       });
     }
@@ -173322,7 +173276,7 @@ function eraseObject(checker, type, state) {
   if (properties.length === 0) {
     throw new ErasureError("an object with no fields has no machine representation. A struct needs " + "at least one field; an empty one would occupy nothing and mean nothing.", "GF0001");
   }
-  const name = structNameOf(checker, type);
+  const name = structNameOf(checker, type, state);
   const fields = [];
   const answer = isUnion ? { kind: "struct", name, fields, union: true } : { kind: "struct", name, fields };
   return state.aggregate(type, answer, () => {
@@ -173396,13 +173350,68 @@ function isBrand(property) {
   const name = declaration?.name;
   return name !== undefined && import_typescript4.default.isComputedPropertyName(name);
 }
-function structNameOf(checker, type) {
-  const symbol = type.aliasSymbol ?? type.getSymbol();
+function structNameOf(checker, type, state) {
+  const alias = type.aliasSymbol;
+  if (alias !== undefined) {
+    return withArguments(checker, alias.getName(), type.aliasTypeArguments, state);
+  }
+  const symbol = type.getSymbol();
   const name = symbol?.getName();
   if (name !== undefined && name !== "__type" && name !== "__object") {
-    return name;
+    const generic = symbol?.declarations?.some((declaration) => (import_typescript4.default.isInterfaceDeclaration(declaration) || import_typescript4.default.isClassDeclaration(declaration) || import_typescript4.default.isTypeAliasDeclaration(declaration)) && declaration.typeParameters !== undefined && declaration.typeParameters.length > 0);
+    return generic === true ? withArguments(checker, name, checker.getTypeArguments(type), state) : name;
   }
   return `{${checker.getPropertiesOfType(type).map((property) => property.name).join(",")}}`;
+}
+function withArguments(checker, name, args, state) {
+  if (args === undefined || args.length === 0) {
+    return name;
+  }
+  const rendered = args.map((argument) => renderType(state.through(() => erase(checker, argument, state))));
+  return `${name}<${rendered.join(", ")}>`;
+}
+function layoutKey(type) {
+  return keyOf(type, []);
+}
+function keyOf(type, open) {
+  switch (type.kind) {
+    case "void":
+    case "bool":
+    case "string":
+    case "cstring":
+      return type.kind;
+    case "scalar":
+      return type.name;
+    case "array":
+      return `[${keyOf(type.element, open)}]`;
+    case "fixedArray":
+      return `[${keyOf(type.element, open)};${type.length}]`;
+    case "pointer":
+      return `*${keyOf(type.pointee, open)}`;
+    case "reference":
+      return `&${keyOf(type.referent, open)}`;
+    case "fnptr":
+    case "localfn":
+      return `${type.kind}(${type.params.map((param) => keyOf(param, open)).join(",")})->${keyOf(type.returns, open)}`;
+    case "class":
+    case "opaque":
+      return `${type.kind} ${type.name}`;
+    case "struct":
+    case "interface": {
+      const at = open.indexOf(type);
+      if (at >= 0) {
+        return `↑${open.length - at}`;
+      }
+      open.push(type);
+      try {
+        const members = type.kind === "struct" ? type.fields.map((f) => `${f.name}:${keyOf(f.type, open)}`) : type.methods.map((m) => `${m.name}(${m.params.map((param) => keyOf(param, open)).join(",")})->${keyOf(m.returns, open)}`);
+        const what = type.kind === "interface" ? "contract" : type.union === true ? "union" : "struct";
+        return `${what} ${type.name}{${members.join(",")}}`;
+      } finally {
+        open.pop();
+      }
+    }
+  }
 }
 function renderType(type) {
   switch (type.kind) {
@@ -173438,6 +173447,180 @@ function renderType(type) {
 }
 function isFloat(name) {
   return name === "f32" || name === "f64";
+}
+
+// ../checker/src/widths.ts
+var EXACT_INTEGER_BITS = {
+  f32: 24,
+  f64: 53
+};
+var WIDTHS = {
+  i8: { name: "i8", bits: 8, signed: true, float: false },
+  i16: { name: "i16", bits: 16, signed: true, float: false },
+  i32: { name: "i32", bits: 32, signed: true, float: false },
+  i64: { name: "i64", bits: 64, signed: true, float: false },
+  u8: { name: "u8", bits: 8, signed: false, float: false },
+  u16: { name: "u16", bits: 16, signed: false, float: false },
+  u32: { name: "u32", bits: 32, signed: false, float: false },
+  u64: { name: "u64", bits: 64, signed: false, float: false },
+  f32: { name: "f32", bits: 32, signed: true, float: true },
+  f64: { name: "f64", bits: 64, signed: true, float: true },
+  isize: { name: "isize", bits: null, signed: true, float: false },
+  usize: { name: "usize", bits: null, signed: false, float: false }
+};
+var ASSUMED_POINTER_BITS = 64;
+function effectiveBits(info) {
+  return info.bits ?? ASSUMED_POINTER_BITS;
+}
+function fits(from, to) {
+  if (from.kind !== "scalar" || to.kind !== "scalar") {
+    return sameType(from, to);
+  }
+  return fitsScalar(from.name, to.name);
+}
+function fitsScalar(from, to) {
+  if (from === to) {
+    return true;
+  }
+  const source = WIDTHS[from];
+  const target = WIDTHS[to];
+  if (source.bits === null || target.bits === null) {
+    return false;
+  }
+  if (source.float) {
+    return target.float && target.bits > source.bits;
+  }
+  if (target.float) {
+    const exact = EXACT_INTEGER_BITS[target.name];
+    return (source.signed ? source.bits - 1 : source.bits) <= exact;
+  }
+  if (source.signed === target.signed) {
+    return target.bits >= source.bits;
+  }
+  if (!source.signed && target.signed) {
+    return target.bits > source.bits;
+  }
+  return false;
+}
+function sameType(a, b) {
+  if (a.kind !== b.kind) {
+    return false;
+  }
+  switch (a.kind) {
+    case "scalar":
+      return a.name === b.name;
+    case "array":
+      return sameType(a.element, b.element);
+    case "pointer":
+      return sameType(a.pointee, b.pointee);
+    case "reference":
+      return sameType(a.referent, b.referent);
+    case "fixedArray": {
+      const other = b;
+      return a.length === other.length && sameType(a.element, other.element);
+    }
+    case "struct": {
+      const other = b;
+      return layoutKey(a) === layoutKey(other);
+    }
+    case "class": {
+      const other = b;
+      return a.name === other.name;
+    }
+    case "interface": {
+      const other = b;
+      return layoutKey(a) === layoutKey(other);
+    }
+    case "fnptr":
+    case "localfn": {
+      const other = b;
+      return a.params.length === other.params.length && sameType(a.returns, other.returns) && a.params.every((param, index) => sameType(param, other.params[index]));
+    }
+    default:
+      return true;
+  }
+}
+function commonType(a, b) {
+  if (fits(a, b)) {
+    return b;
+  }
+  if (fits(b, a)) {
+    return a;
+  }
+  return null;
+}
+var OPERATORS = {
+  "+": { integerOnly: false, shift: false, comparison: false, ordered: false },
+  "-": { integerOnly: false, shift: false, comparison: false, ordered: false },
+  "*": { integerOnly: false, shift: false, comparison: false, ordered: false },
+  "/": { integerOnly: false, shift: false, comparison: false, ordered: false },
+  "%": { integerOnly: true, shift: false, comparison: false, ordered: false },
+  "&": { integerOnly: true, shift: false, comparison: false, ordered: false },
+  "|": { integerOnly: true, shift: false, comparison: false, ordered: false },
+  "^": { integerOnly: true, shift: false, comparison: false, ordered: false },
+  "<<": { integerOnly: true, shift: true, comparison: false, ordered: false },
+  ">>": { integerOnly: true, shift: true, comparison: false, ordered: false },
+  "<": { integerOnly: false, shift: false, comparison: true, ordered: true },
+  "<=": { integerOnly: false, shift: false, comparison: true, ordered: true },
+  ">": { integerOnly: false, shift: false, comparison: true, ordered: true },
+  ">=": { integerOnly: false, shift: false, comparison: true, ordered: true },
+  "===": { integerOnly: false, shift: false, comparison: true, ordered: false },
+  "!==": { integerOnly: false, shift: false, comparison: true, ordered: false }
+};
+function isMachineComparable(type) {
+  switch (type.kind) {
+    case "scalar":
+    case "bool":
+    case "pointer":
+    case "reference":
+    case "cstring":
+    case "fnptr":
+      return true;
+    default:
+      return false;
+  }
+}
+function isFloatType(type) {
+  return type.kind === "scalar" && WIDTHS[type.name].float;
+}
+function isIntegerType(type) {
+  return type.kind === "scalar" && !WIDTHS[type.name].float;
+}
+function rangeOf(name) {
+  const info = WIDTHS[name];
+  if (info.float) {
+    return null;
+  }
+  const span = 1n << BigInt(effectiveBits(info));
+  return info.signed ? { min: -(span >> 1n), max: (span >> 1n) - 1n } : { min: 0n, max: span - 1n };
+}
+function checkLiteral(name, value, explicitRadix) {
+  const range = rangeOf(name);
+  if (range === null) {
+    return { ok: true };
+  }
+  const info = WIDTHS[name];
+  const span = 1n << BigInt(effectiveBits(info));
+  if (value >= range.min && value <= range.max) {
+    return { ok: true, bits: value < 0n ? value + span : value, range };
+  }
+  if (info.signed && explicitRadix && value >= 0n && value < span) {
+    return { ok: true, bits: value, range };
+  }
+  return { ok: false, range };
+}
+function hasExplicitRadix(text) {
+  return /^[+-]?0[xob]/i.test(text);
+}
+function literalDigits(text) {
+  return text.replace(/_/g, "");
+}
+function isIntegerLiteral(text) {
+  const digits = literalDigits(text);
+  if (hasExplicitRadix(digits)) {
+    return true;
+  }
+  return /^[+-]?\d+$/.test(digits);
 }
 // ../runtime/src/build.ts
 import { spawnSync } from "node:child_process";
@@ -173868,8 +174051,10 @@ function linkingAdvice(options) {
 }
 
 class HeaderError extends Error {
-  constructor(message) {
+  code;
+  constructor(message, code = "GF9006") {
     super(message);
+    this.code = code;
     this.name = "HeaderError";
   }
 }
@@ -174029,6 +174214,22 @@ function emitStructs(module) {
       visit(param.ty);
     }
     visit(signature2.ret);
+  }
+  const named = new Map;
+  for (const id of order) {
+    const def = module.structs[id];
+    if (def === undefined) {
+      continue;
+    }
+    const name = identifier(sym2(module, def.name));
+    const first = named.get(name);
+    if (first !== undefined && first !== id) {
+      const shape = (which) => (module.structs[which]?.fields ?? []).map((field) => `${cType(module, field.ty)} ${sym2(module, field.name)}`).join("; ");
+      throw new HeaderError(`two different types both cross this library's boundary as \`${name}\`, ` + `one holding \`${shape(first)}\` and the other \`${shape(id)}\`. A C ` + "header has only the name to tell them apart, and C has no way to say " + '"the other one" — so both would be declared and one of them would be ' + `wrong.
+
+Rename one of them. A generic carries its arguments in its ` + "name already, so this is two declarations that genuinely share a name.", "GF0308");
+    }
+    named.set(name, id);
   }
   const out = [];
   for (const id of order) {
@@ -174198,7 +174399,7 @@ function identifier(name) {
 }
 
 // src/lower/module.ts
-var import_typescript13 = __toESM(require_typescript(), 1);
+var import_typescript14 = __toESM(require_typescript(), 1);
 
 // src/classes.ts
 var import_typescript5 = __toESM(require_typescript(), 1);
@@ -174237,6 +174438,7 @@ function collectClasses(program, checker, report) {
     }
   }
   const result = new Map;
+  const generics = new Map;
   const inProgress = new Set;
   const analyse = (name) => {
     const existing = result.get(name);
@@ -174252,23 +174454,23 @@ function collectClasses(program, checker, report) {
       return;
     }
     inProgress.add(name);
-    const info = build(node, name, analyse, checker, report);
+    const info = buildClass(node, name, NO_BINDINGS, analyse, checker, report);
     inProgress.delete(name);
     if (info !== undefined) {
       result.set(name, info);
     }
     return info;
   };
-  for (const name of declarations.keys()) {
+  for (const [name, node] of declarations) {
+    if (node.typeParameters !== undefined && node.typeParameters.length > 0) {
+      generics.set(name, node);
+      continue;
+    }
     analyse(name);
   }
-  return result;
+  return { classes: result, generics };
 }
-function build(node, name, analyse, checker, report) {
-  if (node.typeParameters && node.typeParameters.length > 0) {
-    report.unsupported(node.typeParameters[0], "a generic class");
-    return;
-  }
+function buildClass(node, name, bindings, analyse, checker, report) {
   const base = baseOf(node, analyse, report);
   if (base === null) {
     return;
@@ -174360,6 +174562,7 @@ function build(node, name, analyse, checker, report) {
   const staticGetters = new Map;
   const staticSetters = new Map;
   const methods = new Map;
+  const methodTemplates = new Map;
   const getters = new Map;
   const setters = new Map;
   if (base) {
@@ -174385,6 +174588,9 @@ function build(node, name, analyse, checker, report) {
     for (const [methodName, method] of base.methods) {
       methods.set(methodName, method);
     }
+    for (const [methodName, template] of base.methodTemplates) {
+      methodTemplates.set(methodName, template);
+    }
   }
   for (const member2 of node.members) {
     if (!import_typescript5.default.isMethodDeclaration(member2)) {
@@ -174398,11 +174604,22 @@ function build(node, name, analyse, checker, report) {
       report.unsupported(member2, "a method with no body");
       return;
     }
-    if (isStatic(member2)) {
-      if (member2.typeParameters && member2.typeParameters.length > 0) {
-        report.unsupported(member2.typeParameters[0], "a generic method");
+    if (member2.typeParameters !== undefined && member2.typeParameters.length > 0) {
+      const parameters = typeParametersOf(member2, checker);
+      if (parameters === undefined) {
+        report.unsupported(member2, "a method whose type parameters tsc could not resolve");
         return;
       }
+      methodTemplates.set(member2.name.text, {
+        name: member2.name.text,
+        declaration: member2,
+        owner: name,
+        parameters,
+        isStatic: isStatic(member2)
+      });
+      continue;
+    }
+    if (isStatic(member2)) {
       statics.set(member2.name.text, {
         name: member2.name.text,
         declaration: member2,
@@ -174410,10 +174627,6 @@ function build(node, name, analyse, checker, report) {
         owner: name
       });
       continue;
-    }
-    if (member2.typeParameters && member2.typeParameters.length > 0) {
-      report.unsupported(member2.typeParameters[0], "a generic method");
-      return;
     }
     const methodName = member2.name.text;
     const symbol = `${name}$${methodName}`;
@@ -174489,11 +174702,13 @@ function build(node, name, analyse, checker, report) {
   return {
     node,
     name,
+    bindings,
     base: base ?? undefined,
     fields,
     ownFieldsAt,
     slots,
     methods,
+    methodTemplates,
     getters,
     setters,
     statics,
@@ -174525,12 +174740,27 @@ function baseOf(node, analyse, report) {
     report.unsupported(expression, "an expression in an `extends` clause");
     return null;
   }
+  if (expression.typeArguments !== undefined && expression.typeArguments.length > 0) {
+    report.unsupported(expression, "a generic class as a base class");
+    return null;
+  }
   const base = analyse(expression.expression.text);
   if (base === undefined) {
     report.unsupported(expression, `\`${expression.expression.text}\` as a base class`);
     return null;
   }
   return base;
+}
+function typeParametersOf(member2, checker) {
+  const symbols = [];
+  for (const parameter of member2.typeParameters ?? []) {
+    const symbol = checker.getSymbolAtLocation(parameter.name);
+    if (symbol === undefined) {
+      return;
+    }
+    symbols.push(symbol);
+  }
+  return symbols;
 }
 function isStatic(member2) {
   return import_typescript5.default.canHaveModifiers(member2) && (import_typescript5.default.getModifiers(member2)?.some((m) => m.kind === import_typescript5.default.SyntaxKind.StaticKeyword) ?? false);
@@ -174783,6 +175013,201 @@ var POLY = { kind: "poly" };
 var ERROR = { kind: "error" };
 var typed = (type) => ({ kind: "typed", type });
 
+// src/lower/generics.ts
+var import_typescript8 = __toESM(require_typescript(), 1);
+
+// src/lower/util.ts
+var import_typescript7 = __toESM(require_typescript(), 1);
+function moduleTag(fileName) {
+  let hash = 2166136261;
+  for (let index = 0;index < fileName.length; index += 1) {
+    hash ^= fileName.charCodeAt(index);
+    hash = Math.imul(hash, 16777619) >>> 0;
+  }
+  return hash.toString(16).padStart(8, "0");
+}
+function needsDrop2(type) {
+  switch (type.kind) {
+    case "string":
+    case "array":
+    case "class":
+      return true;
+    case "fixedArray":
+      return needsDrop2(type.element);
+    case "struct":
+      return type.fields.some((field) => needsDrop2(field.type));
+    default:
+      return false;
+  }
+}
+function placeOf(local) {
+  return { local, projection: [] };
+}
+function behindOneIndirection(type) {
+  switch (type.kind) {
+    case "pointer":
+      return type.pointee;
+    case "reference":
+      return type.referent;
+    default:
+      return;
+  }
+}
+function elementTypeOf(type) {
+  switch (type.kind) {
+    case "fixedArray":
+    case "array":
+      return type.element;
+    case "pointer":
+      return type.pointee;
+    default:
+      return;
+  }
+}
+function hasNullValue(type) {
+  return type.kind === "pointer" || type.kind === "cstring" || type.kind === "fnptr";
+}
+function nullAdvice(type) {
+  switch (type.kind) {
+    case "string":
+    case "array":
+      return "It owns its buffer, so a null one would be released at the end of its " + "scope like any other. An empty one is the value that means nothing " + "here, or a `Pointer<T>` where the absence has to be distinguishable.";
+    case "reference":
+    case "interface":
+      return "A reference is bound once and read through without asking. `tryCast` " + "is what produces the nullable one, and its result is checked before " + "it is used.";
+    default:
+      return "Only the borrowed handles have one: `Pointer<T>`, `CString`, and a " + "function pointer. It is a machine word of zero, and nothing else here " + "has a spare bit pattern to spend on absence.";
+  }
+}
+function isStaticMember(member2) {
+  return import_typescript7.default.canHaveModifiers(member2) && (import_typescript7.default.getModifiers(member2)?.some((m) => m.kind === import_typescript7.default.SyntaxKind.StaticKeyword) ?? false);
+}
+function describe(node) {
+  const name = import_typescript7.default.SyntaxKind[node.kind];
+  return `a ${name.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase()}`;
+}
+function fractionalLiteralIn(expression) {
+  if (import_typescript7.default.isNumericLiteral(expression)) {
+    return !isIntegerLiteral(expression.getText());
+  }
+  return expression.getChildren().some((child) => fractionalLiteralIn(child));
+}
+
+// src/lower/generics.ts
+function typeParameterSymbolsOf(checker, node) {
+  const declared = node.typeParameters;
+  if (declared === undefined) {
+    return;
+  }
+  const symbols = [];
+  for (const parameter of declared) {
+    const symbol = checker.getSymbolAtLocation(parameter.name);
+    if (symbol === undefined) {
+      return;
+    }
+    symbols.push(symbol);
+  }
+  return symbols;
+}
+function inferBindings(checker, parameters, declared, resolved) {
+  const wanted = new Set(parameters);
+  const found = new Map;
+  const declaredParams = declared.getParameters();
+  const resolvedParams = resolved.getParameters();
+  for (const [index, parameter] of declaredParams.entries()) {
+    const actual = resolvedParams[index];
+    if (actual === undefined) {
+      break;
+    }
+    const from = typeOfParameter(checker, parameter);
+    const to = typeOfParameter(checker, actual);
+    if (from !== undefined && to !== undefined) {
+      unify(checker, from, to, wanted, found);
+    }
+  }
+  unify(checker, checker.getReturnTypeOfSignature(declared), checker.getReturnTypeOfSignature(resolved), wanted, found);
+  return parameters.every((parameter) => found.has(parameter)) ? found : undefined;
+}
+function typeOfParameter(checker, parameter) {
+  const declaration2 = parameter.valueDeclaration;
+  return declaration2 === undefined ? undefined : checker.getTypeOfSymbolAtLocation(parameter, declaration2);
+}
+function unify(checker, declared, actual, wanted, into) {
+  const parameter = typeParameterSymbolOf(declared);
+  if (parameter !== undefined) {
+    if (wanted.has(parameter) && !into.has(parameter)) {
+      into.set(parameter, actual);
+    }
+    return;
+  }
+  if (checker.isArrayType(declared) && checker.isArrayType(actual)) {
+    const element = checker.getIndexTypeOfType(declared, import_typescript8.default.IndexKind.Number);
+    const concrete = checker.getIndexTypeOfType(actual, import_typescript8.default.IndexKind.Number);
+    if (element !== undefined && concrete !== undefined) {
+      unify(checker, element, concrete, wanted, into);
+    }
+    return;
+  }
+  const from = typeArgumentsOf(checker, declared);
+  const to = typeArgumentsOf(checker, actual);
+  if (from === undefined || to === undefined) {
+    return;
+  }
+  for (const [index, argument] of from.entries()) {
+    const concrete = to[index];
+    if (concrete !== undefined) {
+      unify(checker, argument, concrete, wanted, into);
+    }
+  }
+}
+function typeArgumentsOf(checker, type) {
+  if ((type.getFlags() & import_typescript8.default.TypeFlags.Object) === 0) {
+    return type.isIntersection() ? type.types : undefined;
+  }
+  if ((type.objectFlags & import_typescript8.default.ObjectFlags.Reference) === 0) {
+    return;
+  }
+  return checker.getTypeArguments(type);
+}
+function bindingsOf(parameters, args) {
+  const bindings = new Map;
+  parameters.forEach((parameter, index) => {
+    const bound = args[index];
+    if (bound !== undefined) {
+      bindings.set(parameter, bound);
+    }
+  });
+  return bindings;
+}
+function instantiationKey(declaration2, args) {
+  return `${declaration2}<${args.map(layoutKey).join(",")}>`;
+}
+function instantiationSymbol(name, module, key, args) {
+  const label = args.map((arg) => renderForSymbol(arg)).join("_").slice(0, 32);
+  return `${name}$${label}$${moduleTag(module)}$${moduleTag(key)}`;
+}
+function renderForSymbol(type) {
+  switch (type.kind) {
+    case "scalar":
+      return type.name;
+    case "struct":
+    case "class":
+    case "interface":
+    case "opaque":
+      return type.name.replace(/[^A-Za-z0-9_]/g, "");
+    case "array":
+      return `${renderForSymbol(type.element)}arr`;
+    case "fixedArray":
+      return `${renderForSymbol(type.element)}arr${type.length}`;
+    case "pointer":
+      return `ptr${renderForSymbol(type.pointee)}`;
+    case "reference":
+      return `ref${renderForSymbol(type.referent)}`;
+    default:
+      return type.kind;
+  }
+}
+
 // src/lower/scopes.ts
 function bindingPlace(binding) {
   return { local: binding.local, projection: [...binding.projection ?? []] };
@@ -174841,84 +175266,17 @@ class Scopes {
   }
 }
 
-// src/lower/util.ts
-var import_typescript7 = __toESM(require_typescript(), 1);
-function moduleTag(fileName) {
-  let hash = 2166136261;
-  for (let index = 0;index < fileName.length; index += 1) {
-    hash ^= fileName.charCodeAt(index);
-    hash = Math.imul(hash, 16777619) >>> 0;
-  }
-  return hash.toString(16).padStart(8, "0");
-}
-function needsDrop2(type) {
-  switch (type.kind) {
-    case "string":
-    case "array":
-    case "class":
-      return true;
-    case "fixedArray":
-      return needsDrop2(type.element);
-    case "struct":
-      return type.fields.some((field) => needsDrop2(field.type));
-    default:
-      return false;
-  }
-}
-function placeOf(local) {
-  return { local, projection: [] };
-}
-function elementTypeOf(type) {
-  switch (type.kind) {
-    case "fixedArray":
-    case "array":
-      return type.element;
-    case "pointer":
-      return type.pointee;
-    default:
-      return;
-  }
-}
-function hasNullValue(type) {
-  return type.kind === "pointer" || type.kind === "cstring" || type.kind === "fnptr";
-}
-function nullAdvice(type) {
-  switch (type.kind) {
-    case "string":
-    case "array":
-      return "It owns its buffer, so a null one would be released at the end of its " + "scope like any other. An empty one is the value that means nothing " + "here, or a `Pointer<T>` where the absence has to be distinguishable.";
-    case "reference":
-    case "interface":
-      return "A reference is bound once and read through without asking. `tryCast` " + "is what produces the nullable one, and its result is checked before " + "it is used.";
-    default:
-      return "Only the borrowed handles have one: `Pointer<T>`, `CString`, and a " + "function pointer. It is a machine word of zero, and nothing else here " + "has a spare bit pattern to spend on absence.";
-  }
-}
-function isStaticMember(member2) {
-  return import_typescript7.default.canHaveModifiers(member2) && (import_typescript7.default.getModifiers(member2)?.some((m) => m.kind === import_typescript7.default.SyntaxKind.StaticKeyword) ?? false);
-}
-function describe(node) {
-  const name = import_typescript7.default.SyntaxKind[node.kind];
-  return `a ${name.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase()}`;
-}
-function fractionalLiteralIn(expression) {
-  if (import_typescript7.default.isNumericLiteral(expression)) {
-    return !isIntegerLiteral(expression.getText());
-  }
-  return expression.getChildren().some((child) => fractionalLiteralIn(child));
-}
-
 // src/lower/body.ts
-var import_typescript12 = __toESM(require_typescript(), 1);
+var import_typescript13 = __toESM(require_typescript(), 1);
 
 // src/lower/linalg.ts
-var import_typescript10 = __toESM(require_typescript(), 1);
+var import_typescript11 = __toESM(require_typescript(), 1);
 
 // src/lower/intrinsics.ts
-var import_typescript9 = __toESM(require_typescript(), 1);
+var import_typescript10 = __toESM(require_typescript(), 1);
 
 // src/lower/width.ts
-var import_typescript8 = __toESM(require_typescript(), 1);
+var import_typescript9 = __toESM(require_typescript(), 1);
 
 // src/lower/emit.ts
 class Emitter {
@@ -174929,10 +175287,18 @@ class Emitter {
   current;
   self;
   inConstructor = false;
-  constructor(outer, f, scopes) {
+  bindings;
+  constructor(outer, f, scopes, bindings) {
     this.outer = outer;
     this.f = f;
     this.scopes = scopes;
+    this.bindings = bindings;
+  }
+  erase(at, type) {
+    return this.outer.erase(at, type, this.bindings);
+  }
+  tryErase(expression) {
+    return this.outer.tryErase(expression, this.bindings);
   }
   setClassContext(info, inConstructor) {
     this.self = info;
@@ -175164,45 +175530,56 @@ class WidthPass extends Emitter {
     return computed;
   }
   #computeWidth(expression) {
-    if (import_typescript8.default.isParenthesizedExpression(expression)) {
+    if (import_typescript9.default.isParenthesizedExpression(expression)) {
       return this.width(expression.expression);
     }
-    if (import_typescript8.default.isNumericLiteral(expression)) {
+    if (import_typescript9.default.isExpressionWithTypeArguments(expression)) {
+      return this.#instantiatedValueWidth(expression);
+    }
+    if (import_typescript9.default.isNumericLiteral(expression)) {
       return POLY;
     }
-    if (import_typescript8.default.isStringLiteralLike(expression)) {
+    if (import_typescript9.default.isStringLiteralLike(expression)) {
       return typed(STRING);
     }
-    if (import_typescript8.default.isTemplateExpression(expression)) {
+    if (import_typescript9.default.isTemplateExpression(expression)) {
       return typed(STRING);
     }
-    if (import_typescript8.default.isPropertyAccessExpression(expression)) {
+    if (import_typescript9.default.isPropertyAccessExpression(expression)) {
       return this.#propertyWidth(expression);
     }
-    if (import_typescript8.default.isElementAccessExpression(expression)) {
+    if (import_typescript9.default.isElementAccessExpression(expression)) {
       return this.#elementWidth(expression);
     }
-    if (import_typescript8.default.isObjectLiteralExpression(expression)) {
+    if (import_typescript9.default.isObjectLiteralExpression(expression)) {
       return POLY;
     }
-    if (expression.kind === import_typescript8.default.SyntaxKind.NullKeyword) {
+    if (expression.kind === import_typescript9.default.SyntaxKind.NullKeyword) {
       return POLY;
     }
-    if (expression.kind === import_typescript8.default.SyntaxKind.TrueKeyword || expression.kind === import_typescript8.default.SyntaxKind.FalseKeyword) {
+    if (expression.kind === import_typescript9.default.SyntaxKind.TrueKeyword || expression.kind === import_typescript9.default.SyntaxKind.FalseKeyword) {
       return typed({ kind: "bool" });
     }
-    if (import_typescript8.default.isIdentifier(expression)) {
+    if (import_typescript9.default.isIdentifier(expression)) {
       const binding = this.scopes.lookup(expression.text);
       if (binding === undefined) {
         if (this.outer.functionValueAt(expression) !== undefined) {
           return this.#erasedWidth(expression);
+        }
+        if (this.outer.namesAGeneric(expression)) {
+          this.outer.error(expression, "GF0404", `\`${expression.text}\` is generic, so it is not one function and ` + "has no one address. Each set of type arguments is compiled " + `separately — write \`${expression.text}<…>\` to name the copy ` + "you meant.");
+          return ERROR;
+        }
+        if (this.outer.namesAGenericClass(expression.text)) {
+          this.outer.error(expression, "GF0001", `\`${expression.text}\` is generic, so every set of type arguments ` + "is a separate class and this names none of them. TypeScript has " + "no syntax for saying which — it never needed one, because a " + "`static` may not use the class's type parameters.\n\n" + "Which is also the way out: a `static` that cannot mention `T` is " + "a plain function with extra punctuation, so move it beside the " + "class and the name resolves.");
+          return ERROR;
         }
         this.outer.unsupported(expression, `the name \`${expression.text}\``);
         return ERROR;
       }
       return typed(binding.type);
     }
-    if (import_typescript8.default.isConditionalExpression(expression)) {
+    if (import_typescript9.default.isConditionalExpression(expression)) {
       if (this.width(expression.condition).kind === "error") {
         return ERROR;
       }
@@ -175223,13 +175600,13 @@ class WidthPass extends Emitter {
       }
       return whenTrue;
     }
-    if (import_typescript8.default.isPrefixUnaryExpression(expression)) {
-      if (expression.operator === import_typescript8.default.SyntaxKind.ExclamationToken) {
+    if (import_typescript9.default.isPrefixUnaryExpression(expression)) {
+      if (expression.operator === import_typescript9.default.SyntaxKind.ExclamationToken) {
         return typed({ kind: "bool" });
       }
       return this.width(expression.operand);
     }
-    if (expression.kind === import_typescript8.default.SyntaxKind.ThisKeyword) {
+    if (expression.kind === import_typescript9.default.SyntaxKind.ThisKeyword) {
       const binding = this.scopes.lookup("this");
       if (binding === undefined) {
         this.outer.error(expression, "GF0002", "`this` is only meaningful inside a method or a constructor.");
@@ -175237,8 +175614,8 @@ class WidthPass extends Emitter {
       }
       return typed(binding.type);
     }
-    if (import_typescript8.default.isNewExpression(expression)) {
-      if (!import_typescript8.default.isIdentifier(expression.expression)) {
+    if (import_typescript9.default.isNewExpression(expression)) {
+      if (!import_typescript9.default.isIdentifier(expression.expression)) {
         this.outer.unsupported(expression, "an expression after `new`");
         return ERROR;
       }
@@ -175251,15 +175628,20 @@ class WidthPass extends Emitter {
         }
         return typed(linalgStruct(linalg));
       }
-      const name = expression.expression.text;
-      if (this.outer.classInfo(name) === undefined) {
-        this.outer.unsupported(expression, `\`new ${name}\``);
+      const created = this.erase(expression, this.outer.checker.getTypeAtLocation(expression));
+      if (created?.kind !== "class") {
+        this.outer.unsupported(expression, `\`new ${expression.expression.text}\``);
         return ERROR;
       }
-      return typed({ kind: "class", name });
+      this.outer.tyOf(created, expression);
+      if (this.outer.classInfo(created.name) === undefined) {
+        this.outer.unsupported(expression, `\`new ${created.name}\``);
+        return ERROR;
+      }
+      return typed(created);
     }
-    if (import_typescript8.default.isArrayLiteralExpression(expression)) {
-      const type = this.outer.erase(expression, this.outer.checker.getContextualType(expression) ?? this.outer.checker.getTypeAtLocation(expression));
+    if (import_typescript9.default.isArrayLiteralExpression(expression)) {
+      const type = this.erase(expression, this.outer.checker.getContextualType(expression) ?? this.outer.checker.getTypeAtLocation(expression));
       if (type === undefined) {
         return ERROR;
       }
@@ -175274,13 +175656,13 @@ class WidthPass extends Emitter {
       }
       return typed(type);
     }
-    if (import_typescript8.default.isCallExpression(expression)) {
+    if (import_typescript9.default.isCallExpression(expression)) {
       return this.#callWidth(expression);
     }
-    if (import_typescript8.default.isBinaryExpression(expression)) {
+    if (import_typescript9.default.isBinaryExpression(expression)) {
       return this.#binaryWidth(expression);
     }
-    if (import_typescript8.default.isArrowFunction(expression) || import_typescript8.default.isFunctionExpression(expression)) {
+    if (import_typescript9.default.isArrowFunction(expression) || import_typescript9.default.isFunctionExpression(expression)) {
       this.outer.error(expression, "GF0239", "a lambda has no type of its own, so it can only be written where one " + "is expected — as an argument to a `LocalFn<F>` parameter. Nothing " + "here says what this one should be.");
       return ERROR;
     }
@@ -175291,18 +175673,18 @@ class WidthPass extends Emitter {
     if (this.outer.enumMemberAt(expression) !== undefined) {
       return this.#erasedWidth(expression);
     }
-    if (expression.name.text === POINTER_ADDRESS && this.outer.tryErase(expression.expression)?.kind === "pointer") {
+    if (expression.name.text === POINTER_ADDRESS && this.tryErase(expression.expression)?.kind === "pointer") {
       return typed(USIZE);
     }
     if (this.staticAt(expression) !== undefined) {
       return this.#erasedWidth(expression);
     }
-    if (this.outer.namespaceCallee(expression) !== undefined) {
+    if (this.outer.namespaceValue(expression) !== undefined) {
       return this.#erasedWidth(expression);
     }
     const staticGet = this.staticAccessorAt(expression, false);
     if (staticGet !== undefined) {
-      const returns = this.outer.accessorType(staticGet.accessor);
+      const returns = this.outer.accessorType(staticGet.info, staticGet.accessor);
       return returns === undefined ? ERROR : typed(returns);
     }
     const staticSet = this.staticAccessorAt(expression, true);
@@ -175310,7 +175692,7 @@ class WidthPass extends Emitter {
       this.outer.error(expression, "GF0002", `\`${staticSet.info.name}.${expression.name.text}\` is a static setter with ` + `no getter, so it can be written and not read. Add ` + `\`static get ${expression.name.text}()\` if it should be.`);
       return ERROR;
     }
-    const className = this.outer.classNameAt(expression.expression);
+    const className = this.outer.classNameAt(expression.expression, this.bindings);
     if (className !== undefined) {
       const info = this.outer.classInfo(className);
       const field = info?.fields.find((f) => f.name === expression.name.text);
@@ -175318,8 +175700,8 @@ class WidthPass extends Emitter {
         return typed(field.type);
       }
       const getter = info?.getters.get(expression.name.text);
-      if (getter !== undefined) {
-        const returns = this.outer.accessorType(getter);
+      if (getter !== undefined && info !== undefined) {
+        const returns = this.outer.accessorType(info, getter);
         return returns === undefined ? ERROR : typed(returns);
       }
       if (info?.setters.has(expression.name.text) === true) {
@@ -175356,7 +175738,7 @@ class WidthPass extends Emitter {
       this.outer.unsupported(expression, `\`${expression.name.text}\` on an array`);
       return ERROR;
     }
-    const pointed = subject.type.kind === "pointer" && subject.type.pointee.kind === "struct" ? subject.type.pointee : subject.type;
+    const pointed = behindOneIndirection(subject.type) ?? subject.type;
     if (pointed.kind === "struct") {
       const field = pointed.fields.find((f) => f.name === expression.name.text);
       if (field === undefined) {
@@ -175397,7 +175779,7 @@ class WidthPass extends Emitter {
     return type.fields.findIndex((field) => field.name === name);
   }
   arrayElementAt(access) {
-    return this.outer.arrayElementAt(access.expression);
+    return this.outer.arrayElementAt(access.expression, this.bindings);
   }
   callableValue(expression) {
     if (this.outer.namesADeclaredFunction(expression)) {
@@ -175406,15 +175788,30 @@ class WidthPass extends Emitter {
     if (this.outer.functionValueAt(expression) !== undefined) {
       return;
     }
-    if (import_typescript8.default.isPropertyAccessExpression(expression) && this.#namesAMethod(expression)) {
+    if (import_typescript9.default.isPropertyAccessExpression(expression) && this.#namesAMethod(expression)) {
       return;
     }
-    const type = this.outer.tryErase(expression);
+    const type = this.tryErase(expression);
     if (type?.kind !== "fnptr") {
       return;
     }
     const value = this.value(expression, type);
     return value === undefined ? undefined : { value, type };
+  }
+  #instantiatedValueWidth(expression) {
+    const target = this.outer.instantiatedValue(expression, this.bindings);
+    if (target === "reported") {
+      return ERROR;
+    }
+    if (target === undefined) {
+      this.outer.unsupported(expression, "type arguments on something not generic");
+      return ERROR;
+    }
+    return typed({
+      kind: "fnptr",
+      params: target.signature.params.map((param) => param.type),
+      returns: target.signature.returns
+    });
   }
   functionValue(expression, natural) {
     const target = this.outer.functionValueAt(expression);
@@ -175439,21 +175836,21 @@ class WidthPass extends Emitter {
   }
   #namesAMethod(access) {
     const symbol = this.outer.checker.getSymbolAtLocation(access.name);
-    return symbol?.declarations?.some((declaration2) => import_typescript8.default.isMethodDeclaration(declaration2) && !isStaticMember(declaration2) || import_typescript8.default.isMethodSignature(declaration2)) ?? false;
+    return symbol?.declarations?.some((declaration2) => import_typescript9.default.isMethodDeclaration(declaration2) && !isStaticMember(declaration2) || import_typescript9.default.isMethodSignature(declaration2)) ?? false;
   }
   #erasedWidth(expression) {
-    const type = this.outer.erase(expression, this.outer.checker.getTypeAtLocation(expression));
+    const type = this.erase(expression, this.outer.checker.getTypeAtLocation(expression));
     return type === undefined ? ERROR : typed(type);
   }
   staticAt(access) {
-    if (!import_typescript8.default.isIdentifier(access.expression)) {
+    if (!import_typescript9.default.isIdentifier(access.expression)) {
       return;
     }
     const info = this.outer.classInfo(access.expression.text);
     return info?.statics.get(access.name.text);
   }
   staticAccessorAt(access, writing) {
-    if (!import_typescript8.default.isIdentifier(access.expression)) {
+    if (!import_typescript9.default.isIdentifier(access.expression)) {
       return;
     }
     const info = this.outer.classInfo(access.expression.text);
@@ -175495,12 +175892,12 @@ class WidthPass extends Emitter {
     };
   }
   #callWidth(expression) {
-    if (expression.expression.kind === import_typescript8.default.SyntaxKind.SuperKeyword) {
+    if (expression.expression.kind === import_typescript9.default.SyntaxKind.SuperKeyword) {
       return typed(VOID);
     }
     const callee2 = expression.expression;
-    const callable = this.outer.tryErase(callee2);
-    if (callable?.kind === "fnptr" && !this.outer.namesADeclaredFunction(callee2) && this.outer.functionValueAt(callee2) === undefined && !(import_typescript8.default.isPropertyAccessExpression(callee2) && this.#namesAMethod(callee2))) {
+    const callable = this.tryErase(callee2);
+    if (callable?.kind === "fnptr" && !this.outer.namesADeclaredFunction(callee2) && this.outer.functionValueAt(callee2) === undefined && !(import_typescript9.default.isPropertyAccessExpression(callee2) && this.#namesAMethod(callee2))) {
       for (const argument of expression.arguments) {
         if (this.width(argument).kind === "error") {
           return ERROR;
@@ -175508,8 +175905,11 @@ class WidthPass extends Emitter {
       }
       return typed(callable.returns);
     }
-    if (import_typescript8.default.isPropertyAccessExpression(expression.expression)) {
-      const qualified = this.outer.namespaceCallee(expression.expression);
+    if (import_typescript9.default.isPropertyAccessExpression(expression.expression)) {
+      const qualified = this.outer.namespaceCallee(expression, expression.expression, this.bindings);
+      if (qualified === "reported") {
+        return ERROR;
+      }
       if (qualified !== undefined) {
         return typed(qualified.signature.returns);
       }
@@ -175519,7 +175919,7 @@ class WidthPass extends Emitter {
       }
       return this.#consoleWidth(expression);
     }
-    if (!import_typescript8.default.isIdentifier(expression.expression)) {
+    if (!import_typescript9.default.isIdentifier(expression.expression)) {
       this.outer.unsupported(expression.expression, "this call target");
       return ERROR;
     }
@@ -175540,11 +175940,11 @@ class WidthPass extends Emitter {
       return this.#erasedWidth(expression);
     }
     if (expression.expression.text === NATIVE_CAST) {
-      const target2 = this.outer.erase(expression, this.outer.checker.getTypeAtLocation(expression));
+      const target2 = this.erase(expression, this.outer.checker.getTypeAtLocation(expression));
       return target2 === undefined ? ERROR : typed(target2);
     }
     if (expression.expression.text === FIXED_ARRAY) {
-      const type = this.outer.erase(expression, this.outer.checker.getContextualType(expression) ?? this.outer.checker.getTypeAtLocation(expression));
+      const type = this.erase(expression, this.outer.checker.getContextualType(expression) ?? this.outer.checker.getTypeAtLocation(expression));
       return type === undefined ? ERROR : typed(type);
     }
     if (expression.expression.text === TRY_CAST) {
@@ -175581,7 +175981,10 @@ class WidthPass extends Emitter {
       }
       return this.width(argument);
     }
-    const target = this.outer.resolveCallee(expression.expression);
+    const target = this.outer.resolveCallee(expression, this.bindings);
+    if (target === "reported") {
+      return ERROR;
+    }
     if (target === undefined) {
       const width = this.width(expression.expression);
       if (width.kind === "typed" && (width.type.kind === "fnptr" || width.type.kind === "localfn")) {
@@ -175618,7 +176021,7 @@ class WidthPass extends Emitter {
           return ERROR;
       }
     }
-    if (this.outer.tryErase(access.expression)?.kind === "string") {
+    if (this.tryErase(access.expression)?.kind === "string") {
       for (const argument of expression.arguments) {
         if (this.width(argument).kind === "error") {
           return ERROR;
@@ -175637,7 +176040,7 @@ class WidthPass extends Emitter {
       }
     }
     const linalgStatic = linalgNamedBy(this.outer.checker, access.expression);
-    const linalgType = linalgStatic ?? linalgFromMachine(this.outer.tryErase(access.expression));
+    const linalgType = linalgStatic ?? linalgFromMachine(this.tryErase(access.expression));
     if (linalgType !== undefined) {
       for (const argument of expression.arguments) {
         if (this.width(argument).kind === "error") {
@@ -175647,7 +176050,7 @@ class WidthPass extends Emitter {
       return this.#linalgWidth(access, linalgType, linalgStatic !== undefined);
     }
     if (POINTER_METHODS.has(access.name.text)) {
-      const pointer = this.outer.tryErase(access.expression);
+      const pointer = this.tryErase(access.expression);
       if (pointer?.kind === "pointer") {
         for (const argument of expression.arguments) {
           if (this.width(argument).kind === "error") {
@@ -175685,15 +176088,28 @@ class WidthPass extends Emitter {
       }
       return typed(method2.returns);
     }
-    const info = access.expression.kind === import_typescript8.default.SyntaxKind.SuperKeyword ? this.self?.base : this.outer.classInfo(this.outer.classNameAt(access.expression) ?? "");
+    const info = access.expression.kind === import_typescript9.default.SyntaxKind.SuperKeyword ? this.self?.base : this.outer.classInfo(this.outer.classNameAt(access.expression, this.bindings) ?? "");
     if (info === undefined) {
-      if (access.expression.kind !== import_typescript8.default.SyntaxKind.SuperKeyword) {
+      if (access.expression.kind !== import_typescript9.default.SyntaxKind.SuperKeyword) {
         return "not-a-method";
       }
       this.outer.error(access, "GF0002", "`super` is only meaningful inside a method of a class that extends another.");
       return ERROR;
     }
     const className = info.name;
+    const template = info.methodTemplates.get(access.name.text);
+    if (template !== undefined) {
+      for (const argument of expression.arguments) {
+        if (this.width(argument).kind === "error") {
+          return ERROR;
+        }
+      }
+      const instance = this.outer.instantiateMethod(info, template, expression, this.bindings);
+      if (instance === undefined || instance === "reported") {
+        return ERROR;
+      }
+      return typed(instance.signature.returns);
+    }
     const method = info.methods.get(access.name.text);
     if (method === undefined) {
       this.outer.unsupported(expression, `\`${className}.${access.name.text}()\``);
@@ -175774,7 +176190,7 @@ class WidthPass extends Emitter {
       this.outer.error(expression, "GF0002", `\`${method}\` takes no arguments.`);
       return;
     }
-    const result = this.outer.erase(expression, this.outer.checker.getTypeAtLocation(expression));
+    const result = this.erase(expression, this.outer.checker.getTypeAtLocation(expression));
     if (result === undefined) {
       return;
     }
@@ -175793,7 +176209,7 @@ class WidthPass extends Emitter {
   }
   #consoleWidth(expression) {
     const access = expression.expression;
-    if (import_typescript8.default.isIdentifier(access.expression) && access.expression.text === "console" && CONSOLE_METHODS[access.name.text] !== undefined) {
+    if (import_typescript9.default.isIdentifier(access.expression) && access.expression.text === "console" && CONSOLE_METHODS[access.name.text] !== undefined) {
       const argument = expression.arguments[0];
       if (argument !== undefined && this.width(argument).kind === "error") {
         return ERROR;
@@ -175810,7 +176226,7 @@ class WidthPass extends Emitter {
     const operator = OPERATOR_TOKENS[expression.operatorToken.kind];
     if (operator === undefined) {
       const kind = expression.operatorToken.kind;
-      if (kind === import_typescript8.default.SyntaxKind.AmpersandAmpersandToken || kind === import_typescript8.default.SyntaxKind.BarBarToken) {
+      if (kind === import_typescript9.default.SyntaxKind.AmpersandAmpersandToken || kind === import_typescript9.default.SyntaxKind.BarBarToken) {
         return typed({ kind: "bool" });
       }
       this.outer.unsupported(expression.operatorToken, `the operator \`${expression.operatorToken.getText()}\``);
@@ -175883,7 +176299,7 @@ class IntrinsicLowerer extends WidthPass {
       this.outer.error(expression, "GF0002", `\`${size ? NATIVE_SIZE_OF : NATIVE_ALIGN_OF}\` needs the type written out: ` + `\`${size ? NATIVE_SIZE_OF : NATIVE_ALIGN_OF}<i32>()\`.`);
       return;
     }
-    const type = this.outer.erase(argument, this.outer.checker.getTypeAtLocation(argument));
+    const type = this.erase(argument, this.outer.checker.getTypeAtLocation(argument));
     if (type === undefined) {
       return;
     }
@@ -175900,7 +176316,7 @@ class IntrinsicLowerer extends WidthPass {
   zeroed(expression, natural) {
     const argument = expression.typeArguments?.[0];
     const at = argument ?? expression;
-    const type = argument === undefined ? natural : this.outer.erase(argument, this.outer.checker.getTypeAtLocation(argument));
+    const type = argument === undefined ? natural : this.erase(argument, this.outer.checker.getTypeAtLocation(argument));
     if (type === undefined) {
       return;
     }
@@ -175921,7 +176337,7 @@ class IntrinsicLowerer extends WidthPass {
       }
       return this.#allocDefault(expression, natural);
     }
-    if (import_typescript9.default.isObjectLiteralExpression(klass)) {
+    if (import_typescript10.default.isObjectLiteralExpression(klass)) {
       if (args.length > 0) {
         this.outer.unsupported(expression, "`alloc` with an initialiser and more arguments");
         return;
@@ -175931,18 +176347,23 @@ class IntrinsicLowerer extends WidthPass {
       }
       return this.#allocInit(expression, natural, klass);
     }
-    if (!import_typescript9.default.isIdentifier(klass)) {
+    if (!import_typescript10.default.isIdentifier(klass)) {
       this.outer.error(expression, "GF0002", "`alloc` takes a class and its constructor's arguments, a type " + "argument and nothing, or a type argument and an initialiser: " + "`alloc(Rect, 6, 7)`, `alloc<i32>()`, or `alloc<Rect>({ w: 6 })`.");
       return;
     }
-    const info = this.outer.classInfo(klass.text);
-    if (info === undefined) {
+    const allocated = this.erase(expression, this.outer.checker.getTypeAtLocation(expression));
+    const object = allocated?.kind === "pointer" && allocated.pointee.kind === "class" ? allocated.pointee : undefined;
+    if (object === undefined) {
       this.outer.unsupported(expression, `\`alloc(${klass.text}, …)\``);
       return;
     }
-    const object = { kind: "class", name: info.name };
     const pointer = natural.kind === "pointer" ? natural : { kind: "pointer", pointee: object };
     const ty2 = this.outer.tyOf(object, expression);
+    const info = this.outer.classInfo(object.name);
+    if (info === undefined) {
+      this.outer.unsupported(expression, `\`alloc(${object.name}, …)\``);
+      return;
+    }
     const size = this.temporaryTyped(expression, USIZE, { kind: "SizeOf", value: ty2 });
     const align = this.temporaryTyped(expression, USIZE, { kind: "AlignOf", value: ty2 });
     if (size === undefined || align === undefined) {
@@ -175977,7 +176398,7 @@ class IntrinsicLowerer extends WidthPass {
     return { operand: raw.operand, type: pointer };
   }
   #allocDefault(expression, natural) {
-    const pointee = natural.kind === "pointer" ? natural.pointee : this.outer.erase(expression, this.outer.checker.getTypeAtLocation(expression));
+    const pointee = natural.kind === "pointer" ? natural.pointee : this.erase(expression, this.outer.checker.getTypeAtLocation(expression));
     if (pointee === undefined) {
       return;
     }
@@ -176039,7 +176460,7 @@ class IntrinsicLowerer extends WidthPass {
       return false;
     }
     for (const property of literal.properties) {
-      if (!import_typescript9.default.isPropertyAssignment(property)) {
+      if (!import_typescript10.default.isPropertyAssignment(property)) {
         this.outer.unsupported(property, "a shorthand or spread in an initialiser");
         return false;
       }
@@ -176055,7 +176476,7 @@ class IntrinsicLowerer extends WidthPass {
         projection: [...target.projection, { kind: "Field", value: FieldId(index) }]
       };
       const initialiser = property.initializer;
-      if (import_typescript9.default.isObjectLiteralExpression(initialiser) && field.type.kind === "struct" && field.type.union !== true) {
+      if (import_typescript10.default.isObjectLiteralExpression(initialiser) && field.type.kind === "struct" && field.type.union !== true) {
         if (!this.#initFields(initialiser, field.type, slot)) {
           return false;
         }
@@ -176377,7 +176798,7 @@ class IntrinsicLowerer extends WidthPass {
   }
   closureArgument(argument) {
     const contextual = this.outer.checker.getContextualType(argument);
-    const expected = contextual === undefined ? undefined : this.outer.erase(argument, contextual);
+    const expected = contextual === undefined ? undefined : this.erase(argument, contextual);
     if (expected === undefined || expected.kind !== "localfn") {
       this.outer.unsupported(argument, "a callback that is not a `LocalFn`");
       return;
@@ -176865,7 +177286,7 @@ class LinalgLowerer extends IntrinsicLowerer {
   }
   linalgElementPlace(expression, subject, type) {
     const argument = expression.argumentExpression;
-    if (!import_typescript10.default.isNumericLiteral(argument) || /[.eE]/.test(argument.getText())) {
+    if (!import_typescript11.default.isNumericLiteral(argument) || /[.eE]/.test(argument.getText())) {
       this.outer.error(argument, "GF0002", `a \`${type.name}\` can only be indexed by a literal, because its ` + `${type.family === "mat" ? "columns" : "components"} are fields rather than ` + "elements at a stride. Name the " + `${type.family === "mat" ? "column" : "component"} — ` + `\`${type.family === "mat" ? "m.c0" : "v.x"}\` — or index by a constant.`);
       return;
     }
@@ -177045,7 +177466,7 @@ class LinalgLowerer extends IntrinsicLowerer {
     if (named !== undefined) {
       return this.#staticCall(expression, access, named);
     }
-    const type = this.linalgOf(this.outer.tryErase(access.expression));
+    const type = this.linalgOf(this.tryErase(access.expression));
     if (type === undefined) {
       return "not-linalg";
     }
@@ -177116,7 +177537,7 @@ class LinalgLowerer extends IntrinsicLowerer {
       this.outer.unsupported(expression, "`from` with no value");
       return;
     }
-    const source = this.linalgOf(this.outer.tryErase(argument));
+    const source = this.linalgOf(this.tryErase(argument));
     if (source === undefined) {
       this.outer.unsupported(argument, "`from` on something that is not a vector");
       return;
@@ -177639,7 +178060,7 @@ class MatrixLowerer extends LinalgLowerer {
       this.outer.unsupported(at, `a \`${type.name}\` axis argument that is missing`);
       return;
     }
-    const axisType = this.linalgOf(this.outer.tryErase(argument));
+    const axisType = this.linalgOf(this.tryErase(argument));
     if (axisType === undefined || axisType.family !== "vec") {
       this.outer.unsupported(argument, "an axis that is not a vector");
       return;
@@ -177667,7 +178088,7 @@ class MatrixLowerer extends LinalgLowerer {
     return out;
   }
   lookAt(expression, type, column, args) {
-    const vec3 = this.linalgOf(this.outer.tryErase(args[0] ?? expression));
+    const vec3 = this.linalgOf(this.tryErase(args[0] ?? expression));
     if (vec3 === undefined) {
       this.outer.unsupported(expression, "`lookAt` without vector arguments");
       return;
@@ -178429,7 +178850,7 @@ class BoundaryLowerer extends QuatLowerer {
       }
       throw error;
     }
-    target ??= this.outer.erase(argument, type);
+    target ??= this.erase(argument, type);
     if (target === undefined) {
       return;
     }
@@ -178464,7 +178885,7 @@ class BoundaryLowerer extends QuatLowerer {
     const ty2 = this.outer.tyOf(contract, expression);
     let rvalue2;
     if (contract.kind === "interface") {
-      const resolved = this.outer.interfaceId(contract.name);
+      const resolved = this.outer.interfaceId(layoutKey(contract));
       if (resolved === undefined) {
         return;
       }
@@ -178496,6 +178917,11 @@ class BoundaryLowerer extends QuatLowerer {
     const referent = referentOf(this.outer.checker, type);
     if (referent === null) {
       return;
+    }
+    const parameter = typeParameterSymbolOf(referent);
+    if (parameter !== undefined) {
+      const bound = this.bindings.get(parameter);
+      return bound?.kind === "interface" ? bound : undefined;
     }
     try {
       const contract = contractOf(this.outer.checker, referent);
@@ -178552,17 +178978,17 @@ class BoundaryLowerer extends QuatLowerer {
 }
 
 // src/lower/closures.ts
-var import_typescript11 = __toESM(require_typescript(), 1);
+var import_typescript12 = __toESM(require_typescript(), 1);
 function capturedNames(fn, checker) {
   const found = new Set;
   const visit = (node) => {
-    if (import_typescript11.default.isIdentifier(node) && namesAValue(node)) {
+    if (import_typescript12.default.isIdentifier(node) && namesAValue(node)) {
       const declaration2 = checker.getSymbolAtLocation(node)?.valueDeclaration;
       if (declaration2 !== undefined && !within(declaration2, fn)) {
         found.add(node.text);
       }
     }
-    import_typescript11.default.forEachChild(node, visit);
+    import_typescript12.default.forEachChild(node, visit);
   };
   visit(fn.body);
   return [...found];
@@ -178572,19 +178998,19 @@ function namesAValue(node) {
   if (parent === undefined) {
     return false;
   }
-  if (import_typescript11.default.isPropertyAccessExpression(parent) && parent.name === node) {
+  if (import_typescript12.default.isPropertyAccessExpression(parent) && parent.name === node) {
     return false;
   }
-  if (import_typescript11.default.isQualifiedName(parent) && parent.right === node) {
+  if (import_typescript12.default.isQualifiedName(parent) && parent.right === node) {
     return false;
   }
-  if (import_typescript11.default.isPropertyAssignment(parent) && parent.name === node) {
+  if (import_typescript12.default.isPropertyAssignment(parent) && parent.name === node) {
     return false;
   }
-  if (import_typescript11.default.isBindingElement(parent) && parent.propertyName === node) {
+  if (import_typescript12.default.isBindingElement(parent) && parent.propertyName === node) {
     return false;
   }
-  return !(import_typescript11.default.isPropertySignature(parent) || import_typescript11.default.isPropertyDeclaration(parent));
+  return !(import_typescript12.default.isPropertySignature(parent) || import_typescript12.default.isPropertyDeclaration(parent));
 }
 function usesThis(fn) {
   let found = false;
@@ -178592,35 +179018,35 @@ function usesThis(fn) {
     if (found) {
       return;
     }
-    if (node.kind === import_typescript11.default.SyntaxKind.ThisKeyword) {
+    if (node.kind === import_typescript12.default.SyntaxKind.ThisKeyword) {
       found = true;
       return;
     }
     if (rebindsThis(node)) {
       return;
     }
-    import_typescript11.default.forEachChild(node, visit);
+    import_typescript12.default.forEachChild(node, visit);
   };
   visit(fn.body);
   return found;
 }
 function thisParameterOf(fn) {
   const first = fn.parameters[0];
-  if (first !== undefined && import_typescript11.default.isIdentifier(first.name) && first.name.text === "this") {
+  if (first !== undefined && import_typescript12.default.isIdentifier(first.name) && first.name.text === "this") {
     return first;
   }
   return;
 }
 function rebindsThis(node) {
-  return import_typescript11.default.isFunctionExpression(node) || import_typescript11.default.isFunctionDeclaration(node) || import_typescript11.default.isClassDeclaration(node) || import_typescript11.default.isClassExpression(node) || import_typescript11.default.isMethodDeclaration(node) || import_typescript11.default.isGetAccessorDeclaration(node) || import_typescript11.default.isSetAccessorDeclaration(node) || import_typescript11.default.isConstructorDeclaration(node);
+  return import_typescript12.default.isFunctionExpression(node) || import_typescript12.default.isFunctionDeclaration(node) || import_typescript12.default.isClassDeclaration(node) || import_typescript12.default.isClassExpression(node) || import_typescript12.default.isMethodDeclaration(node) || import_typescript12.default.isGetAccessorDeclaration(node) || import_typescript12.default.isSetAccessorDeclaration(node) || import_typescript12.default.isConstructorDeclaration(node);
 }
 function isCallArgument(node) {
   let current = node;
-  while (import_typescript11.default.isParenthesizedExpression(current.parent)) {
+  while (import_typescript12.default.isParenthesizedExpression(current.parent)) {
     current = current.parent;
   }
   const parent = current.parent;
-  return parent !== undefined && (import_typescript11.default.isCallExpression(parent) || import_typescript11.default.isNewExpression(parent)) && (parent.arguments?.some((argument) => argument === current) ?? false);
+  return parent !== undefined && (import_typescript12.default.isCallExpression(parent) || import_typescript12.default.isNewExpression(parent)) && (parent.arguments?.some((argument) => argument === current) ?? false);
 }
 function within(node, ancestor) {
   for (let current = node;current !== undefined; current = current.parent) {
@@ -178637,8 +179063,8 @@ class BodyLowerer extends BoundaryLowerer {
   #loops = [];
   #moved = new Map;
   #pendingInitialisers;
-  constructor(outer, f, scopes, returns) {
-    super(outer, f, scopes);
+  constructor(outer, f, scopes, returns, bindings) {
+    super(outer, f, scopes, bindings);
     this.#returns = returns;
   }
   runClosure(body, env) {
@@ -178656,7 +179082,7 @@ class BodyLowerer extends BoundaryLowerer {
         }
       });
     }
-    if (import_typescript12.default.isBlock(body)) {
+    if (import_typescript13.default.isBlock(body)) {
       this.#block(body);
     } else if (this.#returns.kind === "void") {
       this.fullExpression(() => {
@@ -178752,18 +179178,22 @@ class BodyLowerer extends BoundaryLowerer {
     if (linalg !== "not-linalg") {
       return linalg;
     }
-    if (!import_typescript12.default.isIdentifier(expression.expression)) {
+    if (!import_typescript13.default.isIdentifier(expression.expression)) {
       this.outer.unsupported(expression, "an expression after `new`");
       return;
     }
-    const name = expression.expression.text;
+    const type = this.erase(expression, this.outer.checker.getTypeAtLocation(expression));
+    if (type?.kind !== "class") {
+      this.outer.unsupported(expression, `\`new ${expression.expression.text}\``);
+      return;
+    }
+    const ty2 = this.outer.tyOf(type, expression);
+    const name = type.name;
     const info = this.outer.classInfo(name);
     if (info === undefined) {
       this.outer.unsupported(expression, `\`new ${name}\``);
       return;
     }
-    const type = { kind: "class", name };
-    const ty2 = this.outer.tyOf(type, expression);
     const local = this.f.addLocal({
       ty: ty2,
       storage: "Temporary",
@@ -178772,7 +179202,7 @@ class BodyLowerer extends BoundaryLowerer {
     this.push({ kind: "StorageLive", value: local });
     this.push({ kind: "Init", place: placeOf(local), rvalue: { kind: "Default" } });
     this.temporaries.push(local);
-    const args = this.classCallArgs(expression, info, info.constructorSymbol, expression.arguments ?? import_typescript12.default.factory.createNodeArray(), this.refTo(expression, placeOf(local), type));
+    const args = this.classCallArgs(expression, info, info.constructorSymbol, expression.arguments ?? import_typescript13.default.factory.createNodeArray(), this.refTo(expression, placeOf(local), type));
     if (args === undefined) {
       return;
     }
@@ -178913,46 +179343,46 @@ class BodyLowerer extends BoundaryLowerer {
     this.scopes.pop();
   }
   #statement(statement) {
-    if (import_typescript12.default.isReturnStatement(statement)) {
+    if (import_typescript13.default.isReturnStatement(statement)) {
       return this.#return(statement);
     }
-    if (import_typescript12.default.isVariableStatement(statement)) {
+    if (import_typescript13.default.isVariableStatement(statement)) {
       return this.#declaration(statement);
     }
-    if (import_typescript12.default.isIfStatement(statement)) {
+    if (import_typescript13.default.isIfStatement(statement)) {
       return this.#if(statement);
     }
-    if (import_typescript12.default.isWhileStatement(statement)) {
+    if (import_typescript13.default.isWhileStatement(statement)) {
       return this.#while(statement);
     }
-    if (import_typescript12.default.isDoStatement(statement)) {
+    if (import_typescript13.default.isDoStatement(statement)) {
       return this.#doWhile(statement);
     }
-    if (import_typescript12.default.isForStatement(statement)) {
+    if (import_typescript13.default.isForStatement(statement)) {
       return this.#for(statement);
     }
-    if (import_typescript12.default.isForOfStatement(statement)) {
+    if (import_typescript13.default.isForOfStatement(statement)) {
       return this.#forOf(statement);
     }
-    if (import_typescript12.default.isSwitchStatement(statement)) {
+    if (import_typescript13.default.isSwitchStatement(statement)) {
       return this.#switch(statement);
     }
-    if (import_typescript12.default.isLabeledStatement(statement)) {
+    if (import_typescript13.default.isLabeledStatement(statement)) {
       return this.#labelled(statement);
     }
-    if (import_typescript12.default.isBreakStatement(statement)) {
+    if (import_typescript13.default.isBreakStatement(statement)) {
       return this.#break(statement);
     }
-    if (import_typescript12.default.isContinueStatement(statement)) {
+    if (import_typescript13.default.isContinueStatement(statement)) {
       return this.#continue(statement);
     }
-    if (import_typescript12.default.isBlock(statement)) {
+    if (import_typescript13.default.isBlock(statement)) {
       return this.#block(statement);
     }
-    if (import_typescript12.default.isExpressionStatement(statement)) {
+    if (import_typescript13.default.isExpressionStatement(statement)) {
       return this.#expressionStatement(statement);
     }
-    if (statement.kind === import_typescript12.default.SyntaxKind.EmptyStatement) {
+    if (statement.kind === import_typescript13.default.SyntaxKind.EmptyStatement) {
       return;
     }
     this.outer.unsupported(statement, describe(statement));
@@ -178973,7 +179403,7 @@ class BodyLowerer extends BoundaryLowerer {
     this.seal({ kind: "Return" });
   }
   #returnValue(expression) {
-    if (import_typescript12.default.isIdentifier(expression) && sameType(this.#returns, this.widthType(expression))) {
+    if (import_typescript13.default.isIdentifier(expression) && sameType(this.#returns, this.widthType(expression))) {
       const binding = this.scopes.lookup(expression.text);
       if (binding !== undefined && this.#owns(binding.type) && !this.#isOwningParameter(binding) && !isCapture(binding)) {
         if (this.#readMoved(expression, binding.local, expression.text)) {
@@ -179023,19 +179453,19 @@ class BodyLowerer extends BoundaryLowerer {
   #labelled(statement) {
     const label = statement.label.text;
     const inner = statement.statement;
-    if (import_typescript12.default.isWhileStatement(inner)) {
+    if (import_typescript13.default.isWhileStatement(inner)) {
       return this.#while(inner, label);
     }
-    if (import_typescript12.default.isDoStatement(inner)) {
+    if (import_typescript13.default.isDoStatement(inner)) {
       return this.#doWhile(inner, label);
     }
-    if (import_typescript12.default.isForStatement(inner)) {
+    if (import_typescript13.default.isForStatement(inner)) {
       return this.#for(inner, label);
     }
-    if (import_typescript12.default.isForOfStatement(inner)) {
+    if (import_typescript13.default.isForOfStatement(inner)) {
       return this.#forOf(inner, label);
     }
-    if (import_typescript12.default.isSwitchStatement(inner)) {
+    if (import_typescript13.default.isSwitchStatement(inner)) {
       return this.#switch(inner, label);
     }
     const enclosing = this.scopes.innermost;
@@ -179087,7 +179517,7 @@ class BodyLowerer extends BoundaryLowerer {
   }
   #declarationList(list) {
     for (const declaration2 of list.declarations) {
-      if (!import_typescript12.default.isIdentifier(declaration2.name)) {
+      if (!import_typescript13.default.isIdentifier(declaration2.name)) {
         this.outer.unsupported(declaration2, "a destructuring binding");
         return;
       }
@@ -179129,7 +179559,7 @@ class BodyLowerer extends BoundaryLowerer {
   }
   #bindingType(declaration2) {
     if (declaration2.type !== undefined) {
-      return this.outer.erase(declaration2.type, this.outer.checker.getTypeAtLocation(declaration2.type));
+      return this.erase(declaration2.type, this.outer.checker.getTypeAtLocation(declaration2.type));
     }
     const initialiser = declaration2.initializer;
     const width = this.width(initialiser);
@@ -179139,7 +179569,7 @@ class BodyLowerer extends BoundaryLowerer {
     if (width.kind === "typed") {
       return width.type;
     }
-    if (initialiser.kind === import_typescript12.default.SyntaxKind.NullKeyword) {
+    if (initialiser.kind === import_typescript13.default.SyntaxKind.NullKeyword) {
       this.outer.error(declaration2, "GF0161", `\`${declaration2.name.getText()}\` is initialised with \`null\`, which ` + "has no type of its own. Annotate what it is the null of — " + "`const w: Pointer<SDL_Window> | null = null`.");
       return;
     }
@@ -179207,7 +179637,7 @@ class BodyLowerer extends BoundaryLowerer {
   #for(statement, label) {
     const outer = this.scopes.push();
     if (statement.initializer !== undefined) {
-      if (import_typescript12.default.isVariableDeclarationList(statement.initializer)) {
+      if (import_typescript13.default.isVariableDeclarationList(statement.initializer)) {
         this.#declarationList(statement.initializer);
       } else {
         this.fullExpression(() => {
@@ -179245,7 +179675,7 @@ class BodyLowerer extends BoundaryLowerer {
     this.scopes.pop();
   }
   #forOf(statement, label) {
-    if (!import_typescript12.default.isVariableDeclarationList(statement.initializer)) {
+    if (!import_typescript13.default.isVariableDeclarationList(statement.initializer)) {
       this.outer.unsupported(statement.initializer, "a `for…of` binding that is not a declaration");
       return;
     }
@@ -179254,7 +179684,7 @@ class BodyLowerer extends BoundaryLowerer {
       this.outer.unsupported(statement.initializer, "more than one `for…of` binding");
       return;
     }
-    if (!import_typescript12.default.isIdentifier(declaration2.name)) {
+    if (!import_typescript13.default.isIdentifier(declaration2.name)) {
       this.outer.unsupported(declaration2, "a destructuring binding");
       return;
     }
@@ -179391,9 +179821,9 @@ class BodyLowerer extends BoundaryLowerer {
       return;
     }
     const blocks = clauses.map(() => this.f.block());
-    const defaultAt = clauses.findIndex((clause) => import_typescript12.default.isDefaultClause(clause));
+    const defaultAt = clauses.findIndex((clause) => import_typescript13.default.isDefaultClause(clause));
     for (const [index, clause] of clauses.entries()) {
-      if (!import_typescript12.default.isCaseClause(clause)) {
+      if (!import_typescript13.default.isCaseClause(clause)) {
         continue;
       }
       const subject = held;
@@ -179450,7 +179880,7 @@ class BodyLowerer extends BoundaryLowerer {
     this.scopes.pop();
   }
   #loopCondition(expression, body, exit) {
-    if (expression.kind === import_typescript12.default.SyntaxKind.TrueKeyword) {
+    if (expression.kind === import_typescript13.default.SyntaxKind.TrueKeyword) {
       this.seal({ kind: "Goto", value: body });
       return;
     }
@@ -179467,13 +179897,13 @@ class BodyLowerer extends BoundaryLowerer {
     });
   }
   #expressionValue(expression) {
-    if (import_typescript12.default.isCallExpression(expression)) {
+    if (import_typescript13.default.isCallExpression(expression)) {
       this.value(expression, undefined);
       return;
     }
-    if (import_typescript12.default.isBinaryExpression(expression)) {
+    if (import_typescript13.default.isBinaryExpression(expression)) {
       const kind = expression.operatorToken.kind;
-      if (kind === import_typescript12.default.SyntaxKind.EqualsToken) {
+      if (kind === import_typescript13.default.SyntaxKind.EqualsToken) {
         this.#assignment(expression);
         return;
       }
@@ -179483,12 +179913,12 @@ class BodyLowerer extends BoundaryLowerer {
         return;
       }
     }
-    if (import_typescript12.default.isPrefixUnaryExpression(expression) && (expression.operator === import_typescript12.default.SyntaxKind.PlusPlusToken || expression.operator === import_typescript12.default.SyntaxKind.MinusMinusToken)) {
-      this.#incrementDecrement(expression, expression.operand, expression.operator === import_typescript12.default.SyntaxKind.PlusPlusToken);
+    if (import_typescript13.default.isPrefixUnaryExpression(expression) && (expression.operator === import_typescript13.default.SyntaxKind.PlusPlusToken || expression.operator === import_typescript13.default.SyntaxKind.MinusMinusToken)) {
+      this.#incrementDecrement(expression, expression.operand, expression.operator === import_typescript13.default.SyntaxKind.PlusPlusToken);
       return;
     }
-    if (import_typescript12.default.isPostfixUnaryExpression(expression)) {
-      this.#incrementDecrement(expression, expression.operand, expression.operator === import_typescript12.default.SyntaxKind.PlusPlusToken);
+    if (import_typescript13.default.isPostfixUnaryExpression(expression)) {
+      this.#incrementDecrement(expression, expression.operand, expression.operator === import_typescript13.default.SyntaxKind.PlusPlusToken);
       return;
     }
     this.outer.unsupported(expression, "this expression as a statement");
@@ -179510,10 +179940,10 @@ class BodyLowerer extends BoundaryLowerer {
     this.#updateInPlace(at, target, increment ? "+" : "-", spelling, (type) => this.#oneOf(at, type));
   }
   #targetPlace(target) {
-    if (import_typescript12.default.isParenthesizedExpression(target)) {
+    if (import_typescript13.default.isParenthesizedExpression(target)) {
       return this.#targetPlace(target.expression);
     }
-    if (import_typescript12.default.isIdentifier(target)) {
+    if (import_typescript13.default.isIdentifier(target)) {
       const binding = this.scopes.lookup(target.text);
       if (binding === undefined) {
         this.outer.unsupported(target, "updating a non-local name");
@@ -179524,14 +179954,14 @@ class BodyLowerer extends BoundaryLowerer {
       }
       return { place: bindingPlace(binding), type: binding.type };
     }
-    if (import_typescript12.default.isElementAccessExpression(target)) {
+    if (import_typescript13.default.isElementAccessExpression(target)) {
       const element = this.#elementPlace(target);
       if (element === undefined) {
         return;
       }
       return { place: element.place, type: element.element };
     }
-    if (import_typescript12.default.isPropertyAccessExpression(target)) {
+    if (import_typescript13.default.isPropertyAccessExpression(target)) {
       if (this.staticAccessorAt(target, true) !== undefined || this.staticAccessorAt(target, false) !== undefined) {
         this.outer.unsupported(target, "updating a static accessor in place");
         return;
@@ -179584,11 +180014,11 @@ class BodyLowerer extends BoundaryLowerer {
     return { kind: "Const", value: { kind: "Int", bits: 1n, ty: ty2 } };
   }
   #assignment(expression) {
-    if (import_typescript12.default.isPropertyAccessExpression(expression.left)) {
+    if (import_typescript13.default.isPropertyAccessExpression(expression.left)) {
       this.#fieldAssignment(expression.left, expression.right);
       return;
     }
-    if (import_typescript12.default.isElementAccessExpression(expression.left)) {
+    if (import_typescript13.default.isElementAccessExpression(expression.left)) {
       const target = this.#elementPlace(expression.left);
       if (target === undefined) {
         return;
@@ -179604,7 +180034,7 @@ class BodyLowerer extends BoundaryLowerer {
       });
       return;
     }
-    if (!import_typescript12.default.isIdentifier(expression.left)) {
+    if (!import_typescript13.default.isIdentifier(expression.left)) {
       this.outer.unsupported(expression.left, "assigning to anything but a local");
       return;
     }
@@ -179661,9 +180091,9 @@ class BodyLowerer extends BoundaryLowerer {
   }
   #fieldPlaceOf(target, subject, asClass) {
     if (subject.type.kind === "pointer" && subject.type.pointee.kind === "struct") {
-      const struct = subject.type.pointee;
-      const index2 = this.fieldIndex(struct, target.name.text);
-      const field2 = struct.fields[index2];
+      const struct2 = subject.type.pointee;
+      const index2 = this.fieldIndex(struct2, target.name.text);
+      const field2 = struct2.fields[index2];
       if (field2 === undefined) {
         this.outer.unsupported(target, `the field \`${target.name.text}\``);
         return;
@@ -179705,12 +180135,14 @@ class BodyLowerer extends BoundaryLowerer {
         type: field2.type
       };
     }
-    if (subject.type.kind !== "struct") {
+    const behind = behindOneIndirection(subject.type);
+    const struct = behind ?? subject.type;
+    if (struct.kind !== "struct") {
       this.outer.unsupported(target, "assigning to this property");
       return;
     }
-    const index = this.fieldIndex(subject.type, target.name.text);
-    const field = subject.type.fields[index];
+    const index = this.fieldIndex(struct, target.name.text);
+    const field = struct.fields[index];
     if (field === undefined) {
       this.outer.unsupported(target, `the field \`${target.name.text}\``);
       return;
@@ -179719,10 +180151,11 @@ class BodyLowerer extends BoundaryLowerer {
     if (place2 === undefined) {
       return;
     }
+    const base = behind === undefined ? place2.projection : [...place2.projection, { kind: "Deref" }];
     return {
       place: {
         local: place2.local,
-        projection: [...place2.projection, { kind: "Field", value: FieldId(index) }]
+        projection: [...base, { kind: "Field", value: FieldId(index) }]
       },
       type: field.type
     };
@@ -179756,7 +180189,7 @@ class BodyLowerer extends BoundaryLowerer {
     if (expected.kind === "interface" && value.type.kind === "class") {
       return this.#toInterface(at, value, expected);
     }
-    if (expected.kind === "reference" && expected.referent.kind === "array" && value.type.kind === "array") {
+    if (expected.kind === "reference" && sameType(value.type, expected.referent)) {
       const place2 = this.placeOfSubject(at, value);
       if (place2 === undefined) {
         return;
@@ -179810,7 +180243,7 @@ class BodyLowerer extends BoundaryLowerer {
     if (!this.outer.implement(value.type.name, contract, at)) {
       return;
     }
-    const interfaceId = this.outer.interfaceId(contract.name);
+    const interfaceId = this.outer.interfaceId(layoutKey(contract));
     const classId = this.outer.classId(value.type.name);
     if (interfaceId === undefined || classId === undefined) {
       return;
@@ -179901,13 +180334,13 @@ class BodyLowerer extends BoundaryLowerer {
     return;
   }
   value(expression, expected) {
-    if (import_typescript12.default.isParenthesizedExpression(expression)) {
+    if (import_typescript13.default.isParenthesizedExpression(expression)) {
       return this.value(expression.expression, expected);
     }
-    if (expression.kind === import_typescript12.default.SyntaxKind.NullKeyword) {
+    if (expression.kind === import_typescript13.default.SyntaxKind.NullKeyword) {
       return this.#null(expression, expected);
     }
-    if (import_typescript12.default.isArrowFunction(expression) || import_typescript12.default.isFunctionExpression(expression)) {
+    if (import_typescript13.default.isArrowFunction(expression) || import_typescript13.default.isFunctionExpression(expression)) {
       return this.#closure(expression, expected);
     }
     const width = this.width(expression);
@@ -179919,10 +180352,10 @@ class BodyLowerer extends BoundaryLowerer {
       this.outer.error(expression, "GF0161", "this expression is built only from literals, so it has no width, and " + "nothing here supplies one. Annotate the binding or convert with " + "`cast`.");
       return;
     }
-    if (import_typescript12.default.isNumericLiteral(expression)) {
+    if (import_typescript13.default.isNumericLiteral(expression)) {
       return this.#literal(expression, natural, false);
     }
-    if (import_typescript12.default.isStringLiteralLike(expression)) {
+    if (import_typescript13.default.isStringLiteralLike(expression)) {
       return {
         operand: {
           kind: "Const",
@@ -179931,28 +180364,31 @@ class BodyLowerer extends BoundaryLowerer {
         type: STRING
       };
     }
-    if (import_typescript12.default.isTemplateExpression(expression)) {
+    if (import_typescript13.default.isTemplateExpression(expression)) {
       return this.#template(expression);
     }
-    if (import_typescript12.default.isPropertyAccessExpression(expression)) {
+    if (import_typescript13.default.isExpressionWithTypeArguments(expression)) {
+      return this.#instantiatedValue(expression, natural);
+    }
+    if (import_typescript13.default.isPropertyAccessExpression(expression)) {
       return this.#propertyValue(expression, natural);
     }
-    if (import_typescript12.default.isObjectLiteralExpression(expression)) {
+    if (import_typescript13.default.isObjectLiteralExpression(expression)) {
       return this.#objectLiteral(expression, natural);
     }
-    if (import_typescript12.default.isArrayLiteralExpression(expression)) {
+    if (import_typescript13.default.isArrayLiteralExpression(expression)) {
       return this.#arrayLiteral(expression, natural);
     }
-    if (import_typescript12.default.isElementAccessExpression(expression)) {
+    if (import_typescript13.default.isElementAccessExpression(expression)) {
       return this.#elementAccess(expression);
     }
-    if (expression.kind === import_typescript12.default.SyntaxKind.TrueKeyword) {
+    if (expression.kind === import_typescript13.default.SyntaxKind.TrueKeyword) {
       return { operand: { kind: "Const", value: this.boolConst(true) }, type: natural };
     }
-    if (expression.kind === import_typescript12.default.SyntaxKind.FalseKeyword) {
+    if (expression.kind === import_typescript13.default.SyntaxKind.FalseKeyword) {
       return { operand: { kind: "Const", value: this.boolConst(false) }, type: natural };
     }
-    if (import_typescript12.default.isIdentifier(expression)) {
+    if (import_typescript13.default.isIdentifier(expression)) {
       const binding = this.scopes.lookup(expression.text);
       if (binding === undefined) {
         return this.functionValue(expression, natural);
@@ -179962,22 +180398,22 @@ class BodyLowerer extends BoundaryLowerer {
       }
       return { operand: { kind: "Copy", value: bindingPlace(binding) }, type: binding.type };
     }
-    if (expression.kind === import_typescript12.default.SyntaxKind.ThisKeyword) {
+    if (expression.kind === import_typescript13.default.SyntaxKind.ThisKeyword) {
       return this.#thisTyped(expression);
     }
-    if (import_typescript12.default.isNewExpression(expression)) {
+    if (import_typescript13.default.isNewExpression(expression)) {
       return this.#new(expression);
     }
-    if (import_typescript12.default.isConditionalExpression(expression)) {
+    if (import_typescript13.default.isConditionalExpression(expression)) {
       return this.#conditional(expression, natural);
     }
-    if (import_typescript12.default.isPrefixUnaryExpression(expression)) {
+    if (import_typescript13.default.isPrefixUnaryExpression(expression)) {
       return this.#unary(expression, natural);
     }
-    if (import_typescript12.default.isBinaryExpression(expression)) {
+    if (import_typescript13.default.isBinaryExpression(expression)) {
       return this.#binary(expression, natural);
     }
-    if (import_typescript12.default.isCallExpression(expression)) {
+    if (import_typescript13.default.isCallExpression(expression)) {
       return this.#call(expression, natural);
     }
     this.outer.unsupported(expression, describe(expression));
@@ -180116,8 +180552,8 @@ class BodyLowerer extends BoundaryLowerer {
     }
     const values = [];
     for (const field of natural.fields) {
-      const property = expression.properties.find((candidate) => import_typescript12.default.isPropertyAssignment(candidate) && candidate.name !== undefined && candidate.name.getText() === field.name);
-      if (property === undefined || !import_typescript12.default.isPropertyAssignment(property)) {
+      const property = expression.properties.find((candidate) => import_typescript13.default.isPropertyAssignment(candidate) && candidate.name !== undefined && candidate.name.getText() === field.name);
+      if (property === undefined || !import_typescript13.default.isPropertyAssignment(property)) {
         this.outer.unsupported(expression, `an object literal without \`${field.name}\``);
         return;
       }
@@ -180140,7 +180576,7 @@ class BodyLowerer extends BoundaryLowerer {
     }
     const values = [];
     for (const element of expression.elements) {
-      if (import_typescript12.default.isSpreadElement(element)) {
+      if (import_typescript13.default.isSpreadElement(element)) {
         this.outer.unsupported(element, "a spread element in an array literal");
         return;
       }
@@ -180186,7 +180622,7 @@ class BodyLowerer extends BoundaryLowerer {
       return;
     }
     const argument = expression.argumentExpression;
-    if (import_typescript12.default.isNumericLiteral(argument) && !/[.eE]/.test(argument.getText())) {
+    if (import_typescript13.default.isNumericLiteral(argument) && !/[.eE]/.test(argument.getText())) {
       return {
         place: {
           local: base.local,
@@ -180250,7 +180686,7 @@ class BodyLowerer extends BoundaryLowerer {
     if (this.staticAt(expression) !== undefined) {
       return this.functionValue(expression, natural);
     }
-    if (this.outer.namespaceCallee(expression) !== undefined) {
+    if (this.outer.namespaceValue(expression) !== undefined) {
       return this.functionValue(expression, natural);
     }
     const staticGet = this.staticAccessorAt(expression, false);
@@ -180282,7 +180718,7 @@ class BodyLowerer extends BoundaryLowerer {
   }
   #property(expression) {
     if (expression.name.text === POINTER_ADDRESS) {
-      const pointer = this.outer.tryErase(expression.expression);
+      const pointer = this.tryErase(expression.expression);
       if (pointer?.kind === "pointer") {
         const subject2 = this.value(expression.expression, undefined);
         if (subject2 === undefined) {
@@ -180312,7 +180748,7 @@ class BodyLowerer extends BoundaryLowerer {
         };
       }
     }
-    const className = this.outer.classNameAt(expression.expression);
+    const className = this.outer.classNameAt(expression.expression, this.bindings);
     const getter = className === undefined ? undefined : this.outer.classInfo(className)?.getters.get(expression.name.text);
     if (getter !== undefined) {
       return this.#accessorCall(expression, getter, []);
@@ -180339,7 +180775,8 @@ class BodyLowerer extends BoundaryLowerer {
         type: field.type
       };
     }
-    const pointedTo = subject.type.kind === "pointer" && subject.type.pointee.kind === "struct" ? subject.type.pointee : subject.type;
+    const behind = behindOneIndirection(subject.type);
+    const pointedTo = behind ?? subject.type;
     if (pointedTo.kind === "struct") {
       const index = this.fieldIndex(pointedTo, expression.name.text);
       const field = pointedTo.fields[index];
@@ -180351,7 +180788,7 @@ class BodyLowerer extends BoundaryLowerer {
       if (place2 === undefined) {
         return;
       }
-      const base = subject.type.kind === "pointer" ? [...place2.projection, { kind: "Deref" }] : place2.projection;
+      const base = behind === undefined ? place2.projection : [...place2.projection, { kind: "Deref" }];
       return {
         operand: {
           kind: "Copy",
@@ -180377,6 +180814,30 @@ class BodyLowerer extends BoundaryLowerer {
     this.outer.unsupported(expression, "this property access");
     return;
   }
+  #instantiatedValue(expression, natural) {
+    const target = this.outer.instantiatedValue(expression, this.bindings);
+    if (target === undefined || target === "reported") {
+      if (target === undefined) {
+        this.outer.unsupported(expression, "type arguments on something not generic");
+      }
+      return;
+    }
+    if (natural.kind !== "fnptr" || target.kind !== "defined") {
+      this.outer.error(expression, "GF0161", "this names one instantiation of a generic, so it is a code address; " + `it cannot be a \`${renderType(natural)}\`.`);
+      return;
+    }
+    return {
+      operand: {
+        kind: "Const",
+        value: {
+          kind: "Func",
+          func: { kind: "Local", value: target.id },
+          ty: this.outer.tyOf(natural, expression)
+        }
+      },
+      type: natural
+    };
+  }
   placeOfSubject(at, subject) {
     if (subject.operand.kind === "Const") {
       this.outer.unsupported(at, "reaching into a constant");
@@ -180386,7 +180847,7 @@ class BodyLowerer extends BoundaryLowerer {
   }
   #unary(expression, natural) {
     const operand2 = expression.operand;
-    if (expression.operator === import_typescript12.default.SyntaxKind.ExclamationToken) {
+    if (expression.operator === import_typescript13.default.SyntaxKind.ExclamationToken) {
       const inner = this.#condition(operand2);
       if (inner === undefined) {
         return;
@@ -180397,15 +180858,15 @@ class BodyLowerer extends BoundaryLowerer {
         operand: inner
       });
     }
-    if (expression.operator === import_typescript12.default.SyntaxKind.PlusToken) {
+    if (expression.operator === import_typescript13.default.SyntaxKind.PlusToken) {
       return this.value(operand2, natural);
     }
-    if (expression.operator === import_typescript12.default.SyntaxKind.MinusToken) {
+    if (expression.operator === import_typescript13.default.SyntaxKind.MinusToken) {
       if (natural.kind === "scalar" && rangeOf(natural.name)?.min === 0n) {
         this.outer.error(expression, "GF0165", `unary minus has no meaning on \`${natural.name}\`, which is unsigned. ` + "Nothing it could produce is representable.");
         return;
       }
-      if (import_typescript12.default.isNumericLiteral(operand2)) {
+      if (import_typescript13.default.isNumericLiteral(operand2)) {
         return this.#literal(operand2, natural, true);
       }
       const inner = this.#expression(operand2, natural);
@@ -180418,7 +180879,7 @@ class BodyLowerer extends BoundaryLowerer {
         operand: inner
       });
     }
-    if (expression.operator === import_typescript12.default.SyntaxKind.TildeToken) {
+    if (expression.operator === import_typescript13.default.SyntaxKind.TildeToken) {
       if (natural.kind === "scalar" && rangeOf(natural.name) === null) {
         this.outer.error(expression, "GF0162", `\`~\` is defined on integers; this operand is \`${natural.name}\`.`);
         return;
@@ -180433,8 +180894,8 @@ class BodyLowerer extends BoundaryLowerer {
         operand: inner
       });
     }
-    if (expression.operator === import_typescript12.default.SyntaxKind.PlusPlusToken || expression.operator === import_typescript12.default.SyntaxKind.MinusMinusToken) {
-      const spelling = expression.operator === import_typescript12.default.SyntaxKind.PlusPlusToken ? "++" : "--";
+    if (expression.operator === import_typescript13.default.SyntaxKind.PlusPlusToken || expression.operator === import_typescript13.default.SyntaxKind.MinusMinusToken) {
+      const spelling = expression.operator === import_typescript13.default.SyntaxKind.PlusPlusToken ? "++" : "--";
       this.outer.unsupported(expression, `\`${spelling}\` as a value — it updates on its own as a statement`);
       return;
     }
@@ -180447,8 +180908,8 @@ class BodyLowerer extends BoundaryLowerer {
       return this.#nullTest(expression, nullTest);
     }
     const kind = expression.operatorToken.kind;
-    if (kind === import_typescript12.default.SyntaxKind.AmpersandAmpersandToken || kind === import_typescript12.default.SyntaxKind.BarBarToken) {
-      return this.#shortCircuit(expression, kind === import_typescript12.default.SyntaxKind.AmpersandAmpersandToken);
+    if (kind === import_typescript13.default.SyntaxKind.AmpersandAmpersandToken || kind === import_typescript13.default.SyntaxKind.BarBarToken) {
+      return this.#shortCircuit(expression, kind === import_typescript13.default.SyntaxKind.AmpersandAmpersandToken);
     }
     const operator = OPERATOR_TOKENS[kind];
     if (operator === undefined) {
@@ -180603,14 +181064,14 @@ class BodyLowerer extends BoundaryLowerer {
     return { operand: { kind: "Copy", value: placeOf(result) }, type: bool };
   }
   #call(expression, natural) {
-    if (expression.expression.kind === import_typescript12.default.SyntaxKind.SuperKeyword) {
+    if (expression.expression.kind === import_typescript13.default.SyntaxKind.SuperKeyword) {
       return this.#superCall(expression);
     }
     const closure = this.#closureCallee(expression.expression);
     if (closure !== undefined) {
       return this.#localFnCall(expression, closure.place, closure.type);
     }
-    if (import_typescript12.default.isPropertyAccessExpression(expression.expression)) {
+    if (import_typescript13.default.isPropertyAccessExpression(expression.expression)) {
       const linalg = this.linalgCall(expression, expression.expression);
       if (linalg !== "not-linalg") {
         return linalg;
@@ -180620,8 +181081,11 @@ class BodyLowerer extends BoundaryLowerer {
     if (callable !== undefined) {
       return this.#indirectCall(expression, callable.value, callable.type);
     }
-    if (import_typescript12.default.isPropertyAccessExpression(expression.expression)) {
-      const qualified = this.outer.namespaceCallee(expression.expression);
+    if (import_typescript13.default.isPropertyAccessExpression(expression.expression)) {
+      const qualified = this.outer.namespaceCallee(expression, expression.expression, this.bindings);
+      if (qualified === "reported") {
+        return;
+      }
       if (qualified !== undefined) {
         return this.#resolvedCall(expression, qualified);
       }
@@ -180631,7 +181095,7 @@ class BodyLowerer extends BoundaryLowerer {
       }
       return this.#console(expression);
     }
-    if (!import_typescript12.default.isIdentifier(expression.expression)) {
+    if (!import_typescript13.default.isIdentifier(expression.expression)) {
       return;
     }
     const name = expression.expression.text;
@@ -180671,8 +181135,8 @@ class BodyLowerer extends BoundaryLowerer {
     if (name === NATIVE_ZEROED) {
       return this.zeroed(expression, natural);
     }
-    const target = this.outer.resolveCallee(expression.expression);
-    if (target === undefined) {
+    const target = this.outer.resolveCallee(expression, this.bindings);
+    if (target === undefined || target === "reported") {
       return;
     }
     return this.#resolvedCall(expression, target);
@@ -180726,7 +181190,7 @@ class BodyLowerer extends BoundaryLowerer {
     return this.fromCall(destination, returns);
   }
   #closureCallee(expression) {
-    if (!import_typescript12.default.isIdentifier(expression)) {
+    if (!import_typescript13.default.isIdentifier(expression)) {
       return;
     }
     const binding = this.scopes.lookup(expression.text);
@@ -180767,7 +181231,7 @@ class BodyLowerer extends BoundaryLowerer {
       this.outer.error(node, "GF0239", "a lambda's environment is a temporary of the statement that writes it, " + "so binding one to a name would outlive it. Write the lambda at the " + "call that takes it.");
       return;
     }
-    const lifted = this.outer.liftClosure(node, expected, this.scopes, this.self);
+    const lifted = this.outer.liftClosure(node, expected, this.scopes, this.self, this.bindings);
     if (lifted === undefined) {
       return;
     }
@@ -180856,11 +181320,34 @@ class BodyLowerer extends BoundaryLowerer {
       sig: this.outer.sigOf(signature2, expression)
     }, args, signature2.returns);
   }
+  #genericMethodCall(expression, access, info, template) {
+    const record = this.outer.instantiateMethod(info, template, expression, this.bindings);
+    if (record === undefined || record === "reported" || record.kind !== "defined") {
+      return;
+    }
+    if (template.isStatic) {
+      return this.#directCall(expression, record, expression.arguments);
+    }
+    const subject = this.value(access.expression, undefined);
+    if (subject === undefined) {
+      return;
+    }
+    const asClass = this.asClass(subject);
+    if (asClass === undefined) {
+      this.outer.unsupported(access, "a method call on this receiver");
+      return;
+    }
+    const args = this.classCallArgs(expression, info, record.name, expression.arguments, this.refTo(access, asClass.place, { kind: "class", name: info.name }));
+    if (args === undefined || args === null) {
+      return;
+    }
+    return this.emitCall(expression, { kind: "Direct", value: { kind: "Local", value: record.id } }, args, record.signature.returns);
+  }
   #methodCall(expression, access) {
-    if (access.expression.kind === import_typescript12.default.SyntaxKind.SuperKeyword) {
+    if (access.expression.kind === import_typescript13.default.SyntaxKind.SuperKeyword) {
       return this.#superMethodCall(expression, access);
     }
-    if (POINTER_METHODS.has(access.name.text) && this.outer.tryErase(access.expression)?.kind === "pointer") {
+    if (POINTER_METHODS.has(access.name.text) && this.tryErase(access.expression)?.kind === "pointer") {
       const subject2 = this.value(access.expression, undefined);
       if (subject2 !== undefined && subject2.type.kind === "pointer") {
         return this.pointerMethod(expression, access, subject2);
@@ -180893,20 +181380,27 @@ class BodyLowerer extends BoundaryLowerer {
           return;
       }
     }
-    if (this.outer.tryErase(access.expression)?.kind === "string") {
+    if (this.tryErase(access.expression)?.kind === "string") {
       return this.#stringMethod(expression, access);
     }
     const contract = this.contractAt(access.expression);
     if (contract !== undefined) {
       return this.#interfaceCall(expression, access, contract);
     }
-    const className = this.outer.classNameAt(access.expression);
+    const className = this.outer.classNameAt(access.expression, this.bindings);
     if (className === undefined) {
       return "not-a-method";
     }
     const info = this.outer.classInfo(className);
-    const method = info?.methods.get(access.name.text);
-    if (info === undefined || method === undefined) {
+    if (info === undefined) {
+      return "not-a-method";
+    }
+    const template = info.methodTemplates.get(access.name.text);
+    if (template !== undefined) {
+      return this.#genericMethodCall(expression, access, info, template);
+    }
+    const method = info.methods.get(access.name.text);
+    if (method === undefined) {
       return "not-a-method";
     }
     const subject = this.value(access.expression, undefined);
@@ -180952,12 +181446,12 @@ class BodyLowerer extends BoundaryLowerer {
   }
   nullTestOf(expression) {
     const kind = expression.operatorToken.kind;
-    const equals = kind === import_typescript12.default.SyntaxKind.EqualsEqualsToken || kind === import_typescript12.default.SyntaxKind.EqualsEqualsEqualsToken;
-    const differs = kind === import_typescript12.default.SyntaxKind.ExclamationEqualsToken || kind === import_typescript12.default.SyntaxKind.ExclamationEqualsEqualsToken;
+    const equals = kind === import_typescript13.default.SyntaxKind.EqualsEqualsToken || kind === import_typescript13.default.SyntaxKind.EqualsEqualsEqualsToken;
+    const differs = kind === import_typescript13.default.SyntaxKind.ExclamationEqualsToken || kind === import_typescript13.default.SyntaxKind.ExclamationEqualsEqualsToken;
     if (!equals && !differs) {
       return;
     }
-    const isNull = (node) => node.kind === import_typescript12.default.SyntaxKind.NullKeyword;
+    const isNull = (node) => node.kind === import_typescript13.default.SyntaxKind.NullKeyword;
     const subject = isNull(expression.right) ? expression.left : isNull(expression.left) ? expression.right : undefined;
     if (subject === undefined) {
       return;
@@ -181234,7 +181728,7 @@ class BodyLowerer extends BoundaryLowerer {
     if (argument === undefined) {
       return;
     }
-    if (!import_typescript12.default.isIdentifier(argument)) {
+    if (!import_typescript13.default.isIdentifier(argument)) {
       this.outer.unsupported(argument, "moving out of anything but a local");
       return;
     }
@@ -181278,6 +181772,8 @@ class BodyLowerer extends BoundaryLowerer {
 }
 
 // src/lower/module.ts
+var MAX_INSTANTIATION_DEPTH = 64;
+
 class Lowerer {
   #program;
   #checker;
@@ -181288,11 +181784,19 @@ class Lowerer {
   #root;
   #entry;
   #classes = new Map;
+  #genericClasses = new Map;
   #localFns = new Map;
   #liftedCount = 0;
   #classTys = new Map;
   #classIds = new Map;
   #addressTaken = new Set;
+  #templates = new Map;
+  #instantiations = new Map;
+  #pending = [];
+  #pendingClasses = [];
+  #classDepth = 0;
+  #current;
+  #instantiatedAt;
   #externs = new Map;
   #structs = new Map;
   #interfaces = new Map;
@@ -181316,23 +181820,216 @@ class Lowerer {
   get functions() {
     return this.#functions;
   }
-  resolveCallee(expression) {
+  resolveCallee(call, bindings) {
+    const declaration2 = this.#calleeDeclaration(call.expression);
+    if (declaration2?.name === undefined) {
+      return;
+    }
+    const key = this.#keyOf(declaration2, declaration2.name.text);
+    const template = this.#templates.get(key);
+    if (template !== undefined) {
+      return this.#instantiate(template, { node: call }, bindings) ?? "reported";
+    }
+    return this.#functions.get(key);
+  }
+  instantiateMethod(info, template, call, bindings) {
+    const supplied = this.#typeArgumentsOf({ name: `${info.name}.${template.name}`, parameters: template.parameters }, { node: call }, template.declaration);
+    if (supplied === undefined) {
+      return "reported";
+    }
+    const args = [];
+    for (const { type, at } of supplied) {
+      const machine = this.erase(at, type, bindings);
+      if (machine === undefined) {
+        return "reported";
+      }
+      args.push(machine);
+    }
+    const key = instantiationKey(`${info.name}#${template.name}`, args);
+    const existing = this.#instantiations.get(key);
+    if (existing !== undefined) {
+      return existing;
+    }
+    const combined = new Map(info.bindings);
+    for (const [parameter, bound] of bindingsOf(template.parameters, args)) {
+      combined.set(parameter, bound);
+    }
+    const params = this.#classFnParams(template.declaration, combined);
+    const signature2 = this.#checker.getSignatureFromDeclaration(template.declaration);
+    const returns = params === undefined || signature2 === undefined ? undefined : this.erase(template.declaration.type ?? template.declaration, this.#checker.getReturnTypeOfSignature(signature2), combined);
+    if (params === undefined || returns === undefined) {
+      return "reported";
+    }
+    const label = `${info.name}.${template.name}<${args.map(renderType).join(", ")}>`;
+    const symbol = instantiationSymbol(`${info.name}$${template.name}`, this.#relative(template.declaration.getSourceFile().fileName), key, args);
+    const self = {
+      kind: "reference",
+      referent: { kind: "class", name: info.name }
+    };
+    const receiver = template.isStatic ? [] : [self];
+    const builder = this.#declareClassFn(symbol, [...receiver, ...params.map((p) => p.type)], returns, template.declaration);
+    const record = this.#functions.get(symbol);
+    if (record === undefined || record.kind !== "defined") {
+      this.unsupported(call, `a call to \`${label}\``);
+      return "reported";
+    }
+    this.#instantiations.set(key, record);
+    this.#pendingClasses.push({
+      kind: template.isStatic ? "static" : "method",
+      info,
+      bindings: combined,
+      node: template.declaration,
+      builder,
+      params,
+      returns
+    });
+    return record;
+  }
+  instantiatedValue(expression, bindings) {
+    const declaration2 = this.#calleeDeclaration(expression.expression);
+    if (declaration2?.name === undefined) {
+      return;
+    }
+    const template = this.#templates.get(this.#keyOf(declaration2, declaration2.name.text));
+    if (template === undefined) {
+      return;
+    }
+    return this.#instantiate(template, { node: expression }, bindings) ?? "reported";
+  }
+  #instantiate(template, use, bindings) {
+    const supplied = this.#typeArgumentsOf(template, use, template.node);
+    if (supplied === undefined) {
+      return;
+    }
+    const args = [];
+    for (const { type, at } of supplied) {
+      const machine = this.erase(at, type, bindings);
+      if (machine === undefined) {
+        return;
+      }
+      args.push(machine);
+    }
+    const key = instantiationKey(template.key, args);
+    const existing = this.#instantiations.get(key);
+    if (existing !== undefined) {
+      return existing;
+    }
+    const label = `${template.name}<${args.map(renderType).join(", ")}>`;
+    const depth = (this.#current?.depth ?? 0) + 1;
+    const trail = [...this.#current?.trail ?? [], label];
+    if (depth > MAX_INSTANTIATION_DEPTH) {
+      this.error(use.node, "GF0402", `instantiating \`${label}\` here needs another instantiation, and that ` + `one needs another, ${MAX_INSTANTIATION_DEPTH} deep so far. The last few:` + `
+
+${trail.slice(-5).map((step, index) => `    #${trail.length - 4 + index}  ${step}`).join(`
+`)}
+
+` + "Each set of type arguments is compiled separately, so a generic that " + "calls itself with a *larger* type has no end. Recursion is fine as long " + "as the type arguments stop growing — pass on the same ones this copy " + "was given, or stop at a function that is not generic.");
+      return;
+    }
+    const symbol = instantiationSymbol(template.name, this.#relative(template.node.getSourceFile().fileName), key, args);
+    const instanceBindings = bindingsOf(template.parameters, args);
+    const signature2 = this.#signature(template.node, instanceBindings);
+    if (signature2 === undefined) {
+      return;
+    }
+    const sig = this.#mir.sig({
+      params: signature2.params.map((param) => ({
+        ty: this.tyOf(param.type, template.node),
+        name: null
+      })),
+      ret: this.tyOf(signature2.returns, template.node),
+      abi: this.#addressTaken.has(template.node) ? "C" : "Internal"
+    });
+    const builder = this.#mir.declareFunction({
+      name: symbol,
+      sig,
+      linkage: "Internal",
+      span: this.span(template.node)
+    });
+    const record = {
+      kind: "defined",
+      id: builder.id,
+      sig,
+      signature: signature2,
+      name: template.name,
+      exported: false
+    };
+    this.#instantiations.set(key, record);
+    this.#pending.push({
+      node: template.node,
+      builder,
+      record,
+      bindings: instanceBindings,
+      key,
+      label,
+      depth,
+      trail,
+      at: use.node
+    });
+    return record;
+  }
+  #typeArgumentsOf(template, use, declaration2) {
+    const written = use.node.typeArguments;
+    if (written !== undefined && written.length === template.parameters.length) {
+      return written.map((node) => ({
+        type: this.#checker.getTypeFromTypeNode(node),
+        at: node
+      }));
+    }
+    const resolved = use.node.kind === import_typescript14.default.SyntaxKind.CallExpression ? this.#checker.getResolvedSignature(use.node) : undefined;
+    const declared = this.#checker.getSignatureFromDeclaration(declaration2);
+    const inferred = resolved === undefined || declared === undefined ? undefined : inferBindings(this.#checker, template.parameters, declared, resolved);
+    if (inferred !== undefined) {
+      return template.parameters.map((parameter) => ({
+        type: inferred.get(parameter),
+        at: use.node
+      }));
+    }
+    const undetermined = template.parameters.map((p) => `\`${p.name}\``).join(" and ");
+    const one = template.parameters.length === 1;
+    const angles = template.parameters.map(() => "…").join(", ");
+    this.error(use.node, "GF0404", use.node.kind === import_typescript14.default.SyntaxKind.CallExpression ? `this call does not determine ${undetermined}, so there is no way to ` + `know which copy of \`${template.name}\` to compile. Write ` + `\`${template.name}<${angles}>(…)\` with a concrete type in place of ` + `each \`…\`.
+
+A generic is compiled once for each set of type ` + `arguments, so ${one ? "it has" : "they have"} to be settled at the ` + "call — either by an argument whose type says so, or in writing." : `\`${template.name}\` is generic and this takes its *address*, which ` + `has no arguments to determine ${undetermined} from. Write ` + `\`${template.name}<${angles}>\` with a concrete type in place of each ` + "`…`.\n\nA generic has no address of its own: each set of type " + "arguments is a separate function, so naming one is how you say which " + "function you meant.");
+    return;
+  }
+  #drainPending() {
+    while (this.#pending.length > 0 || this.#pendingClasses.length > 0) {
+      while (this.#pendingClasses.length > 0) {
+        this.#lowerClassBody(this.#pendingClasses.shift());
+      }
+      if (this.#pending.length === 0) {
+        continue;
+      }
+      const pending = this.#pending.shift();
+      const previousNote = this.#instantiatedAt;
+      const previousCurrent = this.#current;
+      this.#instantiatedAt = {
+        message: `\`${pending.label}\` was instantiated here`,
+        location: this.#locationOf(pending.at)
+      };
+      this.#current = { depth: pending.depth, trail: pending.trail };
+      try {
+        this.#lowerInstantiation(pending);
+      } finally {
+        this.#current = previousCurrent;
+        this.#instantiatedAt = previousNote;
+      }
+    }
+  }
+  #calleeDeclaration(expression) {
     let symbol = this.#checker.getSymbolAtLocation(expression);
     if (symbol === undefined) {
       return;
     }
-    if ((symbol.flags & import_typescript13.default.SymbolFlags.Alias) !== 0) {
+    if ((symbol.flags & import_typescript14.default.SymbolFlags.Alias) !== 0) {
       symbol = this.#checker.getAliasedSymbol(symbol);
     }
-    const declaration2 = symbol.declarations?.find(import_typescript13.default.isFunctionDeclaration);
-    if (declaration2?.name === undefined) {
-      return;
-    }
-    return this.#functions.get(this.#keyOf(declaration2, declaration2.name.text));
+    return symbol.declarations?.find(import_typescript14.default.isFunctionDeclaration);
   }
-  tryErase(expression) {
+  tryErase(expression, bindings) {
     try {
-      return erase(this.#checker, this.#checker.getTypeAtLocation(expression));
+      return erase(this.#checker, this.#checker.getTypeAtLocation(expression), new Erasure(bindings));
     } catch (error) {
       if (error instanceof ErasureError) {
         return;
@@ -181341,42 +182038,68 @@ class Lowerer {
     }
   }
   namesADeclaredFunction(expression) {
-    if (!import_typescript13.default.isIdentifier(expression)) {
+    if (!import_typescript14.default.isIdentifier(expression)) {
       return false;
     }
     let symbol = this.#checker.getSymbolAtLocation(expression);
     if (symbol === undefined) {
       return false;
     }
-    if ((symbol.flags & import_typescript13.default.SymbolFlags.Alias) !== 0) {
+    if ((symbol.flags & import_typescript14.default.SymbolFlags.Alias) !== 0) {
       symbol = this.#checker.getAliasedSymbol(symbol);
     }
-    return symbol.declarations?.some(import_typescript13.default.isFunctionDeclaration) ?? false;
+    return symbol.declarations?.some(import_typescript14.default.isFunctionDeclaration) ?? false;
   }
   functionValueAt(expression) {
-    if (import_typescript13.default.isPropertyAccessExpression(expression) && import_typescript13.default.isIdentifier(expression.expression)) {
+    if (import_typescript14.default.isPropertyAccessExpression(expression) && import_typescript14.default.isIdentifier(expression.expression)) {
       const info = this.#classes.get(expression.expression.text);
       const method = info?.statics.get(expression.name.text);
       if (method !== undefined) {
         return this.#functions.get(method.symbol);
       }
-      return this.namespaceCallee(expression);
+      if (!this.#isModuleNamespace(expression.expression)) {
+        return;
+      }
+      return this.#plainCallee(expression);
     }
-    return this.resolveCallee(expression);
+    return this.#plainCallee(expression);
   }
-  namespaceCallee(access) {
+  #plainCallee(expression) {
+    const declaration2 = this.#calleeDeclaration(expression);
+    if (declaration2?.name === undefined) {
+      return;
+    }
+    return this.#functions.get(this.#keyOf(declaration2, declaration2.name.text));
+  }
+  namespaceCallee(call, access, bindings) {
     if (!this.#isModuleNamespace(access.expression)) {
       return;
     }
-    return this.resolveCallee(access);
+    return this.resolveCallee(call, bindings);
+  }
+  namespaceValue(access) {
+    if (!this.#isModuleNamespace(access.expression)) {
+      return;
+    }
+    return this.#plainCallee(access);
+  }
+  namesAGenericClass(name) {
+    return this.#genericClasses.has(name);
+  }
+  namesAGeneric(expression) {
+    const declaration2 = this.#calleeDeclaration(expression);
+    if (declaration2?.name === undefined) {
+      return false;
+    }
+    return this.#templates.has(this.#keyOf(declaration2, declaration2.name.text));
   }
   #isModuleNamespace(expression) {
     const symbol = this.#checker.getSymbolAtLocation(expression);
     if (symbol === undefined) {
       return false;
     }
-    const resolved = (symbol.flags & import_typescript13.default.SymbolFlags.Alias) !== 0 ? this.#checker.getAliasedSymbol(symbol) : symbol;
-    return (resolved.flags & import_typescript13.default.SymbolFlags.Module) !== 0;
+    const resolved = (symbol.flags & import_typescript14.default.SymbolFlags.Alias) !== 0 ? this.#checker.getAliasedSymbol(symbol) : symbol;
+    return (resolved.flags & import_typescript14.default.SymbolFlags.Module) !== 0;
   }
   run() {
     const sources = this.#program.getSourceFiles().filter((file) => !file.isDeclarationFile && !this.#program.isSourceFileFromExternalLibrary(file));
@@ -181398,6 +182121,7 @@ class Lowerer {
     for (const { node, builder } of declared) {
       this.#lowerBody(node, builder);
     }
+    this.#drainPending();
     const hasMain = [...this.#functions.values()].some((record) => record.kind === "defined" && record.exported && record.name === "main");
     if (this.#requireMain && !hasMain) {
       const first = sources[0];
@@ -181416,6 +182140,57 @@ class Lowerer {
   classInfo(name) {
     return this.#classes.get(name);
   }
+  classInfoFor(name, args, at) {
+    const known = this.#classes.get(name);
+    if (known !== undefined) {
+      return known;
+    }
+    if (args.length === 0) {
+      return;
+    }
+    const bare = name.slice(0, name.indexOf("<"));
+    const node = this.#genericClasses.get(bare);
+    if (node === undefined) {
+      return;
+    }
+    const parameters = node.typeParameters ?? [];
+    if (parameters.length !== args.length) {
+      this.unsupported(at, `\`${name}\`, whose type arguments do not match \`${bare}\``);
+      return;
+    }
+    if (this.#classDepth >= MAX_INSTANTIATION_DEPTH) {
+      this.error(at, "GF0402", `instantiating \`${name}\` needs another instantiation of \`${bare}\`, and ` + `that one needs another, ${MAX_INSTANTIATION_DEPTH} deep. Each set of ` + "type arguments is a separate class with its own layout, so one that " + "contains itself at a *larger* type has no end.");
+      return;
+    }
+    const bindings = new Map;
+    for (const [index, parameter] of parameters.entries()) {
+      const symbol = this.#checker.getSymbolAtLocation(parameter.name);
+      if (symbol === undefined) {
+        this.unsupported(parameter, "a type parameter tsc could not resolve");
+        return;
+      }
+      bindings.set(symbol, args[index]);
+    }
+    this.#classDepth += 1;
+    try {
+      const info = buildClass(node, name, bindings, (baseName) => this.#classes.get(baseName), this.#checker, {
+        unsupported: (node_, what) => this.unsupported(node_, what),
+        refuse: (node_, message) => this.error(node_, "GF0002", message),
+        erase: (eraseAt, type) => this.erase(eraseAt, type, bindings)
+      });
+      if (info === undefined) {
+        return;
+      }
+      this.#classes.set(name, info);
+      this.#registerClass(info);
+      this.#pendingClasses.push(...this.#declareClassMembers(info));
+      this.#defineClassLayout(info);
+      this.#registerDeclaredInterfaces(info);
+      return info;
+    } finally {
+      this.#classDepth -= 1;
+    }
+  }
   fn(symbol) {
     return this.#functions.get(symbol);
   }
@@ -181429,39 +182204,50 @@ class Lowerer {
     }
     return false;
   }
-  accessorType(accessor) {
+  accessorType(info, accessor) {
+    const bindings = info.bindings;
     const declaration2 = accessor.declaration;
-    if (import_typescript13.default.isSetAccessorDeclaration(declaration2)) {
+    if (import_typescript14.default.isSetAccessorDeclaration(declaration2)) {
       const parameter = declaration2.parameters[0];
       if (parameter === undefined) {
         this.unsupported(declaration2, "a setter with no parameter");
         return;
       }
-      return this.erase(parameter, this.#checker.getTypeAtLocation(parameter));
+      return this.erase(parameter, this.#checker.getTypeAtLocation(parameter), bindings);
     }
     const signature2 = this.#checker.getSignatureFromDeclaration(declaration2);
     if (signature2 === undefined) {
       this.unsupported(declaration2, "an accessor tsc could not give a signature to");
       return;
     }
-    return this.erase(declaration2, this.#checker.getReturnTypeOfSignature(signature2));
+    return this.erase(declaration2, this.#checker.getReturnTypeOfSignature(signature2), bindings);
   }
-  arrayElementAt(expression) {
+  arrayElementAt(expression, bindings) {
     const type = this.#checker.getTypeAtLocation(expression);
     const candidates = type.isIntersection() ? type.types : [type];
     for (const part of candidates) {
       if (!this.#checker.isArrayType(part)) {
         continue;
       }
-      const element = this.#checker.getIndexTypeOfType(part, import_typescript13.default.IndexKind.Number);
+      const element = this.#checker.getIndexTypeOfType(part, import_typescript14.default.IndexKind.Number);
       if (element === undefined) {
         continue;
       }
-      return this.erase(expression, element);
+      return this.erase(expression, element, bindings);
     }
     return;
   }
-  classNameAt(expression) {
+  classNameAt(expression, bindings) {
+    const erased = this.tryErase(expression, bindings);
+    const behind = erased === undefined ? undefined : behindOneIndirection(erased) ?? erased;
+    if (behind?.kind === "class") {
+      if (behind.args !== undefined) {
+        this.classInfoFor(behind.name, behind.args, expression);
+      }
+      if (this.#classes.has(behind.name)) {
+        return behind.name;
+      }
+    }
     const type = this.#checker.getTypeAtLocation(expression);
     const direct = classNameOf(type);
     if (direct !== null && this.#classes.has(direct)) {
@@ -181530,9 +182316,9 @@ class Lowerer {
     this.#localFns.set(name, ty2);
     return ty2;
   }
-  liftClosure(node, type, enclosing, self) {
+  liftClosure(node, type, enclosing, self, bindings) {
     const declaredThis = thisParameterOf(node);
-    if (declaredThis !== undefined || import_typescript13.default.isFunctionExpression(node) && usesThis(node)) {
+    if (declaredThis !== undefined || import_typescript14.default.isFunctionExpression(node) && usesThis(node)) {
       this.error(declaredThis ?? node, "GF0002", "a `function` expression takes its `this` from the receiver at the call " + "site, and a `LocalFn` is a code address and an environment with no " + "receiver in it — so nothing here can supply one. Write it as an arrow " + "function, which captures the enclosing `this` instead of expecting to " + "be given one.");
       return;
     }
@@ -181543,7 +182329,7 @@ class Lowerer {
     }
     const params = [];
     for (const [index2, parameter] of written.entries()) {
-      if (!import_typescript13.default.isIdentifier(parameter.name)) {
+      if (!import_typescript14.default.isIdentifier(parameter.name)) {
         this.unsupported(parameter, "a destructured closure parameter");
         return;
       }
@@ -181603,7 +182389,7 @@ class Lowerer {
         ty: this.tyOf(param.type, node)
       });
     });
-    const lowerer = new BodyLowerer(this, builder, scopes, type.returns);
+    const lowerer = new BodyLowerer(this, builder, scopes, type.returns, bindings);
     if (self !== undefined) {
       lowerer.setClassContext(self, false);
     }
@@ -181626,6 +182412,9 @@ class Lowerer {
       case "struct":
         return this.#structTy(type, at);
       case "class": {
+        if (type.args !== undefined && this.classTy(type.name) === undefined) {
+          this.classInfoFor(type.name, type.args, at);
+        }
         const ty2 = this.classTy(type.name);
         if (ty2 === undefined) {
           this.unsupported(at, `the class \`${type.name}\``);
@@ -181688,24 +182477,25 @@ class Lowerer {
     this.#externs.set(name, id);
     return id;
   }
-  interfaceId(name) {
-    return this.#interfaces.get(name);
+  interfaceId(key) {
+    return this.#interfaces.get(key);
   }
   classId(name) {
     return this.#classIds.get(name);
   }
-  interfaceInfo(name) {
-    return this.#interfaceInfo.get(name);
+  interfaceInfo(key) {
+    return this.#interfaceInfo.get(key);
   }
   implement(className, contract, at) {
-    const key = `${className}\x00${contract.name}`;
+    const contractKey = layoutKey(contract);
+    const key = `${className}\x00${contractKey}`;
     if (this.#implemented.has(key)) {
       return true;
     }
     this.#implemented.add(key);
     const classId = this.#classIds.get(className);
     const info = this.#classes.get(className);
-    const interfaceId = this.#interfaces.get(contract.name);
+    const interfaceId = this.#interfaces.get(contractKey);
     if (classId === undefined || info === undefined || interfaceId === undefined) {
       this.unsupported(at, `converting \`${className}\` to \`${contract.name}\``);
       return false;
@@ -181742,11 +182532,11 @@ class Lowerer {
   }
   enumMemberAt(expression) {
     const declaration2 = this.#checker.getSymbolAtLocation(expression.name)?.declarations?.[0];
-    return declaration2 !== undefined && import_typescript13.default.isEnumMember(declaration2) ? declaration2 : undefined;
+    return declaration2 !== undefined && import_typescript14.default.isEnumMember(declaration2) ? declaration2 : undefined;
   }
-  erase(at, type) {
+  erase(at, type, bindings) {
     try {
-      return erase(this.#checker, type);
+      return erase(this.#checker, type, new Erasure(bindings));
     } catch (error) {
       if (error instanceof ErasureError) {
         this.error(at, error.code, error.message);
@@ -181789,21 +182579,25 @@ class Lowerer {
     return false;
   }
   error(node, code, message) {
-    const source = node.getSourceFile();
-    const start = node.getStart(source);
-    const { line, character } = source.getLineAndCharacterOfPosition(start);
     this.#diagnostics.push({
       severity: "error",
       code,
       source: "goblin",
       message,
-      location: {
-        file: source.fileName,
-        line: line + 1,
-        column: character + 1,
-        length: Math.max(1, node.getEnd() - start)
-      }
+      location: this.#locationOf(node),
+      ...this.#instantiatedAt === undefined ? {} : { notes: [this.#instantiatedAt] }
     });
+  }
+  #locationOf(node) {
+    const source = node.getSourceFile();
+    const start = node.getStart(source);
+    const { line, character } = source.getLineAndCharacterOfPosition(start);
+    return {
+      file: source.fileName,
+      line: line + 1,
+      column: character + 1,
+      length: Math.max(1, node.getEnd() - start)
+    };
   }
   #keyOf(node, name) {
     return `${node.getSourceFile().fileName}#${name}`;
@@ -181833,64 +182627,85 @@ class Lowerer {
   #collectAddressTaken(sources) {
     const callees = new Set;
     const findCalls = (node) => {
-      if (import_typescript13.default.isCallExpression(node)) {
+      if (import_typescript14.default.isCallExpression(node)) {
         callees.add(node.expression);
       }
-      import_typescript13.default.forEachChild(node, findCalls);
+      import_typescript14.default.forEachChild(node, findCalls);
     };
     for (const source of sources) {
       findCalls(source);
     }
     const scan = (node) => {
       const parent = node.parent;
-      const isDeclarationName = parent !== undefined && (import_typescript13.default.isFunctionDeclaration(parent) || import_typescript13.default.isMethodDeclaration(parent) || import_typescript13.default.isClassDeclaration(parent) || import_typescript13.default.isVariableDeclaration(parent) || import_typescript13.default.isParameter(parent) || import_typescript13.default.isPropertyDeclaration(parent) || import_typescript13.default.isBindingElement(parent)) && parent.name === node;
-      const isMemberName = parent !== undefined && (import_typescript13.default.isPropertyAccessExpression(parent) && parent.name === node || import_typescript13.default.isQualifiedName(parent) && parent.right === node);
-      if ((import_typescript13.default.isIdentifier(node) || import_typescript13.default.isPropertyAccessExpression(node)) && !callees.has(node) && !isMemberName && !isDeclarationName) {
+      const isDeclarationName = parent !== undefined && (import_typescript14.default.isFunctionDeclaration(parent) || import_typescript14.default.isMethodDeclaration(parent) || import_typescript14.default.isClassDeclaration(parent) || import_typescript14.default.isVariableDeclaration(parent) || import_typescript14.default.isParameter(parent) || import_typescript14.default.isPropertyDeclaration(parent) || import_typescript14.default.isBindingElement(parent)) && parent.name === node;
+      const isMemberName = parent !== undefined && (import_typescript14.default.isPropertyAccessExpression(parent) && parent.name === node || import_typescript14.default.isQualifiedName(parent) && parent.right === node);
+      if ((import_typescript14.default.isIdentifier(node) || import_typescript14.default.isPropertyAccessExpression(node)) && !callees.has(node) && !isMemberName && !isDeclarationName) {
         for (const declaration2 of this.#checker.getSymbolAtLocation(node)?.declarations ?? []) {
-          if (import_typescript13.default.isFunctionDeclaration(declaration2)) {
+          if (import_typescript14.default.isFunctionDeclaration(declaration2)) {
             this.#addressTaken.add(declaration2);
-          } else if (import_typescript13.default.isMethodDeclaration(declaration2) && isStaticMember(declaration2)) {
+          } else if (import_typescript14.default.isMethodDeclaration(declaration2) && isStaticMember(declaration2)) {
             this.#addressTaken.add(declaration2);
           }
         }
       }
-      import_typescript13.default.forEachChild(node, scan);
+      import_typescript14.default.forEachChild(node, scan);
     };
     for (const source of sources) {
       scan(source);
     }
   }
   #declareClasses() {
-    this.#classes = collectClasses(this.#program, this.#checker, {
+    const collected = collectClasses(this.#program, this.#checker, {
       unsupported: (node, what) => this.unsupported(node, what),
       refuse: (node, message) => this.error(node, "GF0002", message),
-      erase: (at, type) => this.erase(at, type)
+      erase: (at, type) => this.erase(at, type, NO_BINDINGS)
     });
+    this.#classes = collected.classes;
+    this.#genericClasses = collected.generics;
     this.#refuseInlineCycles();
-    for (const [name, info] of this.#classes) {
-      const id = this.#mir.declareClass({
-        name,
-        base: (info.base ? this.#classIds.get(info.base.name) : null) ?? null,
-        span: this.span(info.node)
-      });
-      this.#classIds.set(name, id);
-      this.#classTys.set(name, this.#mir.ty({ kind: "Class", value: id }));
+    for (const info of this.#classes.values()) {
+      this.#registerClass(info);
     }
     const bodies = [];
     for (const info of this.#classes.values()) {
+      bodies.push(...this.#declareClassMembers(info));
+    }
+    for (const info of this.#classes.values()) {
+      this.#defineClassLayout(info);
+    }
+    for (const info of this.#classes.values()) {
+      this.#registerDeclaredInterfaces(info);
+    }
+    return bodies;
+  }
+  #registerClass(info) {
+    const id = this.#mir.declareClass({
+      name: info.name,
+      base: (info.base ? this.#classIds.get(info.base.name) : null) ?? null,
+      span: this.span(info.node)
+    });
+    this.#classIds.set(info.name, id);
+    this.#classTys.set(info.name, this.#mir.ty({ kind: "Class", value: id }));
+  }
+  #declareClassMembers(info) {
+    const bindings = info.bindings;
+    const bodies = [];
+    {
       const self = { kind: "class", name: info.name };
       const selfRef = { kind: "reference", referent: self };
       bodies.push({
         kind: "destructor",
         info,
+        bindings,
         builder: this.#declareClassFn(info.destructorSymbol, [selfRef], VOID, info.node)
       });
       if (info.constructorSymbol !== undefined) {
-        const params = info.ctor === undefined ? [] : this.#classFnParams(info.ctor);
+        const params = info.ctor === undefined ? [] : this.#classFnParams(info.ctor, bindings);
         if (params !== undefined) {
           bodies.push({
             kind: "constructor",
             info,
+            bindings,
             node: info.ctor,
             builder: this.#declareClassFn(info.constructorSymbol, [selfRef, ...params.map((p) => p.type)], VOID, info.ctor ?? info.node),
             params
@@ -181905,12 +182720,12 @@ class Lowerer {
         if (method.owner !== info.name) {
           continue;
         }
-        const params = this.#classFnParams(method.declaration);
+        const params = this.#classFnParams(method.declaration, bindings);
         if (params === undefined) {
           continue;
         }
         const signature2 = this.#checker.getSignatureFromDeclaration(method.declaration);
-        const returns = signature2 === undefined ? undefined : this.erase(method.declaration.type ?? method.declaration, this.#checker.getReturnTypeOfSignature(signature2));
+        const returns = signature2 === undefined ? undefined : this.erase(method.declaration.type ?? method.declaration, this.#checker.getReturnTypeOfSignature(signature2), bindings);
         if (returns === undefined) {
           this.unsupported(method.declaration, "a method tsc could not give a signature to");
           continue;
@@ -181918,6 +182733,7 @@ class Lowerer {
         bodies.push({
           kind: "method",
           info,
+          bindings,
           node: method.declaration,
           builder: this.#declareClassFn(method.symbol, [selfRef, ...params.map((p) => p.type)], returns, method.declaration),
           params,
@@ -181932,12 +182748,12 @@ class Lowerer {
         if (method.owner !== info.name) {
           continue;
         }
-        const params = this.#classFnParams(method.declaration);
+        const params = this.#classFnParams(method.declaration, bindings);
         if (params === undefined) {
           continue;
         }
         const signature2 = this.#checker.getSignatureFromDeclaration(method.declaration);
-        const returns = signature2 === undefined ? undefined : this.erase(method.declaration.type ?? method.declaration, this.#checker.getReturnTypeOfSignature(signature2));
+        const returns = signature2 === undefined ? undefined : this.erase(method.declaration.type ?? method.declaration, this.#checker.getReturnTypeOfSignature(signature2), bindings);
         if (returns === undefined) {
           this.unsupported(method.declaration, "a method tsc could not give a signature to");
           continue;
@@ -181945,6 +182761,7 @@ class Lowerer {
         bodies.push({
           kind: "static",
           info,
+          bindings,
           node: method.declaration,
           builder: this.#declareClassFn(method.symbol, params.map((p) => p.type), returns, method.declaration, this.#addressTaken.has(method.declaration)),
           params,
@@ -181952,23 +182769,21 @@ class Lowerer {
         });
       }
     }
-    for (const [name, info] of this.#classes) {
-      const id = this.#classIds.get(name);
+    return bodies;
+  }
+  #defineClassLayout(info) {
+    {
+      const id = this.#classIds.get(info.name);
       if (id === undefined) {
-        continue;
+        return;
       }
       const vtable = [];
-      let complete = true;
       for (const symbol of info.slots) {
         const record = this.#functions.get(symbol);
         if (record === undefined || record.kind !== "defined") {
-          complete = false;
-          break;
+          return;
         }
         vtable.push(record.id);
-      }
-      if (!complete) {
-        continue;
       }
       this.#mir.defineClass(id, {
         fields: info.fields.map((field) => ({
@@ -181980,22 +182795,21 @@ class Lowerer {
         vtable
       });
     }
-    for (const info of this.#classes.values()) {
-      for (const clause of info.node.heritageClauses ?? []) {
-        if (clause.token !== import_typescript13.default.SyntaxKind.ImplementsKeyword) {
+  }
+  #registerDeclaredInterfaces(info) {
+    for (const clause of info.node.heritageClauses ?? []) {
+      if (clause.token !== import_typescript14.default.SyntaxKind.ImplementsKeyword) {
+        continue;
+      }
+      for (const expression of clause.types) {
+        const contract = this.#contractFrom(expression, info.bindings);
+        if (contract === undefined) {
           continue;
         }
-        for (const expression of clause.types) {
-          const contract = this.#contractFrom(expression);
-          if (contract === undefined) {
-            continue;
-          }
-          this.tyOf(contract, expression);
-          this.implement(info.name, contract, expression);
-        }
+        this.tyOf(contract, expression);
+        this.implement(info.name, contract, expression);
       }
     }
-    return bodies;
   }
   #refuseInlineCycles() {
     const reaches = (type, target, seen) => {
@@ -182027,9 +182841,9 @@ class Lowerer {
       this.error(field.declaration, "GF0307", `\`${info.name}.${field.name}\` is a \`${renderType(field.type)}\`, so the ` + `layout of \`${info.name}\` would have to contain itself — as large as ` + "itself and then larger. A field is laid out inline, which is what makes " + "the bytes match C's, and an object's own storage is not somewhere it can " + `be. Hold a \`Pointer<${info.name}>\`, which is one machine word whatever ` + `is behind it, or \`${info.name}[]\`, which is a handle to a buffer ` + "elsewhere.");
     }
   }
-  #contractFrom(expression) {
+  #contractFrom(expression, bindings) {
     try {
-      const contract = contractOf(this.#checker, this.#checker.getTypeAtLocation(expression));
+      const contract = contractOf(this.#checker, this.#checker.getTypeAtLocation(expression), new Erasure(bindings));
       return contract?.kind === "interface" ? contract : undefined;
     } catch (error) {
       if (error instanceof ErasureError) {
@@ -182039,10 +182853,10 @@ class Lowerer {
       throw error;
     }
   }
-  #classFnParams(node) {
+  #classFnParams(node, bindings) {
     const params = [];
     for (const parameter of node.parameters) {
-      if (!import_typescript13.default.isIdentifier(parameter.name)) {
+      if (!import_typescript14.default.isIdentifier(parameter.name)) {
         this.unsupported(parameter, "a destructured parameter");
         return;
       }
@@ -182050,7 +182864,7 @@ class Lowerer {
         this.unsupported(parameter, "an optional, rest, or defaulted parameter");
         return;
       }
-      const type = this.erase(parameter, this.#checker.getTypeAtLocation(parameter));
+      const type = this.erase(parameter, this.#checker.getTypeAtLocation(parameter), bindings);
       if (type === undefined) {
         return;
       }
@@ -182087,23 +182901,23 @@ class Lowerer {
     return builder;
   }
   #declare(statement) {
-    if (import_typescript13.default.isInterfaceDeclaration(statement) || import_typescript13.default.isTypeAliasDeclaration(statement) || import_typescript13.default.isImportDeclaration(statement) || import_typescript13.default.isExportDeclaration(statement) || statement.kind === import_typescript13.default.SyntaxKind.EmptyStatement) {
+    if (import_typescript14.default.isInterfaceDeclaration(statement) || import_typescript14.default.isTypeAliasDeclaration(statement) || import_typescript14.default.isImportDeclaration(statement) || import_typescript14.default.isExportDeclaration(statement) || statement.kind === import_typescript14.default.SyntaxKind.EmptyStatement) {
       return;
     }
-    if (import_typescript13.default.isEnumDeclaration(statement)) {
+    if (import_typescript14.default.isEnumDeclaration(statement)) {
       this.#checkEnum(statement);
       return;
     }
-    if (import_typescript13.default.isModuleDeclaration(statement)) {
+    if (import_typescript14.default.isModuleDeclaration(statement)) {
       if (!this.#checkEnumNamespace(statement)) {
         return;
       }
       return;
     }
-    if (import_typescript13.default.isClassDeclaration(statement)) {
+    if (import_typescript14.default.isClassDeclaration(statement)) {
       return;
     }
-    if (!import_typescript13.default.isFunctionDeclaration(statement)) {
+    if (!import_typescript14.default.isFunctionDeclaration(statement)) {
       this.unsupported(statement, describe(statement));
       return;
     }
@@ -182112,17 +182926,21 @@ class Lowerer {
       return;
     }
     if (statement.body === undefined) {
+      if (statement.typeParameters && statement.typeParameters.length > 0) {
+        this.error(statement.typeParameters[0], "GF0403", `\`${statement.name.text}\` is declared without a body, so it names a ` + "symbol some other library defines — and it is generic, so there is " + "no one symbol for it to name. A generic is compiled once for each " + "set of type arguments, which needs a body to compile. Declare the " + "concrete signatures you actually call.");
+        return;
+      }
       this.#declareImport(statement);
       return;
     }
     if (statement.typeParameters && statement.typeParameters.length > 0) {
-      this.unsupported(statement.typeParameters[0], "a generic function");
+      this.#declareTemplate(statement);
       return;
     }
     const name = statement.name.text;
-    const exported = statement.modifiers?.some((m) => m.kind === import_typescript13.default.SyntaxKind.ExportKeyword) ?? false;
+    const exported = statement.modifiers?.some((m) => m.kind === import_typescript14.default.SyntaxKind.ExportKeyword) ?? false;
     const isPublic = this.#isPublic(statement, exported);
-    const signature2 = this.#signature(statement);
+    const signature2 = this.#signature(statement, NO_BINDINGS);
     if (signature2 === undefined) {
       return;
     }
@@ -182178,6 +182996,18 @@ class Lowerer {
     });
     return { node: statement, builder };
   }
+  #declareTemplate(node) {
+    if (node.name === undefined) {
+      return;
+    }
+    const parameters = typeParameterSymbolsOf(this.#checker, node);
+    if (parameters === undefined) {
+      this.unsupported(node, "a generic whose type parameters tsc could not resolve");
+      return;
+    }
+    const key = this.#keyOf(node, node.name.text);
+    this.#templates.set(key, { node, name: node.name.text, key, parameters });
+  }
   #declareImport(node, symbol) {
     if (node.name === undefined) {
       return;
@@ -182190,7 +183020,7 @@ class Lowerer {
     if (this.#hasImplementation(node)) {
       return;
     }
-    const signature2 = this.#signature(node);
+    const signature2 = this.#signature(node, NO_BINDINGS);
     if (signature2 === undefined) {
       return;
     }
@@ -182217,18 +183047,18 @@ class Lowerer {
         continue;
       }
       for (const statement of file.statements) {
-        if (!import_typescript13.default.isModuleDeclaration(statement) || !import_typescript13.default.isStringLiteral(statement.name)) {
+        if (!import_typescript14.default.isModuleDeclaration(statement) || !import_typescript14.default.isStringLiteral(statement.name)) {
           continue;
         }
         const members = STD_MODULES.get(statement.name.text);
         if (members === undefined || statement.body === undefined) {
           continue;
         }
-        if (!import_typescript13.default.isModuleBlock(statement.body)) {
+        if (!import_typescript14.default.isModuleBlock(statement.body)) {
           continue;
         }
         for (const declaration2 of statement.body.statements) {
-          if (!import_typescript13.default.isFunctionDeclaration(declaration2) || declaration2.name === undefined) {
+          if (!import_typescript14.default.isFunctionDeclaration(declaration2) || declaration2.name === undefined) {
             continue;
           }
           const symbol = members.get(declaration2.name.text);
@@ -182241,9 +183071,12 @@ class Lowerer {
   }
   #hasImplementation(node) {
     const symbol = node.name === undefined ? undefined : this.#checker.getSymbolAtLocation(node.name);
-    return symbol?.declarations?.some((declaration2) => import_typescript13.default.isFunctionDeclaration(declaration2) && declaration2.body !== undefined) ?? false;
+    return symbol?.declarations?.some((declaration2) => import_typescript14.default.isFunctionDeclaration(declaration2) && declaration2.body !== undefined) ?? false;
   }
   #checkCBoundary(type, at, what) {
+    if (type.kind === "reference") {
+      return this.#checkCBoundary(type.referent, at, `${what}, which is a reference to a value that`);
+    }
     if (type.kind === "fnptr") {
       let crossable = true;
       for (const param of type.params) {
@@ -182263,10 +183096,10 @@ class Lowerer {
     this.error(at, "GF0301", `${what} is a \`${renderType(type)}\`, which ${reason}. An exported ` + "function is called from outside this build, so it can only take and " + "return plain data — the fixed widths, `boolean`, a struct of those, or " + "a `Pointer<T>` and a length.");
     return false;
   }
-  #signature(node) {
+  #signature(node, bindings) {
     const params = [];
     for (const parameter of node.parameters) {
-      if (!import_typescript13.default.isIdentifier(parameter.name)) {
+      if (!import_typescript14.default.isIdentifier(parameter.name)) {
         this.unsupported(parameter, "a destructured parameter");
         return;
       }
@@ -182274,7 +183107,7 @@ class Lowerer {
         this.unsupported(parameter, "an optional, rest, or defaulted parameter");
         return;
       }
-      const type = this.erase(parameter, this.#checker.getTypeAtLocation(parameter));
+      const type = this.erase(parameter, this.#checker.getTypeAtLocation(parameter), bindings);
       if (type === undefined) {
         return;
       }
@@ -182288,7 +183121,7 @@ class Lowerer {
       this.unsupported(node, "a function tsc could not give a signature to");
       return;
     }
-    const returns = this.erase(node.type ?? node, this.#checker.getReturnTypeOfSignature(signature2));
+    const returns = this.erase(node.type ?? node, this.#checker.getReturnTypeOfSignature(signature2), bindings);
     if (returns === undefined) {
       return;
     }
@@ -182332,7 +183165,7 @@ class Lowerer {
           ty: this.tyOf(param.type, body.node)
         });
       });
-      const lowerer2 = new BodyLowerer(this, body.builder, scopes, body.returns);
+      const lowerer2 = new BodyLowerer(this, body.builder, scopes, body.returns, body.bindings);
       lowerer2.setClassContext(body.info, false);
       if (body.node.body !== undefined) {
         lowerer2.run(body.node.body);
@@ -182356,7 +183189,7 @@ class Lowerer {
       });
     });
     const returns = body.kind === "constructor" ? VOID : body.returns ?? VOID;
-    const lowerer = new BodyLowerer(this, body.builder, scopes, returns);
+    const lowerer = new BodyLowerer(this, body.builder, scopes, returns, body.bindings);
     lowerer.setClassContext(body.info, body.kind === "constructor");
     if (body.kind === "constructor") {
       lowerer.runConstructor(body.info, body.node?.body);
@@ -182420,11 +183253,26 @@ class Lowerer {
         });
       });
     }
-    const lowerer = new BodyLowerer(this, builder, scopes, record.signature.returns);
+    const lowerer = new BodyLowerer(this, builder, scopes, record.signature.returns, NO_BINDINGS);
     lowerer.run(node.body, isEntry, entryArgs ? record.signature.params[0] : undefined);
   }
+  #lowerInstantiation(pending) {
+    if (pending.node.body === undefined) {
+      return;
+    }
+    const scopes = new Scopes;
+    pending.record.signature.params.forEach((param, index) => {
+      scopes.declare(param.name, {
+        local: LocalId(index + 1),
+        type: param.type,
+        ty: this.tyOf(param.type, pending.node)
+      });
+    });
+    new BodyLowerer(this, pending.builder, scopes, pending.record.signature.returns, pending.bindings).run(pending.node.body);
+  }
   #structTy(type, at) {
-    const existing = this.#structs.get(type.name);
+    const key = layoutKey(type);
+    const existing = this.#structs.get(key);
     if (existing !== undefined) {
       return existing;
     }
@@ -182446,7 +183294,7 @@ class Lowerer {
     }
     const id = this.#mir.declareStruct({ name: type.name, union: type.union === true });
     const ty2 = this.#mir.ty({ kind: "Struct", value: id });
-    this.#structs.set(type.name, ty2);
+    this.#structs.set(key, ty2);
     this.#mir.defineStruct(id, {
       fields: type.fields.map((field) => ({
         name: field.name,
@@ -182456,15 +183304,16 @@ class Lowerer {
     return ty2;
   }
   #interfaceTy(type, at) {
-    const existing = this.#interfaceTys.get(type.name);
+    const key = layoutKey(type);
+    const existing = this.#interfaceTys.get(key);
     if (existing !== undefined) {
       return existing;
     }
     const id = this.#mir.declareInterface({ name: type.name, span: this.span(at) });
-    this.#interfaces.set(type.name, id);
-    this.#interfaceInfo.set(type.name, type);
+    this.#interfaces.set(key, id);
+    this.#interfaceInfo.set(key, type);
     const ty2 = this.#mir.ty({ kind: "Interface", value: id });
-    this.#interfaceTys.set(type.name, ty2);
+    this.#interfaceTys.set(key, ty2);
     const receiver = this.#mir.ty({
       kind: "Pointer",
       value: this.#mir.ty({ kind: "Void" })
@@ -182484,7 +183333,7 @@ class Lowerer {
   }
   #checkEnum(statement) {
     const type = this.#checker.getTypeAtLocation(statement.name);
-    const width = this.erase(statement.name, type);
+    const width = this.erase(statement.name, type, NO_BINDINGS);
     if (width === undefined || width.kind !== "scalar") {
       return;
     }
@@ -182513,17 +183362,17 @@ class Lowerer {
   }
   #checkEnumNamespace(statement) {
     const merged = this.#checker.getSymbolAtLocation(statement.name);
-    const mergesWithEnum = merged?.declarations?.some((declaration2) => import_typescript13.default.isEnumDeclaration(declaration2));
+    const mergesWithEnum = merged?.declarations?.some((declaration2) => import_typescript14.default.isEnumDeclaration(declaration2));
     if (mergesWithEnum !== true) {
       this.unsupported(statement, `a namespace — the only one this language has is ` + `\`declare namespace E { type ${ENUM_UNDERLYING} = … }\`, which gives an ` + `enum its width`);
       return false;
     }
     const body = statement.body;
-    if (body === undefined || !import_typescript13.default.isModuleBlock(body)) {
+    if (body === undefined || !import_typescript14.default.isModuleBlock(body)) {
       return true;
     }
     for (const inner of body.statements) {
-      if (import_typescript13.default.isTypeAliasDeclaration(inner) && inner.name.text === ENUM_UNDERLYING) {
+      if (import_typescript14.default.isTypeAliasDeclaration(inner) && inner.name.text === ENUM_UNDERLYING) {
         continue;
       }
       this.unsupported(inner, `\`${statement.name.getText()}\` is an enum's width declaration, so ` + `\`type ${ENUM_UNDERLYING} = …\` is the only thing it may contain`);
@@ -182727,9 +183576,9 @@ class Compiler {
         }
         diagnostics.push({
           severity: "error",
-          code: "GF9006",
+          code: error.code,
           source: "goblin",
-          message: `could not write a C header for \`${moduleName}\`: ${error.message}`
+          message: error.code === "GF9006" ? `could not write a C header for \`${moduleName}\`: ${error.message}` : error.message
         });
         return { ...failed(diagnostics), objects: [artifact.objectPath] };
       }
