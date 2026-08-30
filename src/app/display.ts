@@ -106,43 +106,6 @@ export class Display {
         return true;
     }
 
-    /**
-     * Ask for a present mode, settle for what exists.
-     *
-     * The returned mode is what was actually installed — including when the
-     * install itself failed, in which case the swapchain is still on VSYNC and
-     * saying otherwise would mislabel every measurement taken afterwards.
-     */
-    private negotiatePresentMode(
-        device: Pointer<SDL_GPUDevice>,
-        window: Pointer<SDL_Window>,
-        requested: SDL_GPUPresentMode,
-    ): SDL_GPUPresentMode {
-        if (requested === SDL_GPUPresentMode.VSYNC) {
-            return SDL_GPUPresentMode.VSYNC;
-        }
-
-        if (!SDL_WindowSupportsGPUPresentMode(device, window, requested)) {
-            console.log(
-                `display: ${presentModeName(requested)} is not supported here, falling back to vsync`,
-            );
-            return SDL_GPUPresentMode.VSYNC;
-        }
-
-        if (!SDL_SetGPUSwapchainParameters(device, window, SDL_GPUSwapchainComposition.SDR, requested)) {
-            console.log(
-                `display: setting ${presentModeName(requested)} failed : ${stringFromCString(SDL_GetError())}`,
-            );
-            return SDL_GPUPresentMode.VSYNC;
-        }
-
-        if (requested === SDL_GPUPresentMode.MAILBOX) {
-            console.log("display: mailbox has a known SDL bug — early frames may still pace to vblank");
-        }
-
-        return requested;
-    }
-
     /** Re-read the drawable size. Returns true when it changed. */
     readSize(): boolean {
         const window = this.window;
@@ -179,5 +142,42 @@ export class Display {
 
         this.device = null;
         this.window = null;
+    }
+
+    /**
+     * Ask for a present mode, settle for what exists.
+     *
+     * The returned mode is what was actually installed — including when the
+     * install itself failed, in which case the swapchain is still on VSYNC and
+     * saying otherwise would mislabel every measurement taken afterwards.
+     */
+    private negotiatePresentMode(
+        device: Pointer<SDL_GPUDevice>,
+        window: Pointer<SDL_Window>,
+        requested: SDL_GPUPresentMode,
+    ): SDL_GPUPresentMode {
+        if (requested === SDL_GPUPresentMode.VSYNC) {
+            return SDL_GPUPresentMode.VSYNC;
+        }
+
+        if (!SDL_WindowSupportsGPUPresentMode(device, window, requested)) {
+            console.log(
+                `display: ${presentModeName(requested)} is not supported here, falling back to vsync`,
+            );
+            return SDL_GPUPresentMode.VSYNC;
+        }
+
+        if (!SDL_SetGPUSwapchainParameters(device, window, SDL_GPUSwapchainComposition.SDR, requested)) {
+            console.log(
+                `display: setting ${presentModeName(requested)} failed : ${stringFromCString(SDL_GetError())}`,
+            );
+            return SDL_GPUPresentMode.VSYNC;
+        }
+
+        if (requested === SDL_GPUPresentMode.MAILBOX) {
+            console.log("display: mailbox has a known SDL bug — early frames may still pace to vblank");
+        }
+
+        return requested;
     }
 }

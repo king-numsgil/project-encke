@@ -5,6 +5,7 @@
 // mesh loader yet — so the cap would exist to save a few kilobytes of procedural
 // geometry. Revisit when glTF arrives and meshes stop being boxes.
 
+import { fvec3 } from "std/linalg";
 import {
     SDL_BindGPUIndexBuffer,
     SDL_BindGPUVertexBuffers,
@@ -16,14 +17,24 @@ import {
     SDL_GPUIndexElementSize,
     type SDL_GPURenderPass,
 } from "../../bindings/SDL3";
-import { fvec3 } from "std/linalg";
 import { createBuffer, releaseBuffer, Staging } from "../gpu/buffer.ts";
 import { type MeshData, vertexStride } from "./meshdata.ts";
 
 export class GpuMesh {
+    /** Indices to draw. Zero until {@link upload} has succeeded. */
+    indexCount: u32;
+    /**
+     * Bounding sphere in the mesh's own space, for culling.
+     *
+     * The sphere around the axis-aligned box rather than a minimal one. It is
+     * looser — up to `sqrt(3)` on a cube — and it is the right looseness: a
+     * sphere is what survives an arbitrary rotation without being recomputed,
+     * and every instance of a mesh has its own transform.
+     */
+    boundsCenter: fvec3;
+    boundsRadius: f32;
     private vertices: Pointer<SDL_GPUBuffer> | null;
     private indices: Pointer<SDL_GPUBuffer> | null;
-
     /**
      * The two binding structs {@link draw} hands to SDL, built once at upload.
      *
@@ -39,20 +50,6 @@ export class GpuMesh {
      */
     private vertexBinding: Pointer<SDL_GPUBufferBinding> | null;
     private indexBinding: Pointer<SDL_GPUBufferBinding> | null;
-
-    /** Indices to draw. Zero until {@link upload} has succeeded. */
-    indexCount: u32;
-
-    /**
-     * Bounding sphere in the mesh's own space, for culling.
-     *
-     * The sphere around the axis-aligned box rather than a minimal one. It is
-     * looser — up to `sqrt(3)` on a cube — and it is the right looseness: a
-     * sphere is what survives an arbitrary rotation without being recomputed,
-     * and every instance of a mesh has its own transform.
-     */
-    boundsCenter: fvec3;
-    boundsRadius: f32;
 
     constructor() {
         this.vertices = null;

@@ -5,6 +5,8 @@
 // is `app/run.ts`, and everything that draws is under `renderer/`.
 
 import { mi_calloc, mi_free, mi_malloc, mi_realloc } from "std/alloc";
+import { parseOptions, printUsage } from "./app/options.ts";
+import { run } from "./app/run.ts";
 import {
     SDL_GetError,
     SDL_GetRevision,
@@ -16,8 +18,6 @@ import {
 } from "./bindings/SDL3";
 import { IMG_Version } from "./bindings/SDL3_image";
 import { TTF_Init, TTF_Quit, TTF_Version } from "./bindings/SDL3_ttf";
-import { parseOptions, printUsage } from "./app/options.ts";
-import { run } from "./app/run.ts";
 
 export function main(args: string[]): i32 {
     // Before SDL_Init, so that nothing has been taken from SDL's own allocator

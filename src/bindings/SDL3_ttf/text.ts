@@ -28,14 +28,7 @@
 // it early, for when the cost belongs somewhere other than the frame that
 // happened to ask.
 
-import type {
-    SDL_FPoint,
-    SDL_GPUDevice,
-    SDL_GPUTexture,
-    SDL_PropertiesID,
-    SDL_Rect,
-    SDL_Surface,
-} from "../SDL3";
+import type { SDL_FPoint, SDL_GPUDevice, SDL_GPUTexture, SDL_PropertiesID, SDL_Rect, SDL_Surface } from "../SDL3";
 import type { TTF_Direction, TTF_Font, TTF_ImageType } from "./font.ts";
 
 /** An opaque handle to a text engine. Destroyed by the call matching the one that made it. */

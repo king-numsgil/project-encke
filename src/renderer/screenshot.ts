@@ -14,6 +14,7 @@
 import {
     SDL_AcquireGPUCommandBuffer,
     SDL_BeginGPUCopyPass,
+    SDL_CreateGPUTransferBuffer,
     SDL_CreateSurfaceFrom,
     SDL_DestroySurface,
     SDL_DownloadFromGPUTexture,
@@ -27,7 +28,6 @@ import {
     type SDL_GPUTextureTransferInfo,
     type SDL_GPUTransferBufferCreateInfo,
     SDL_GPUTransferBufferUsage,
-    SDL_CreateGPUTransferBuffer,
     SDL_MapGPUTransferBuffer,
     SDL_ReleaseGPUTransferBuffer,
     SDL_SavePNG,

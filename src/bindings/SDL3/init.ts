@@ -8,13 +8,19 @@ export enum SDL_InitFlags {
     SENSOR = 0x00008000,
     CAMERA = 0x00010000,
 }
+
 export declare namespace SDL_InitFlags {
     type Underlying = u32;
 }
 
 export declare function SDL_Init(flags: SDL_InitFlags): boolean;
+
 export declare function SDL_InitSubSystem(flags: SDL_InitFlags): boolean;
+
 export declare function SDL_QuitSubSystem(flags: SDL_InitFlags): void;
+
 export declare function SDL_WasInit(flags: SDL_InitFlags): SDL_InitFlags;
+
 export declare function SDL_Quit(): void;
+
 export declare function SDL_IsMainThread(): boolean;

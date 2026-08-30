@@ -42,6 +42,7 @@ export declare function IMG_SaveTyped_IO(
 // -- lossless, no parameters ------------------------------------------------
 
 export declare function IMG_SaveBMP(surface: Pointer<SDL_Surface>, file: CString): boolean;
+
 export declare function IMG_SaveBMP_IO(
     surface: Pointer<SDL_Surface>,
     dst: Pointer<SDL_IOStream>,
@@ -49,6 +50,7 @@ export declare function IMG_SaveBMP_IO(
 ): boolean;
 
 export declare function IMG_SaveCUR(surface: Pointer<SDL_Surface>, file: CString): boolean;
+
 export declare function IMG_SaveCUR_IO(
     surface: Pointer<SDL_Surface>,
     dst: Pointer<SDL_IOStream>,
@@ -56,6 +58,7 @@ export declare function IMG_SaveCUR_IO(
 ): boolean;
 
 export declare function IMG_SaveGIF(surface: Pointer<SDL_Surface>, file: CString): boolean;
+
 export declare function IMG_SaveGIF_IO(
     surface: Pointer<SDL_Surface>,
     dst: Pointer<SDL_IOStream>,
@@ -63,6 +66,7 @@ export declare function IMG_SaveGIF_IO(
 ): boolean;
 
 export declare function IMG_SaveICO(surface: Pointer<SDL_Surface>, file: CString): boolean;
+
 export declare function IMG_SaveICO_IO(
     surface: Pointer<SDL_Surface>,
     dst: Pointer<SDL_IOStream>,
@@ -70,6 +74,7 @@ export declare function IMG_SaveICO_IO(
 ): boolean;
 
 export declare function IMG_SavePNG(surface: Pointer<SDL_Surface>, file: CString): boolean;
+
 export declare function IMG_SavePNG_IO(
     surface: Pointer<SDL_Surface>,
     dst: Pointer<SDL_IOStream>,
@@ -77,6 +82,7 @@ export declare function IMG_SavePNG_IO(
 ): boolean;
 
 export declare function IMG_SaveTGA(surface: Pointer<SDL_Surface>, file: CString): boolean;
+
 export declare function IMG_SaveTGA_IO(
     surface: Pointer<SDL_Surface>,
     dst: Pointer<SDL_IOStream>,
@@ -87,6 +93,7 @@ export declare function IMG_SaveTGA_IO(
 
 /** `quality` runs 0 to 100. */
 export declare function IMG_SaveAVIF(surface: Pointer<SDL_Surface>, file: CString, quality: i32): boolean;
+
 export declare function IMG_SaveAVIF_IO(
     surface: Pointer<SDL_Surface>,
     dst: Pointer<SDL_IOStream>,
@@ -96,6 +103,7 @@ export declare function IMG_SaveAVIF_IO(
 
 /** `quality` runs 0 to 100. */
 export declare function IMG_SaveJPG(surface: Pointer<SDL_Surface>, file: CString, quality: i32): boolean;
+
 export declare function IMG_SaveJPG_IO(
     surface: Pointer<SDL_Surface>,
     dst: Pointer<SDL_IOStream>,
@@ -108,6 +116,7 @@ export declare function IMG_SaveJPG_IO(
  * note at the top of this file. An `f32`, unlike the two above.
  */
 export declare function IMG_SaveWEBP(surface: Pointer<SDL_Surface>, file: CString, quality: f32): boolean;
+
 export declare function IMG_SaveWEBP_IO(
     surface: Pointer<SDL_Surface>,
     dst: Pointer<SDL_IOStream>,

@@ -15,18 +15,16 @@ import {
 } from "../bindings/SDL3";
 
 export class Input {
+    /** Mouse movement since the last {@link poll}, in pixels. Zero unless looking. */
+    mouseDeltaX: f32;
+    mouseDeltaY: f32;
     /**
      * SDL's own key array. Fetched once — the pointer is valid for the lifetime
      * of the program and the contents update as events are pumped.
      */
     private keys: Pointer<boolean> | null;
-
     private window: Pointer<SDL_Window> | null;
     private looking: boolean;
-
-    /** Mouse movement since the last {@link poll}, in pixels. Zero unless looking. */
-    mouseDeltaX: f32;
-    mouseDeltaY: f32;
 
     constructor() {
         this.keys = null;

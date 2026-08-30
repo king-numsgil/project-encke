@@ -19,13 +19,7 @@
 // The `IMG_isXXX` predicates all **rewind the stream to where they found it**,
 // so a caller can try several in sequence without seeking between them.
 
-import type {
-    SDL_GPUCopyPass,
-    SDL_GPUDevice,
-    SDL_GPUTexture,
-    SDL_IOStream,
-    SDL_Surface,
-} from "../SDL3";
+import type { SDL_GPUCopyPass, SDL_GPUDevice, SDL_GPUTexture, SDL_IOStream, SDL_Surface } from "../SDL3";
 
 // ---------------------------------------------------------------------------
 // Detection and generic loading.
@@ -116,23 +110,41 @@ export declare function IMG_LoadGPUTextureTyped_IO(
 // ---------------------------------------------------------------------------
 
 export declare function IMG_isANI(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isAVIF(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isBMP(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isCUR(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isGIF(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isICO(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isJPG(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isJXL(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isLBM(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isPCX(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isPNG(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isPNM(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isQOI(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isSVG(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isTIF(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isWEBP(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isXCF(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isXPM(src: Pointer<SDL_IOStream>): boolean;
+
 export declare function IMG_isXV(src: Pointer<SDL_IOStream>): boolean;
 
 // ---------------------------------------------------------------------------
@@ -145,22 +157,39 @@ export declare function IMG_isXV(src: Pointer<SDL_IOStream>): boolean;
 // ---------------------------------------------------------------------------
 
 export declare function IMG_LoadAVIF_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadBMP_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadCUR_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadGIF_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadICO_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadJPG_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadJXL_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadLBM_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadPCX_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadPNG_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadPNM_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadQOI_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadTGA_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadTIF_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadWEBP_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadXCF_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadXPM_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
+
 export declare function IMG_LoadXV_IO(src: Pointer<SDL_IOStream>): Pointer<SDL_Surface> | null;
 
 /**

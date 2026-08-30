@@ -23,7 +23,7 @@
 // a fresh block instead of stalling. It is how you avoid writing a
 // `SDL_WaitForGPUIdle` into your inner loop.
 
-import type { SDL_PixelFormat, SDL_FColor } from "./pixels.ts";
+import type { SDL_FColor, SDL_PixelFormat } from "./pixels.ts";
 import type { SDL_PropertiesID } from "./properties.ts";
 import type { SDL_Rect } from "./rect.ts";
 import type { SDL_FlipMode } from "./surface.ts";

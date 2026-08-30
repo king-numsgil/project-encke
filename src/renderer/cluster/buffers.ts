@@ -25,17 +25,17 @@
 // `COMPUTE_STORAGE_WRITE | GRAPHICS_STORAGE_READ` — declaring only one is not a
 // creation error, it is a binding error much later.
 
+import { type fmat4, fvec4 } from "std/linalg";
 import {
     type SDL_GPUBuffer,
     SDL_GPUBufferUsageFlags,
     type SDL_GPUCopyPass,
     type SDL_GPUDevice,
 } from "../../bindings/SDL3";
-import { type fmat4, fvec4 } from "std/linalg";
 import { clusterCount, maxLights, maxLightsPerCluster } from "../config.ts";
 import { createBuffer, releaseBuffer, Staging } from "../gpu/buffer.ts";
-import { cullLightStride, lightStride, writeCullLight, writeLight } from "../scene/light.ts";
 import type { Light } from "../scene/light.ts";
+import { cullLightStride, lightStride, writeCullLight, writeLight } from "../scene/light.ts";
 
 export class ClusterBuffers {
     /** View-space AABB per cluster. Written by `cluster_build`, read by `cluster_cull`. */

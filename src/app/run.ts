@@ -202,8 +202,8 @@ export function run(options: Reference<Options>): i32 {
                 renderer.render(cmd, capture, scene, camera, clock.elapsed, ui);
 
                 const blit = alloc<SDL_GPUBlitInfo>({
-                    source: { texture: capture, w: display.width, h: display.height },
-                    destination: { texture: swapchain[0], w: display.width, h: display.height },
+                    source: {texture: capture, w: display.width, h: display.height},
+                    destination: {texture: swapchain[0], w: display.width, h: display.height},
                     load_op: SDL_GPULoadOp.DONT_CARE,
                     filter: SDL_GPUFilter.NEAREST,
                 });

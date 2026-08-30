@@ -14,18 +14,17 @@
 //   * **Spheres of varying roughness**, because a specular lobe sliding across a
 //     curved surface is where a wrong BRDF shows up first.
 
-import { fvec3, fmat4 } from "std/linalg";
+import { fmat4, fvec3 } from "std/linalg";
 import { fcos, fpi, fsin } from "std/math";
 import type { SDL_GPUDevice } from "../bindings/SDL3";
+import { Fallbacks, MaterialTextures } from "../renderer/assets/material_set.ts";
 import { makeBox } from "../renderer/geometry/box.ts";
 import { GpuMesh } from "../renderer/geometry/mesh.ts";
 import { warnIfPaperThin } from "../renderer/geometry/meshdata.ts";
 import { makeSphere } from "../renderer/geometry/sphere.ts";
-import { Fallbacks, MaterialTextures } from "../renderer/assets/material_set.ts";
-import { Material, makeMaterial, makeMetal } from "../renderer/scene/material.ts";
 import { makePointLight, makeSpotLight } from "../renderer/scene/light.ts";
+import { makeMaterial, makeMetal, Material } from "../renderer/scene/material.ts";
 import { Scene } from "../renderer/scene/scene.ts";
-
 
 /** Minimum thickness a mesh must have on every axis, in world units. */
 function minimumThickness(): f32 {

@@ -13,7 +13,7 @@ export enum SDL_IOWhence {
     END,
 }
 
-export declare class SDL_IOStream { private _opaque: never; }
+export declare class SDL_IOStream {private _opaque: never;}
 
 export declare function SDL_IOFromFile(file: CString, mode: CString): Pointer<SDL_IOStream> | null;
 

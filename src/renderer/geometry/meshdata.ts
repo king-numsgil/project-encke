@@ -148,7 +148,7 @@ export function warnIfPaperThin(mesh: Reference<MeshData>, name: string, minimum
         if (extent < minimum) {
             console.log(
                 `geometry: '${name}' is ${extent} thick along ${axes.substring(axis, axis + 1)} ` +
-                    `(want at least ${minimum}) — light will bleed through it and the renderer cannot help`,
+                `(want at least ${minimum}) — light will bleed through it and the renderer cannot help`,
             );
             sound = false;
         }

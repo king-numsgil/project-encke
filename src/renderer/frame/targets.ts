@@ -9,16 +9,8 @@
 // falloff produces radiance far outside `[0, 1]`, and clamping it at the shading
 // stage would destroy exactly the highlights the tonemap exists to roll off.
 
-import {
-    type SDL_GPUDevice,
-    type SDL_GPUTexture,
-    SDL_GPUTextureFormat,
-} from "../../bindings/SDL3";
-import {
-    cascadeAtlasHeight,
-    cascadeAtlasWidth,
-    spotAtlasSize,
-} from "../config.ts";
+import { type SDL_GPUDevice, type SDL_GPUTexture, SDL_GPUTextureFormat } from "../../bindings/SDL3";
+import { cascadeAtlasHeight, cascadeAtlasWidth, spotAtlasSize } from "../config.ts";
 import { createColorTarget, createDepthTarget, releaseTexture } from "../gpu/texture.ts";
 
 /** Half of `value`, never zero. */
@@ -127,6 +119,14 @@ export class Targets {
         );
     }
 
+    release(device: Pointer<SDL_GPUDevice>): void {
+        this.releaseSized(device);
+        releaseTexture(device, this.cascadeAtlas);
+        releaseTexture(device, this.spotAtlas);
+        this.cascadeAtlas = null;
+        this.spotAtlas = null;
+    }
+
     private releaseSized(device: Pointer<SDL_GPUDevice>): void {
         releaseTexture(device, this.scene);
         releaseTexture(device, this.depth);
@@ -136,13 +136,5 @@ export class Targets {
         this.depth = null;
         this.occlusion = null;
         this.occlusionBlurred = null;
-    }
-
-    release(device: Pointer<SDL_GPUDevice>): void {
-        this.releaseSized(device);
-        releaseTexture(device, this.cascadeAtlas);
-        releaseTexture(device, this.spotAtlas);
-        this.cascadeAtlas = null;
-        this.spotAtlas = null;
     }
 }

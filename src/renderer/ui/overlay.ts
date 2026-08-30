@@ -19,7 +19,7 @@
 
 import { fvec4 } from "std/linalg";
 import { uiGraphSamples } from "../config.ts";
-import { uiFontMono, uiFontSans, type UiAtlas } from "./atlas.ts";
+import { type UiAtlas, uiFontMono, uiFontSans } from "./atlas.ts";
 import { type UiDrawList, uiFade, uiWhite } from "./draw.ts";
 
 /** Milliseconds at the top of the graph: two frames at 60Hz. */
@@ -61,15 +61,13 @@ export class OverlayInfo {
 }
 
 export class Overlay {
+    /** Toggled by F1 in the frame loop. */
+    visible: boolean;
     /** Frame durations in milliseconds, oldest first once {@link head} has wrapped. */
     private samples: f32[];
     private head: usize;
-
     /** Exponential average of the frame time, for the readout. */
     private smoothed: f32;
-
-    /** Toggled by F1 in the frame loop. */
-    visible: boolean;
 
     constructor() {
         this.samples = [];

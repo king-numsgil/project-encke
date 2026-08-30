@@ -150,13 +150,13 @@ export declare function SDL_WarpMouseGlobal(x: f32, y: f32): boolean;
 export declare function SDL_SetRelativeMouseTransform(
     callback:
         | ((
-            userdata: Pointer<unknown> | null,
-            timestamp: u64,
-            window: Pointer<SDL_Window> | null,
-            mouseID: SDL_MouseID,
-            x: Pointer<f32>,
-            y: Pointer<f32>,
-        ) => void)
+        userdata: Pointer<unknown> | null,
+        timestamp: u64,
+        window: Pointer<SDL_Window> | null,
+        mouseID: SDL_MouseID,
+        x: Pointer<f32>,
+        y: Pointer<f32>,
+    ) => void)
         | null,
     userdata: Pointer<unknown> | null,
 ): boolean;

@@ -10,15 +10,13 @@
 import { SDL_GetPerformanceCounter, SDL_GetPerformanceFrequency } from "../bindings/SDL3";
 
 export class Clock {
+    /** Seconds since the last {@link tick}. Zero on the first. */
+    delta: f32;
+    /** Seconds since {@link start}. */
+    elapsed: f32;
     private frequency: f64;
     private origin: u64;
     private previous: u64;
-
-    /** Seconds since the last {@link tick}. Zero on the first. */
-    delta: f32;
-
-    /** Seconds since {@link start}. */
-    elapsed: f32;
 
     constructor() {
         this.frequency = 1.0;

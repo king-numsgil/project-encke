@@ -155,7 +155,7 @@ export class ForwardPass {
 
         const color = alloc<SDL_GPUColorTargetInfo>({
             texture: scene,
-            clear_color: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
+            clear_color: {r: 0.0, g: 0.0, b: 0.0, a: 1.0},
             load_op: SDL_GPULoadOp.CLEAR,
             store_op: SDL_GPUStoreOp.STORE,
             cycle: true,

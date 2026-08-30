@@ -153,6 +153,14 @@ export class ShadowPasses {
         SDL_EndGPURenderPass(pass);
     }
 
+    release(device: Pointer<SDL_GPUDevice>): void {
+        const pipeline = this.pipeline;
+        if (pipeline !== null) {
+            SDL_ReleaseGPUGraphicsPipeline(device, pipeline);
+        }
+        this.pipeline = null;
+    }
+
     private begin(
         cmd: Pointer<SDL_GPUCommandBuffer>,
         atlas: Pointer<SDL_GPUTexture>,
@@ -251,13 +259,5 @@ export class ShadowPasses {
             SDL_PushGPUVertexUniformData(cmd, 0, view, viewBytes);
             scene.meshes[scene.instances[i].mesh].draw(pass);
         }
-    }
-
-    release(device: Pointer<SDL_GPUDevice>): void {
-        const pipeline = this.pipeline;
-        if (pipeline !== null) {
-            SDL_ReleaseGPUGraphicsPipeline(device, pipeline);
-        }
-        this.pipeline = null;
     }
 }

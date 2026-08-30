@@ -39,8 +39,9 @@ import {
     type SDL_GPUTexture,
     SDL_GPUTextureFormat,
 } from "../bindings/SDL3";
-import { cameraFar, cameraNear, shadowDistance, uiMonoFontPath, uiSansFontPath } from "./config.ts";
+import { Fallbacks } from "./assets/material_set.ts";
 import { ClusterBuffers } from "./cluster/buffers.ts";
+import { cameraFar, cameraNear, shadowDistance, uiMonoFontPath, uiSansFontPath } from "./config.ts";
 import { Targets } from "./frame/targets.ts";
 import {
     fillFrame,
@@ -55,7 +56,6 @@ import {
     type TonemapUniform,
     type UiUniform,
 } from "./frame/uniforms.ts";
-import { Fallbacks } from "./assets/material_set.ts";
 import {
     createLinearClamp,
     createMaterialSampler,
@@ -84,34 +84,6 @@ function depthFormat(): SDL_GPUTextureFormat {
 }
 
 export class Renderer {
-    private targets: Targets;
-    private clusters: ClusterBuffers;
-
-    private clusterPasses: ClusterPasses;
-    private depthPrepass: DepthPrepass;
-    private shadowPasses: ShadowPasses;
-    private ssaoPass: SsaoPass;
-    private forwardPass: ForwardPass;
-    private tonemapPass: TonemapPass;
-    private uiPass: UiPass;
-
-    // Uniform scratch, allocated once and refilled per frame. Pushing a uniform
-    // copies it into the command buffer, so one block per kind is enough — there
-    // is never a second live value of any of these.
-    private frame: Pointer<FrameUniform> | null;
-    private object: Pointer<ObjectUniform> | null;
-    private material: Pointer<MaterialUniform> | null;
-    private shadows: Pointer<ShadowUniform> | null;
-    private shadowView: Pointer<ShadowViewUniform> | null;
-    private ssaoParams: Pointer<SsaoUniform> | null;
-    private tonemapParams: Pointer<TonemapUniform> | null;
-    private uiParams: Pointer<UiUniform> | null;
-
-    private linearSampler: Pointer<SDL_GPUSampler> | null;
-    private nearestSampler: Pointer<SDL_GPUSampler> | null;
-    private shadowSampler: Pointer<SDL_GPUSampler> | null;
-    private materialSampler: Pointer<SDL_GPUSampler> | null;
-
     /**
      * The 1x1 stand-ins for maps a material does not have.
      *
@@ -119,7 +91,6 @@ export class Renderer {
      * shared by every material and outlive whatever is being drawn.
      */
     fallbacks: Fallbacks;
-
     /**
      * The overlay's glyph and shape atlas.
      *
@@ -129,7 +100,31 @@ export class Renderer {
      * texture with the same lifetime as everything else in this class.
      */
     uiAtlas: UiAtlas;
+    private targets: Targets;
+    private clusters: ClusterBuffers;
+    private clusterPasses: ClusterPasses;
+    private depthPrepass: DepthPrepass;
+    private shadowPasses: ShadowPasses;
+    private ssaoPass: SsaoPass;
+    private forwardPass: ForwardPass;
 
+    // Uniform scratch, allocated once and refilled per frame. Pushing a uniform
+    // copies it into the command buffer, so one block per kind is enough — there
+    private tonemapPass: TonemapPass;
+    private uiPass: UiPass;
+    // is never a second live value of any of these.
+    private frame: Pointer<FrameUniform> | null;
+    private object: Pointer<ObjectUniform> | null;
+    private material: Pointer<MaterialUniform> | null;
+    private shadows: Pointer<ShadowUniform> | null;
+    private shadowView: Pointer<ShadowViewUniform> | null;
+    private ssaoParams: Pointer<SsaoUniform> | null;
+    private tonemapParams: Pointer<TonemapUniform> | null;
+    private uiParams: Pointer<UiUniform> | null;
+    private linearSampler: Pointer<SDL_GPUSampler> | null;
+    private nearestSampler: Pointer<SDL_GPUSampler> | null;
+    private shadowSampler: Pointer<SDL_GPUSampler> | null;
+    private materialSampler: Pointer<SDL_GPUSampler> | null;
     private inputs: ForwardInputs;
 
     /** Readable stand-in for the swapchain. Null unless `enableCapture` was called. */
@@ -288,16 +283,6 @@ export class Renderer {
         this.clusterPasses.invalidate();
         this.refreshInputs();
         return true;
-    }
-
-    /** Re-point the forward pass at whatever the current targets are. */
-    private refreshInputs(): void {
-        this.inputs.cascadeAtlas = this.targets.cascadeAtlas;
-        this.inputs.spotAtlas = this.targets.spotAtlas;
-        this.inputs.occlusion = this.targets.occlusionBlurred;
-        this.inputs.shadowSampler = this.shadowSampler;
-        this.inputs.occlusionSampler = this.linearSampler;
-        this.inputs.materialSampler = this.materialSampler;
     }
 
     /**
@@ -570,5 +555,15 @@ export class Renderer {
         this.ssaoParams = null;
         this.tonemapParams = null;
         this.uiParams = null;
+    }
+
+    /** Re-point the forward pass at whatever the current targets are. */
+    private refreshInputs(): void {
+        this.inputs.cascadeAtlas = this.targets.cascadeAtlas;
+        this.inputs.spotAtlas = this.targets.spotAtlas;
+        this.inputs.occlusion = this.targets.occlusionBlurred;
+        this.inputs.shadowSampler = this.shadowSampler;
+        this.inputs.occlusionSampler = this.linearSampler;
+        this.inputs.materialSampler = this.materialSampler;
     }
 }

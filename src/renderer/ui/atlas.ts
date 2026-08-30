@@ -46,8 +46,8 @@ import {
     type SDL_GPUTextureRegion,
     type SDL_GPUTextureTransferInfo,
     SDL_GPUTextureUsageFlags,
-    SDL_GPUTransferBufferUsage,
     type SDL_GPUTransferBufferCreateInfo,
+    SDL_GPUTransferBufferUsage,
     SDL_MapGPUTransferBuffer,
     SDL_PixelFormat,
     SDL_ReleaseGPUTexture,
@@ -192,23 +192,17 @@ class Shelf {
 }
 
 export class UiAtlas {
-    private texture: Pointer<SDL_GPUTexture> | null;
-
     /** Every baked glyph, for every font. Indexed through {@link UiFont.base}. */
     glyphs: UiGlyph[];
-
     fonts: UiFont[];
-
     /** Atlas coordinates of the centre of the white block. Shapes sample exactly this. */
     whiteU: f32;
     whiteV: f32;
-
     /** The disc's cell. */
     discU0: f32;
     discV0: f32;
     discU1: f32;
     discV1: f32;
-
     /**
      * How much wider than its drawn radius a circle's quad has to be.
      *
@@ -217,6 +211,7 @@ export class UiAtlas {
      * `radius * this` puts the fade exactly on `radius`.
      */
     discOversize: f32;
+    private texture: Pointer<SDL_GPUTexture> | null;
 
     constructor() {
         this.texture = null;
@@ -286,6 +281,16 @@ export class UiAtlas {
         this.texture = texture;
         console.log(`ui atlas: ${width}x${height}, ${this.glyphs.length} glyphs, ${this.fonts.length} fonts`);
         return true;
+    }
+
+    release(device: Pointer<SDL_GPUDevice>): void {
+        const texture = this.texture;
+        if (texture !== null) {
+            SDL_ReleaseGPUTexture(device, texture);
+        }
+        this.texture = null;
+        this.glyphs = [];
+        this.fonts = [];
     }
 
     /** A block of opaque white. Its centre is what every shape's UV points at. */
@@ -484,16 +489,6 @@ export class UiAtlas {
             this.glyphs[i].u1 *= du;
             this.glyphs[i].v1 *= dv;
         }
-    }
-
-    release(device: Pointer<SDL_GPUDevice>): void {
-        const texture = this.texture;
-        if (texture !== null) {
-            SDL_ReleaseGPUTexture(device, texture);
-        }
-        this.texture = null;
-        this.glyphs = [];
-        this.fonts = [];
     }
 }
 

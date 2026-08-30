@@ -8,7 +8,7 @@
 // The seam is real: the last column of vertices duplicates the first, because
 // UV wraps from 1 back to 0 and one vertex cannot hold both.
 
-import { fcos, fsin, fpi } from "std/math";
+import { fcos, fpi, fsin } from "std/math";
 import { MeshData } from "./meshdata.ts";
 
 /**

@@ -86,9 +86,13 @@ export declare function IMG_LoadAnimationTyped_IO(
 ): Pointer<IMG_Animation> | null;
 
 export declare function IMG_LoadANIAnimation_IO(src: Pointer<SDL_IOStream>): Pointer<IMG_Animation> | null;
+
 export declare function IMG_LoadAPNGAnimation_IO(src: Pointer<SDL_IOStream>): Pointer<IMG_Animation> | null;
+
 export declare function IMG_LoadAVIFAnimation_IO(src: Pointer<SDL_IOStream>): Pointer<IMG_Animation> | null;
+
 export declare function IMG_LoadGIFAnimation_IO(src: Pointer<SDL_IOStream>): Pointer<IMG_Animation> | null;
+
 export declare function IMG_LoadWEBPAnimation_IO(src: Pointer<SDL_IOStream>): Pointer<IMG_Animation> | null;
 
 /**

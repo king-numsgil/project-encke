@@ -37,12 +37,7 @@ import {
 import { ssaoBias, ssaoIntensity, ssaoMaxRadiusPixels, ssaoRadius } from "../config.ts";
 import type { FrameUniform, SsaoUniform } from "../frame/uniforms.ts";
 import { createFullscreenPipeline } from "../gpu/pipeline.ts";
-import {
-    ssaoBlurFsMain,
-    ssaoBlurVsMain,
-    ssaoFsMain,
-    ssaoVsMain,
-} from "../shaders.generated.ts";
+import { ssaoBlurFsMain, ssaoBlurVsMain, ssaoFsMain, ssaoVsMain } from "../shaders.generated.ts";
 
 export class SsaoPass {
     private estimate: Pointer<SDL_GPUGraphicsPipeline> | null;

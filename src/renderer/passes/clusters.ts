@@ -35,19 +35,10 @@ import {
     SDL_PushGPUComputeUniformData,
     SDL_ReleaseGPUComputePipeline,
 } from "../../bindings/SDL3";
-import {
-    clusterCount,
-    clusterLinearWorkgroup,
-    clusterMarkWorkgroup,
-} from "../config.ts";
 import type { ClusterBuffers } from "../cluster/buffers.ts";
+import { clusterCount, clusterLinearWorkgroup, clusterMarkWorkgroup } from "../config.ts";
 import type { FrameUniform } from "../frame/uniforms.ts";
-import {
-    clusterBuildCsMain,
-    clusterClearCsMain,
-    clusterCullCsMain,
-    clusterMarkCsMain,
-} from "../shaders.generated.ts";
+import { clusterBuildCsMain, clusterClearCsMain, clusterCullCsMain, clusterMarkCsMain } from "../shaders.generated.ts";
 
 /** `ceil(value / divisor)`, for turning a thread count into a workgroup count. */
 function groups(value: u32, divisor: u32): u32 {
@@ -127,6 +118,17 @@ export class ClusterPasses {
         this.recordClear(cmd, active);
         this.recordMark(cmd, active, depth, depthSampler, frame, frameBytes, width, height);
         this.recordCull(cmd, bounds, cullLights, active, lightCount, lightIndex, frame, frameBytes);
+    }
+
+    release(device: Pointer<SDL_GPUDevice>): void {
+        releasePipeline(device, this.build);
+        releasePipeline(device, this.clear);
+        releasePipeline(device, this.mark);
+        releasePipeline(device, this.cull);
+        this.build = null;
+        this.clear = null;
+        this.mark = null;
+        this.cull = null;
     }
 
     private recordBuild(
@@ -269,17 +271,6 @@ export class ClusterPasses {
         // cluster nothing marked, which is the whole point of the marking pass.
         SDL_DispatchGPUCompute(pass, clusterCount(), 1, 1);
         SDL_EndGPUComputePass(pass);
-    }
-
-    release(device: Pointer<SDL_GPUDevice>): void {
-        releasePipeline(device, this.build);
-        releasePipeline(device, this.clear);
-        releasePipeline(device, this.mark);
-        releasePipeline(device, this.cull);
-        this.build = null;
-        this.clear = null;
-        this.mark = null;
-        this.cull = null;
     }
 }
 

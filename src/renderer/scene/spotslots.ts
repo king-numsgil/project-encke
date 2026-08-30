@@ -14,7 +14,7 @@ import type { fvec3 } from "std/linalg";
 import { spotShadowCount } from "../config.ts";
 import type { ShadowUniform } from "../frame/uniforms.ts";
 import { computeSpotViewProj, setSpotShadow } from "./cascades.ts";
-import { lightKindSpot, type Light } from "./light.ts";
+import { type Light, lightKindSpot } from "./light.ts";
 
 export class SpotAssignment {
     /**
