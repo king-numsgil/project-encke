@@ -15,7 +15,12 @@
         "strictPropertyInitialization": true,
         "isolatedModules": true,
         "verbatimModuleSyntax": true,
-        "noEmit": true
+        "noEmit": true,
+        "paths": {
+            "std/collection": [
+                "../node_modules/goblin-forge/std/collection.ts"
+            ]
+        }
     },
     "files": [
         "../node_modules/goblin-forge/global.d.ts"

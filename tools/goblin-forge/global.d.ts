@@ -150,6 +150,51 @@ interface Array<T> {
     readonly length: usize;
 
     /**
+     * Elements the buffer has room for before it must grow again. Never less
+     * than {@link length}, and zero for an empty array, which holds no buffer.
+     *
+     * This is `std::vector::capacity`. It is worth asking only next to
+     * {@link reserve}: on its own it describes an allocator's rounding.
+     */
+    readonly capacity: usize;
+
+    /**
+     * Make room for at least `capacity` elements, without adding any.
+     *
+     *     const bodies: Body[] = [];
+     *     bodies.reserve(4096);
+     *
+     * `length` does not change, so this is not `resize` — the elements are not
+     * there yet and nothing is constructed. Reserving *less* than the current
+     * capacity does nothing at all; there is no shrink here, because a shrink
+     * would be a reallocation that a smaller number should not be able to ask
+     * for.
+     *
+     * **Growing an existing buffer goes through the allocator's `realloc`**,
+     * which is what makes a fixed-step growth policy worth writing:
+     *
+     * ```ts
+     * const CHUNK: usize = 4096;
+     * if (bodies.length === bodies.capacity) {
+     *     bodies.reserve(bodies.capacity + CHUNK);
+     * }
+     * bodies.push(b);
+     * ```
+     *
+     * where mimalloc can extend the block in place, that growth copies nothing
+     * and holds one buffer rather than two. Doubling — which is what `push`
+     * does on its own, and the right default — allocates a second buffer beside
+     * the first at every step, so a 400 MB array of bodies transiently wants
+     * 1.2 GB. That is the whole reason this exists.
+     *
+     * It is **not** a promise that the buffer stays put. mimalloc extends in
+     * place when it can and moves the block when it cannot, so a `Pointer<T>`
+     * into the array is dangling after any growth, exactly as it is after a
+     * `push`. What is promised is only the room.
+     */
+    reserve(capacity: usize): void;
+
+    /**
      * Mutable, unlike `length`: `xs[0] = 1` is the point of the type. A
      * `readonly` index signature is what TypeScript's own `ReadonlyArray` has,
      * and it would make this a different container.
@@ -742,6 +787,54 @@ declare function alloc<T>(init: DeepPartial<T>): Pointer<T>;
 declare function move<T>(value: T): T;
 
 /**
+ * Take the value out of a place, leaving the default one there.
+ *
+ *     const oldest = take(slots[head]);   // slots[head] is now empty
+ *     const buffer = take(this.pending);  // the field is now an empty array
+ *
+ * This is `move` for somewhere that is not a local — an array element, a field,
+ * anything you can assign to — and it is a *different operation* rather than the
+ * same one in a new position, because what it leaves behind is different.
+ *
+ * **`move` leaves nothing; `take` leaves the default.** After `move(s)` the
+ * binding may not be read and `GF0235` says so. After `take(xs[i])` the element
+ * holds an empty `string`, a zeroed struct, an empty array — a real value, which
+ * you may read, and which the container's destructor will destroy harmlessly.
+ *
+ * The reason for the split is that only one of those promises can be kept. A
+ * binding is a name and the compiler can follow it; `xs[i]` with a computed `i`
+ * is not something any analysis can track, so a `move` there would leave a
+ * hollow slot nothing could warn you about — reading it would be a wrong answer
+ * with no diagnostic. Rust refuses to move out of an index for exactly this
+ * reason and offers `mem::take` instead; C++ allows it and leaves a
+ * "valid but unspecified" value, which is the footgun this avoids by specifying
+ * it.
+ *
+ * ```ts
+ * const first = take(xs[0]);
+ * console.log(xs[0]);        // "" — defined, not undefined behaviour
+ * console.log(xs.length);    // unchanged: taking is not removing
+ * ```
+ *
+ * **For a type that owns nothing this is exactly a read**, and costs exactly a
+ * read: there is nothing to take and nothing to put back, so `take(counts[i])`
+ * on an `i32[]` is `counts[i]`. That matters inside a generic, where `T` may
+ * turn out to be either.
+ *
+ * Three things it will not do:
+ *
+ *   * **A class** is refused. What would be left behind is an object whose
+ *     constructor never ran, which is the same thing `zeroed<T>()` refuses to
+ *     produce and refuses for the same reason.
+ *   * **A by-value parameter** is `GF0236`, exactly as `move` is: the caller
+ *     releases the argument when the call ends, so emptying the callee's copy
+ *     would free the same buffer twice.
+ *   * **A temporary** — `take(f())` — is refused, because there is no place to
+ *     put anything back into. Bind it and take from the binding, or just use it.
+ */
+declare function take<T>(value: T): T;
+
+/**
  * A checked downcast: `Reference<T>` if the value really is a `T`, `null` if not.
  *
  * ```ts
@@ -808,6 +901,65 @@ declare function sizeOf<T>(): usize;
 
 /** Alignment of `T` in bytes. */
 declare function alignOf<T>(): usize;
+
+// ---------------------------------------------------------------------------
+// Hashing and equality, by the type.
+//
+// These two are what a keyed container asks of a key, and they exist because
+// neither question has a single spelling that works across the language.
+// `a === b` compares two `i32` and two `string` perfectly well and is refused on
+// a struct (`GF0002`), on the grounds that the compiler should not guess which
+// fields matter. There is no operator overloading, so a class cannot answer for
+// itself either. A `HashMap<K, V>` needs *one* spelling that covers all three.
+//
+// So this is that spelling, and it is resolved from the type at the
+// instantiation:
+//
+//   * a **scalar**, `boolean`, enum, pointer, function pointer or `CString` —
+//     the bits, mixed;
+//   * a **`string`** — its bytes;
+//   * a **struct** or `FixedArray` — field by field, recursively, and never over
+//     the bytes, so the padding `GF0002` warns about is never read;
+//   * anything declaring **`hash(): u64`** and **`equals(other: Reference<T>)`**
+//     — those, which is the extension point.
+//
+// The last is where a class lands. A class has a vtable and slices on copy, so
+// there is no structural answer that is right for one; declaring the pair is how
+// a class becomes a key. It is the same job C++ gives a `std::hash<T>`
+// specialisation, resolved in the same place — at the instantiation, where the
+// concrete type is known — and it costs no vtable slot, because it is found by
+// name rather than dispatched.
+//
+// **A float is not a key** (`GF0407`). `0.0 === -0.0` is true and their bits
+// differ, so equal keys would hash to different buckets; `NaN !== NaN`, so a key
+// could never be found again. Rust refuses `Hash` for `f64` for exactly this
+// reason. Quantise to an integer and hash that.
+//
+// The hash is **deterministic**: the same value gives the same number in every
+// run, on every platform. That is what a simulation that has to replay wants,
+// and it is the opposite of what a server exposed to hostile keys wants — there
+// is no seeding here and no HashDoS resistance is claimed.
+// ---------------------------------------------------------------------------
+
+/**
+ * The hash of a value, by its type.
+ *
+ *     const h = hashOf<string>("sol");
+ *     const g = hashOf(cell);            // the type comes from the argument
+ *
+ * Equal values hash equally, which is the only property a container depends on.
+ * The converse is not promised and cannot be: two different values may collide.
+ */
+declare function hashOf<T>(value: T): u64;
+
+/**
+ * Whether two values of the same type are equal, by that type.
+ *
+ * Everything `===` accepts, plus the two things it refuses: a struct, compared
+ * field by field, and a class that declares `equals`. Where `===` works this is
+ * exactly `===` and costs the same.
+ */
+declare function equalsOf<T>(a: T, b: T): boolean;
 
 /**
  * A `T` whose bytes are all zero — what `alloc<T>()` gives, on the stack.

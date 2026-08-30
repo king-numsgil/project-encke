@@ -169483,7 +169483,7 @@ Additional information: BADCLIENT: Bad error code, ${badCode} not found in range
 });
 
 // src/packaged.ts
-import { dirname as dirname4, join as join6 } from "node:path";
+import { dirname as dirname5, join as join6 } from "node:path";
 import { fileURLToPath as fileURLToPath2 } from "node:url";
 
 // ../runtime/src/paths.ts
@@ -169502,6 +169502,9 @@ function tsconfigBase() {
 }
 function runtimeCrate() {
   return override?.runtimeCrate ?? join(packageRoot, "native");
+}
+function stdLibrary() {
+  return override?.stdLibrary ?? join(packageRoot, "std");
 }
 
 // ../backend/binding.js
@@ -169575,8 +169578,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-android-arm64");
         const bindingPackageVersion = require2("@goblin-forge/backend-android-arm64/package.json").version;
-        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169591,8 +169594,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-android-arm-eabi");
         const bindingPackageVersion = require2("@goblin-forge/backend-android-arm-eabi/package.json").version;
-        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169612,8 +169615,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-win32-x64-gnu");
           const bindingPackageVersion = require2("@goblin-forge/backend-win32-x64-gnu/package.json").version;
-          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169628,8 +169631,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-win32-x64-msvc");
           const bindingPackageVersion = require2("@goblin-forge/backend-win32-x64-msvc/package.json").version;
-          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169645,8 +169648,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-win32-ia32-msvc");
         const bindingPackageVersion = require2("@goblin-forge/backend-win32-ia32-msvc/package.json").version;
-        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169661,8 +169664,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-win32-arm64-msvc");
         const bindingPackageVersion = require2("@goblin-forge/backend-win32-arm64-msvc/package.json").version;
-        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169680,8 +169683,8 @@ function requireNative() {
     try {
       const binding = require2("@goblin-forge/backend-darwin-universal");
       const bindingPackageVersion = require2("@goblin-forge/backend-darwin-universal/package.json").version;
-      if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-        throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+      if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+        throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
       }
       return binding;
     } catch (e) {
@@ -169696,8 +169699,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-darwin-x64");
         const bindingPackageVersion = require2("@goblin-forge/backend-darwin-x64/package.json").version;
-        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169712,8 +169715,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-darwin-arm64");
         const bindingPackageVersion = require2("@goblin-forge/backend-darwin-arm64/package.json").version;
-        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169732,8 +169735,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-freebsd-x64");
         const bindingPackageVersion = require2("@goblin-forge/backend-freebsd-x64/package.json").version;
-        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169748,8 +169751,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-freebsd-arm64");
         const bindingPackageVersion = require2("@goblin-forge/backend-freebsd-arm64/package.json").version;
-        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169769,8 +169772,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-x64-musl");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-x64-musl/package.json").version;
-          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169785,8 +169788,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-x64-gnu");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-x64-gnu/package.json").version;
-          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169803,8 +169806,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-arm64-musl");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-arm64-musl/package.json").version;
-          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169819,8 +169822,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-arm64-gnu");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-arm64-gnu/package.json").version;
-          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169837,8 +169840,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-arm-musleabihf");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-arm-musleabihf/package.json").version;
-          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169853,8 +169856,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-arm-gnueabihf");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-arm-gnueabihf/package.json").version;
-          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169871,8 +169874,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-loong64-musl");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-loong64-musl/package.json").version;
-          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169887,8 +169890,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-loong64-gnu");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-loong64-gnu/package.json").version;
-          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169905,8 +169908,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-riscv64-musl");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-riscv64-musl/package.json").version;
-          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169921,8 +169924,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-riscv64-gnu");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-riscv64-gnu/package.json").version;
-          if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169938,8 +169941,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-linux-ppc64-gnu");
         const bindingPackageVersion = require2("@goblin-forge/backend-linux-ppc64-gnu/package.json").version;
-        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169954,8 +169957,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-linux-s390x-gnu");
         const bindingPackageVersion = require2("@goblin-forge/backend-linux-s390x-gnu/package.json").version;
-        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169974,8 +169977,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-openharmony-arm64");
         const bindingPackageVersion = require2("@goblin-forge/backend-openharmony-arm64/package.json").version;
-        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169990,8 +169993,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-openharmony-x64");
         const bindingPackageVersion = require2("@goblin-forge/backend-openharmony-x64/package.json").version;
-        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -170006,8 +170009,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-openharmony-arm");
         const bindingPackageVersion = require2("@goblin-forge/backend-openharmony-arm/package.json").version;
-        if (bindingPackageVersion !== "0.2.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -170114,8 +170117,8 @@ if (!nativeBinding || forceWasi) {
       if (!candidateFailed) {
         if (process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
           const bindingPackageVersion = require2("@goblin-forge/backend-wasm32-wasi/package.json").version;
-          if (bindingPackageVersion !== "0.2.0") {
-            throw new Error(`WASI binding package version mismatch, expected 0.2.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.2.1") {
+            throw new Error(`WASI binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
         }
         wasiBinding = require2("@goblin-forge/backend-wasm32-wasi");
@@ -172116,6 +172119,40 @@ var CODES = {
 
 ` + "Note what this is *not* about. `identity(1)` fails, but for the older " + "and more basic reason: `1` is a plain `number` with no width, so `T` is " + "determined and has no machine type. That is `GF0161`, and the fix is to " + "give the literal a width rather than to annotate the call."
   },
+  GF0405: {
+    title: "this type has no hash",
+    explanation: "`hashOf<T>(v)` answers from the type, and it answers for four kinds of " + "type: a scalar, `boolean`, an enum, a pointer or a `CString` — the bits, " + "mixed; a `string` — its bytes; a struct or a `FixedArray` — field by " + "field, recursively; and anything that declares `hash(): u64`.\n\n" + "That last one is the extension point, and it is where a **class** " + "belongs. A class has a vtable pointer and slices when it is copied, so " + "there is no structural answer that is right for one — hashing its bytes " + "would hash the vtable, and hashing its fields would make a base and a " + "derived object with the same fields the same key. Declaring the method " + `says what the identity actually is:
+
+` + `    class Cell {
+` + `        x: i32;
+` + `        y: i32;
+` + `        hash(): u64 { return hashOf<i32>(this.x) ^ hashOf<i32>(this.y); }
+` + `        equals(other: Reference<Cell>): boolean {
+` + `            return this.x === other.x && this.y === other.y;
+` + `        }
+` + `    }
+
+` + "Declare `equals` beside it. A container that hashes a key also compares " + "it, and a type that answers one question and not the other is one that " + `fails at the second call rather than at the first.
+
+` + "A `T[]` is not hashable and this is a gap rather than a rule: it needs a " + "loop over a length known only at run time, which every other case here " + "avoids. Hash something derived from it."
+  },
+  GF0406: {
+    title: "this type has no equality",
+    explanation: "`equalsOf<T>(a, b)` accepts everything `===` accepts — the scalars, " + "`boolean`, enums, pointers, `CString` and `string` — plus the two things " + "`===` refuses: a struct, compared field by field, and a class that " + "declares `equals(other: Reference<T>): boolean`.\n\n" + "A class with no such method is the usual arrival. See `GF0405`, which is " + "the same rule for the other half of the pair and shows both methods " + `together.
+
+` + "Note what is *not* happening here: nothing compares the bytes. Padding " + "between a struct's fields holds nothing in particular, so two values " + "that are equal in every field can differ in bytes — which is why `===` " + "on a struct is `GF0002` and why this walks the fields instead."
+  },
+  GF0407: {
+    title: "a float is not a key",
+    explanation: "`hashOf<f64>()` and `hashOf<f32>()` are refused, and so is hashing a " + "struct that contains one, because a float breaks the one property a " + `hashed container depends on: that equal keys hash equally.
+
+` + "`0.0 === -0.0` is true and the two have different bits, so they would " + "land in different buckets and a lookup would miss. `NaN !== NaN`, so a " + "`NaN` key could never be found again, whatever it hashed to.\n\n" + "Rust refuses `Hash` for `f64` for exactly this reason; C++ supplies " + "`std::hash<double>` and inherits both bugs.\n\n" + `Quantise, and hash the integer:
+
+` + `    const cell = { x: cast<i64>(dfloor(p.x / SIZE)), y: cast<i64>(dfloor(p.y / SIZE)) };
+` + `    map.set(cell, body);
+
+` + "`equalsOf` is a different question and accepts a float, because `===` on " + "two floats is well defined — it is only the pairing with a hash that is " + "not."
+  },
   GF9001: {
     title: "the backend could not decode the MIR",
     explanation: "The frontend produced a buffer the backend could not read. This is a " + "compiler bug; please report it with the program that triggered it."
@@ -173625,7 +173662,7 @@ function isIntegerLiteral(text) {
 // ../runtime/src/build.ts
 import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { join as join2 } from "node:path";
+import { dirname as dirname3, join as join2 } from "node:path";
 var CARGO_OPT_LEVEL = {
   O0: "0",
   O1: "1",
@@ -173653,7 +173690,11 @@ function buildRuntime(target, optLevel = "O2") {
     cwd: RUNTIME_CRATE(),
     encoding: "utf8",
     shell: process.platform === "win32",
-    env: { ...process.env, CARGO_PROFILE_RELEASE_OPT_LEVEL: CARGO_OPT_LEVEL[optLevel] }
+    env: {
+      ...process.env,
+      CARGO_PROFILE_RELEASE_OPT_LEVEL: CARGO_OPT_LEVEL[optLevel],
+      ...cToolchain(target ?? hostTarget())
+    }
   });
   if (result.error) {
     throw new Error(`could not run cargo to build the Goblin runtime: ${result.error.message}`);
@@ -173674,6 +173715,53 @@ ${result.stderr ?? ""}${result.stdout ?? ""}`);
   };
   cache.set(key, build);
   return build;
+}
+function cToolchain(triple) {
+  if (triple === undefined || !triple.endsWith("-msvc")) {
+    return {};
+  }
+  const clang = msvcClang();
+  const suffix = triple.replaceAll("-", "_");
+  const env = {};
+  for (const [name, value] of [
+    [`CC_${suffix}`, clang],
+    [`CXX_${suffix}`, clang],
+    [`CXXFLAGS_${suffix}`, "-EHsc"]
+  ]) {
+    if (process.env[name] === undefined) {
+      env[name] = value;
+    }
+  }
+  return env;
+}
+function msvcClang() {
+  const named = process.env["GOBLIN_CLANG"];
+  if (named === undefined || !(named.includes("/") || named.includes("\\"))) {
+    return "clang-cl";
+  }
+  for (const name of ["clang-cl.exe", "clang-cl"]) {
+    const beside = join2(dirname3(named), name);
+    if (existsSync(beside)) {
+      return beside;
+    }
+  }
+  return "clang-cl";
+}
+var hostTriple;
+var hostAsked = false;
+function hostTarget() {
+  if (hostAsked) {
+    return hostTriple;
+  }
+  hostAsked = true;
+  const probe = spawnSync("rustc", ["-vV"], {
+    encoding: "utf8",
+    shell: process.platform === "win32"
+  });
+  const marker = "host: ";
+  const line = (probe.stdout ?? "").split(/\r?\n/).find((candidate) => candidate.startsWith(marker));
+  hostTriple = line?.slice(marker.length).trim() || undefined;
+  return hostTriple;
 }
 function targetDir(optLevel) {
   return join2(RUNTIME_CRATE(), "target", `opt-${optLevel}`);
@@ -173727,7 +173815,7 @@ function parseNativeStaticLibs(stderr) {
 
 // src/compile.ts
 import { copyFileSync, mkdirSync, writeFileSync } from "node:fs";
-import { basename, dirname as dirname3, isAbsolute as isAbsolute3, join as join4, resolve as resolve2 } from "node:path";
+import { basename, dirname as dirname4, isAbsolute as isAbsolute3, join as join4, resolve as resolve2 } from "node:path";
 
 // src/drop-elaboration.ts
 var ENTRY_BLOCK = 0;
@@ -173892,14 +173980,31 @@ function setInit(local, tracked, state, initialised) {
 function readsOf(rvalue2) {
   switch (rvalue2.kind) {
     case "Use":
+      return [rvalue2.value];
     case "Unary":
-      return [rvalue2.kind === "Use" ? rvalue2.value : rvalue2.operand];
+      return [rvalue2.operand];
     case "Cast":
       return [rvalue2.operand];
     case "Binary":
       return [rvalue2.lhs, rvalue2.rhs];
     case "Aggregate":
       return rvalue2.fields;
+    case "Select":
+      return [rvalue2.cond, rvalue2.ifTrue, rvalue2.ifFalse];
+    case "SimdStore":
+      return [rvalue2.vector];
+    case "SimdFromParts":
+      return rvalue2.lanes;
+    case "SimdSplat":
+      return [rvalue2.value];
+    case "SimdBinary":
+      return [rvalue2.lhs, rvalue2.rhs];
+    case "SimdUnary":
+      return [rvalue2.operand];
+    case "SimdShuffle":
+      return [rvalue2.lhs, rvalue2.rhs];
+    case "SimdFma":
+      return [rvalue2.a, rvalue2.b, rvalue2.c];
     default:
       return [];
   }
@@ -173980,6 +174085,7 @@ function insertDrops(module, func, tracked, onEntry) {
       if (statement.kind === "Init" || statement.kind === "Assign") {
         applyStatement(statement, tracked, running);
         rewritten.push(statement);
+        clearMovedFlags(rewritten, flags, readsOf(statement.rvalue));
         maybeSetFlag(rewritten, flags, statement.place, true);
         continue;
       }
@@ -173995,6 +174101,7 @@ function insertDrops(module, func, tracked, onEntry) {
       applyStatement(statement, tracked, running);
       rewritten.push(statement);
     }
+    clearMovedFlags(rewritten, flags, movedByTerminator(block.terminator));
     applyTerminator(block.terminator, tracked, running);
     block.statements = rewritten;
   }
@@ -174003,6 +174110,29 @@ function insertDrops(module, func, tracked, onEntry) {
     if (entry !== undefined) {
       entry.statements.unshift(...[...flags.values()].map((flag) => ({ kind: "SetDropFlag", flag, value: false })));
     }
+  }
+}
+function clearMovedFlags(out, flags, operands) {
+  for (const operand2 of operands) {
+    if (operand2.kind !== "Move" || operand2.value.projection.length !== 0) {
+      continue;
+    }
+    const flag = flags.get(operand2.value.local);
+    if (flag !== undefined) {
+      out.push({ kind: "SetDropFlag", flag, value: false });
+    }
+  }
+}
+function movedByTerminator(terminator) {
+  switch (terminator.kind) {
+    case "Branch":
+      return [terminator.cond];
+    case "Switch":
+      return [terminator.discr];
+    case "Call":
+      return terminator.args;
+    default:
+      return [];
   }
 }
 function maybeSetFlag(out, flags, place2, value) {
@@ -174415,7 +174545,7 @@ var RESERVED_ON_POINTER = [
 function collectClasses(program, checker, report) {
   const declarations = new Map;
   for (const source of program.getSourceFiles()) {
-    if (source.isDeclarationFile || program.isSourceFileFromExternalLibrary(source)) {
+    if (source.isDeclarationFile) {
       continue;
     }
     for (const statement of source.statements) {
@@ -174555,7 +174685,7 @@ function buildClass(node, name, bindings, analyse, checker, report) {
     }
     fields.push({ name: member2.name.text, type, declaration: member2, owner: name });
   }
-  const destructorSymbol = `${name}$drop`;
+  const destructorSymbol = `${name}$~drop`;
   const slots = base ? [...base.slots] : [destructorSymbol];
   slots[0] = destructorSymbol;
   const statics = new Map;
@@ -174786,6 +174916,7 @@ var import_typescript6 = __toESM(require_typescript(), 1);
 var NO_UNWIND = { kind: "Unreachable" };
 var NATIVE_CAST = "cast";
 var MOVE = "move";
+var TAKE = "take";
 var FIXED_ARRAY = "fixedArray";
 var TRY_CAST = "tryCast";
 var CSTRING = "cstring";
@@ -174797,6 +174928,12 @@ var NATIVE_ALIGN_OF = "alignOf";
 var NATIVE_ZEROED = "zeroed";
 var STRING_FROM_CSTRING = "stringFromCString";
 var STRING_FROM_BYTES = "stringFromBytes";
+var HASH_OF = "hashOf";
+var EQUALS_OF = "equalsOf";
+var HASH_METHOD = "hash";
+var EQUALS_METHOD = "equals";
+var FNV_OFFSET_BASIS = 0xcbf29ce484222325n;
+var FNV_PRIME = 0x00000100000001b3n;
 var POINTER_ADDRESS = "address";
 var MATH_NAMES = [
   "dsin",
@@ -174923,6 +175060,10 @@ var RUNTIME = {
   fromBool: "gf_string_from_bool",
   stringFree: "gf_string_free",
   arrayPop: "gf_array_pop",
+  arrayCapacity: "gf_array_capacity",
+  hashU64: "gf_hash_u64",
+  stringHash: "gf_string_hash",
+  arrayReserve: "gf_array_reserve",
   alloc: "gf_alloc",
   free: "gf_free",
   allocArray: "gf_alloc_array",
@@ -175009,6 +175150,8 @@ var CSTRING_TYPE = { kind: "cstring" };
 var USIZE = { kind: "scalar", name: "usize" };
 var ISIZE = { kind: "scalar", name: "isize" };
 var VOID = { kind: "void" };
+var U64 = { kind: "scalar", name: "u64" };
+var BOOL = { kind: "bool" };
 var POLY = { kind: "poly" };
 var ERROR = { kind: "error" };
 var typed = (type) => ({ kind: "typed", type });
@@ -175621,10 +175764,8 @@ class WidthPass extends Emitter {
       }
       const linalg = linalgNamedBy(this.outer.checker, expression.expression);
       if (linalg !== undefined) {
-        for (const argument of expression.arguments ?? []) {
-          if (this.width(argument).kind === "error") {
-            return ERROR;
-          }
+        if (!this.argumentWidths(expression.arguments ?? [])) {
+          return ERROR;
         }
         return typed(linalgStruct(linalg));
       }
@@ -175733,6 +175874,9 @@ class WidthPass extends Emitter {
     const array = subject.type.kind === "reference" ? subject.type.referent : subject.type;
     if (array.kind === "array" || array.kind === "fixedArray") {
       if (expression.name.text === "length") {
+        return typed(USIZE);
+      }
+      if (expression.name.text === "capacity" && array.kind === "array") {
         return typed(USIZE);
       }
       this.outer.unsupported(expression, `\`${expression.name.text}\` on an array`);
@@ -175891,6 +176035,17 @@ class WidthPass extends Emitter {
       element: array.element
     };
   }
+  argumentWidths(args) {
+    for (const argument of args) {
+      if (import_typescript9.default.isArrowFunction(argument) || import_typescript9.default.isFunctionExpression(argument)) {
+        continue;
+      }
+      if (this.width(argument).kind === "error") {
+        return false;
+      }
+    }
+    return true;
+  }
   #callWidth(expression) {
     if (expression.expression.kind === import_typescript9.default.SyntaxKind.SuperKeyword) {
       return typed(VOID);
@@ -175898,10 +176053,8 @@ class WidthPass extends Emitter {
     const callee2 = expression.expression;
     const callable = this.tryErase(callee2);
     if (callable?.kind === "fnptr" && !this.outer.namesADeclaredFunction(callee2) && this.outer.functionValueAt(callee2) === undefined && !(import_typescript9.default.isPropertyAccessExpression(callee2) && this.#namesAMethod(callee2))) {
-      for (const argument of expression.arguments) {
-        if (this.width(argument).kind === "error") {
-          return ERROR;
-        }
+      if (!this.argumentWidths(expression.arguments)) {
+        return ERROR;
       }
       return typed(callable.returns);
     }
@@ -175923,60 +176076,69 @@ class WidthPass extends Emitter {
       this.outer.unsupported(expression.expression, "this call target");
       return ERROR;
     }
-    if (expression.expression.text === ALLOC_ARRAY) {
-      for (const argument of expression.arguments) {
-        if (this.width(argument).kind === "error") {
-          return ERROR;
-        }
+    const name = this.outer.shadowsPrelude(expression.expression) ? "" : expression.expression.text;
+    if (name === ALLOC_ARRAY) {
+      if (!this.argumentWidths(expression.arguments)) {
+        return ERROR;
       }
       return this.#erasedWidth(expression);
     }
-    if (expression.expression.text === ALLOC || expression.expression.text === NATIVE_SIZE_OF || expression.expression.text === NATIVE_ALIGN_OF || expression.expression.text === NATIVE_ZEROED) {
-      for (const argument of expression.arguments.slice(1)) {
-        if (this.width(argument).kind === "error") {
-          return ERROR;
-        }
+    if (name === ALLOC || name === NATIVE_SIZE_OF || name === NATIVE_ALIGN_OF || name === NATIVE_ZEROED) {
+      if (!this.argumentWidths(expression.arguments.slice(1))) {
+        return ERROR;
       }
       return this.#erasedWidth(expression);
     }
-    if (expression.expression.text === NATIVE_CAST) {
+    if (name === HASH_OF || name === EQUALS_OF) {
+      if (!this.argumentWidths(expression.arguments)) {
+        return ERROR;
+      }
+      return typed(name === HASH_OF ? U64 : BOOL);
+    }
+    if (name === NATIVE_CAST) {
       const target2 = this.erase(expression, this.outer.checker.getTypeAtLocation(expression));
       return target2 === undefined ? ERROR : typed(target2);
     }
-    if (expression.expression.text === FIXED_ARRAY) {
+    if (name === FIXED_ARRAY) {
       const type = this.erase(expression, this.outer.checker.getContextualType(expression) ?? this.outer.checker.getTypeAtLocation(expression));
       return type === undefined ? ERROR : typed(type);
     }
-    if (expression.expression.text === TRY_CAST) {
+    if (name === TRY_CAST) {
       const type = this.tryCastTarget(expression);
       return type === undefined ? ERROR : typed(type);
     }
-    if (expression.expression.text === CSTRING) {
+    if (name === CSTRING) {
       const argument = expression.arguments[0];
       if (argument !== undefined && this.width(argument).kind === "error") {
         return ERROR;
       }
       return typed(CSTRING_TYPE);
     }
-    if (expression.expression.text === CSTRING_FREE) {
+    if (name === CSTRING_FREE) {
       const argument = expression.arguments[0];
       if (argument !== undefined && this.width(argument).kind === "error") {
         return ERROR;
       }
       return typed(VOID);
     }
-    if (expression.expression.text === STRING_FROM_CSTRING || expression.expression.text === STRING_FROM_BYTES) {
-      for (const argument of expression.arguments) {
-        if (this.width(argument).kind === "error") {
-          return ERROR;
-        }
+    if (name === STRING_FROM_CSTRING || name === STRING_FROM_BYTES) {
+      if (!this.argumentWidths(expression.arguments)) {
+        return ERROR;
       }
       return typed(STRING);
     }
-    if (expression.expression.text === MOVE) {
+    if (name === MOVE) {
       const argument = expression.arguments[0];
       if (expression.arguments.length !== 1 || argument === undefined) {
         this.outer.error(expression, "GF0235", "`move` takes exactly one value.");
+        return ERROR;
+      }
+      return this.width(argument);
+    }
+    if (name === TAKE) {
+      const argument = expression.arguments[0];
+      if (expression.arguments.length !== 1 || argument === undefined) {
+        this.outer.error(expression, "GF0002", "`take` takes exactly one place.");
         return ERROR;
       }
       return this.width(argument);
@@ -175988,10 +176150,8 @@ class WidthPass extends Emitter {
     if (target === undefined) {
       const width = this.width(expression.expression);
       if (width.kind === "typed" && (width.type.kind === "fnptr" || width.type.kind === "localfn")) {
-        for (const argument of expression.arguments) {
-          if (this.width(argument).kind === "error") {
-            return ERROR;
-          }
+        if (!this.argumentWidths(expression.arguments)) {
+          return ERROR;
         }
         return typed(width.type.returns);
       }
@@ -176006,13 +176166,13 @@ class WidthPass extends Emitter {
       if (access.name.text === "forEach") {
         return typed(VOID);
       }
-      for (const argument of expression.arguments) {
-        if (this.width(argument).kind === "error") {
-          return ERROR;
-        }
+      if (!this.argumentWidths(expression.arguments)) {
+        return ERROR;
       }
       switch (access.name.text) {
         case "push":
+          return typed(VOID);
+        case "reserve":
           return typed(VOID);
         case "pop":
           return typed(element);
@@ -176022,10 +176182,8 @@ class WidthPass extends Emitter {
       }
     }
     if (this.tryErase(access.expression)?.kind === "string") {
-      for (const argument of expression.arguments) {
-        if (this.width(argument).kind === "error") {
-          return ERROR;
-        }
+      if (!this.argumentWidths(expression.arguments)) {
+        return ERROR;
       }
       switch (access.name.text) {
         case "substring":
@@ -176042,30 +176200,24 @@ class WidthPass extends Emitter {
     const linalgStatic = linalgNamedBy(this.outer.checker, access.expression);
     const linalgType = linalgStatic ?? linalgFromMachine(this.tryErase(access.expression));
     if (linalgType !== undefined) {
-      for (const argument of expression.arguments) {
-        if (this.width(argument).kind === "error") {
-          return ERROR;
-        }
+      if (!this.argumentWidths(expression.arguments)) {
+        return ERROR;
       }
       return this.#linalgWidth(access, linalgType, linalgStatic !== undefined);
     }
     if (POINTER_METHODS.has(access.name.text)) {
       const pointer = this.tryErase(access.expression);
       if (pointer?.kind === "pointer") {
-        for (const argument of expression.arguments) {
-          if (this.width(argument).kind === "error") {
-            return ERROR;
-          }
+        if (!this.argumentWidths(expression.arguments)) {
+          return ERROR;
         }
         return this.#pointerMethodWidth(expression, access, pointer);
       }
     }
     const staticMethod = this.staticAt(access);
     if (staticMethod !== undefined) {
-      for (const argument of expression.arguments) {
-        if (this.width(argument).kind === "error") {
-          return ERROR;
-        }
+      if (!this.argumentWidths(expression.arguments)) {
+        return ERROR;
       }
       const record2 = this.outer.fn(staticMethod.symbol);
       if (record2 === undefined) {
@@ -176081,10 +176233,8 @@ class WidthPass extends Emitter {
         this.outer.unsupported(expression, `\`${contract.name}.${access.name.text}()\``);
         return ERROR;
       }
-      for (const argument of expression.arguments) {
-        if (this.width(argument).kind === "error") {
-          return ERROR;
-        }
+      if (!this.argumentWidths(expression.arguments)) {
+        return ERROR;
       }
       return typed(method2.returns);
     }
@@ -176099,10 +176249,8 @@ class WidthPass extends Emitter {
     const className = info.name;
     const template = info.methodTemplates.get(access.name.text);
     if (template !== undefined) {
-      for (const argument of expression.arguments) {
-        if (this.width(argument).kind === "error") {
-          return ERROR;
-        }
+      if (!this.argumentWidths(expression.arguments)) {
+        return ERROR;
       }
       const instance = this.outer.instantiateMethod(info, template, expression, this.bindings);
       if (instance === undefined || instance === "reported") {
@@ -176119,10 +176267,8 @@ class WidthPass extends Emitter {
     if (record === undefined) {
       return ERROR;
     }
-    for (const argument of expression.arguments) {
-      if (this.width(argument).kind === "error") {
-        return ERROR;
-      }
+    if (!this.argumentWidths(expression.arguments)) {
+      return ERROR;
     }
     return typed(record.signature.returns);
   }
@@ -176745,6 +176891,34 @@ class IntrinsicLowerer extends WidthPass {
       rvalue: { kind: "Use", value: this.forStorage(value) }
     });
     this.push({ kind: "StorageDead", value: slot });
+    return { operand: { kind: "Const", value: this.boolConst(true) }, type: VOID };
+  }
+  arrayReserve(expression, array, element) {
+    const argument = expression.arguments[0];
+    if (expression.arguments.length !== 1 || argument === undefined) {
+      this.outer.error(expression, "GF0002", "`reserve` takes exactly one capacity.");
+      return;
+    }
+    const resolved = this.asArray(expression, array);
+    if (resolved === undefined) {
+      return;
+    }
+    const capacity = this.expressionTyped(argument, USIZE);
+    if (capacity === undefined) {
+      return;
+    }
+    const handle = { kind: "array", element };
+    const ty2 = this.outer.tyOf(element, expression);
+    const slot = this.temporaryTyped(expression, { kind: "pointer", pointee: handle }, {
+      kind: "Ref",
+      value: resolved.place
+    });
+    const size = this.temporaryTyped(expression, USIZE, { kind: "SizeOf", value: ty2 });
+    const align = this.temporaryTyped(expression, USIZE, { kind: "AlignOf", value: ty2 });
+    if (slot === undefined || size === undefined || align === undefined) {
+      return;
+    }
+    this.callRuntime(expression, RUNTIME.arrayReserve, [slot, capacity, size, align], VOID);
     return { operand: { kind: "Const", value: this.boolConst(true) }, type: VOID };
   }
   arrayPop(expression, array, element) {
@@ -180811,6 +180985,17 @@ class BodyLowerer extends BoundaryLowerer {
         return this.temporaryTyped(expression, USIZE, { kind: "Len", value: read.value });
       }
     }
+    if (expression.name.text === "capacity") {
+      const array = this.asArray(expression, subject);
+      if (array !== undefined) {
+        return this.callRuntime(expression, RUNTIME.arrayCapacity, [
+          {
+            operand: { kind: "Copy", value: array.place },
+            type: { kind: "array", element: array.element }
+          }
+        ], USIZE);
+      }
+    }
     this.outer.unsupported(expression, "this property access");
     return;
   }
@@ -181098,12 +181283,15 @@ class BodyLowerer extends BoundaryLowerer {
     if (!import_typescript13.default.isIdentifier(expression.expression)) {
       return;
     }
-    const name = expression.expression.text;
+    const name = this.outer.shadowsPrelude(expression.expression) ? "" : expression.expression.text;
     if (name === NATIVE_CAST) {
       return this.cast(expression, natural);
     }
     if (name === MOVE) {
       return this.#move(expression);
+    }
+    if (name === TAKE) {
+      return this.#take(expression);
     }
     if (name === FIXED_ARRAY) {
       return this.fixedArray(expression, natural);
@@ -181134,6 +181322,12 @@ class BodyLowerer extends BoundaryLowerer {
     }
     if (name === NATIVE_ZEROED) {
       return this.zeroed(expression, natural);
+    }
+    if (name === HASH_OF) {
+      return this.#hashOf(expression);
+    }
+    if (name === EQUALS_OF) {
+      return this.#equalsOf(expression);
     }
     const target = this.outer.resolveCallee(expression, this.bindings);
     if (target === undefined || target === "reported") {
@@ -181343,6 +181537,317 @@ class BodyLowerer extends BoundaryLowerer {
     }
     return this.emitCall(expression, { kind: "Direct", value: { kind: "Local", value: record.id } }, args, record.signature.returns);
   }
+  #hashOf(expression) {
+    const argument = expression.arguments[0];
+    if (expression.arguments.length !== 1 || argument === undefined) {
+      this.outer.error(expression, "GF0002", `\`${HASH_OF}\` takes exactly one value.`);
+      return;
+    }
+    const value = this.#keyOperand(expression, argument);
+    if (value === undefined) {
+      return;
+    }
+    return this.#hashValue(argument, value);
+  }
+  #keyOperand(expression, argument) {
+    const written = expression.typeArguments?.[0];
+    if (written === undefined) {
+      return this.value(argument, undefined);
+    }
+    const type = this.erase(written, this.outer.checker.getTypeAtLocation(written));
+    return type === undefined ? undefined : this.expressionTyped(argument, type);
+  }
+  #hashValue(at, value) {
+    const borrowed = this.#throughReference(at, value);
+    if (borrowed === "reported") {
+      return;
+    }
+    if (borrowed !== undefined) {
+      return this.#hashValue(at, borrowed);
+    }
+    const own = this.#ownHash(at, value);
+    if (own !== undefined) {
+      return own === "reported" ? undefined : own;
+    }
+    const bits = this.#hashBits(at, value);
+    if (bits === undefined) {
+      return;
+    }
+    return this.callRuntime(at, RUNTIME.hashU64, [bits], U64);
+  }
+  #ownHash(at, value) {
+    const asClass = this.asClass(value);
+    if (asClass === undefined || !asClass.info.methods.has(HASH_METHOD)) {
+      return;
+    }
+    const called = this.#callKeyMethod(at, asClass, HASH_METHOD, []);
+    if (called === undefined) {
+      return "reported";
+    }
+    if (called.type.kind !== "scalar" || called.type.name !== "u64") {
+      this.outer.error(at, "GF0405", `\`${asClass.info.name}.${HASH_METHOD}()\` returns ` + `\`${renderType(called.type)}\`, and a hash is a \`u64\`. Write ` + `\`${HASH_METHOD}(): u64\`.`);
+      return "reported";
+    }
+    return called;
+  }
+  #throughReference(at, value) {
+    if (value.type.kind !== "reference") {
+      return;
+    }
+    const place2 = this.placeOfSubject(at, value);
+    if (place2 === undefined) {
+      return "reported";
+    }
+    const referent = value.type.referent;
+    return {
+      operand: {
+        kind: this.needsCallerCopy(referent) ? "Borrow" : "Copy",
+        value: { local: place2.local, projection: [...place2.projection, { kind: "Deref" }] }
+      },
+      type: referent
+    };
+  }
+  #hashBits(at, value) {
+    const type = value.type;
+    if (isFloatType(type)) {
+      this.outer.error(at, "GF0407", `\`${renderType(type)}\` has no hash: \`0.0 === -0.0\` is true and their ` + "bits differ, so two equal keys would land in different buckets, and " + "`NaN` is not equal to itself, so such a key could never be found " + "again. Quantise to an integer and hash that.");
+      return;
+    }
+    if (isIntegerType(type)) {
+      return this.#widenToU64(at, value);
+    }
+    if (type.kind === "bool") {
+      const widened = this.temporaryTyped(at, U64, {
+        kind: "Cast",
+        op: "BoolToInt",
+        operand: this.forRead(value),
+        to: this.outer.tyOf(U64, at)
+      });
+      return widened;
+    }
+    if (type.kind === "pointer" || type.kind === "fnptr" || type.kind === "cstring") {
+      const address = this.temporaryTyped(at, USIZE, {
+        kind: "Cast",
+        op: "PtrToInt",
+        operand: this.forRead(value),
+        to: this.outer.tyOf(USIZE, at)
+      });
+      return this.#widenToU64(at, address);
+    }
+    if (type.kind === "string") {
+      return this.callRuntime(at, RUNTIME.stringHash, [value], U64);
+    }
+    if (type.kind === "struct") {
+      const place2 = this.placeOfSubject(at, value);
+      if (place2 === undefined) {
+        return;
+      }
+      let accumulator = this.#u64Const(at, FNV_OFFSET_BASIS);
+      for (const [index, field] of type.fields.entries()) {
+        const read = {
+          operand: {
+            kind: this.needsCallerCopy(field.type) ? "Borrow" : "Copy",
+            value: {
+              local: place2.local,
+              projection: [...place2.projection, { kind: "Field", value: FieldId(index) }]
+            }
+          },
+          type: field.type
+        };
+        const part = this.#hashValue(at, read);
+        if (part === undefined) {
+          return;
+        }
+        accumulator = this.#foldHash(at, accumulator, part);
+      }
+      return accumulator;
+    }
+    if (type.kind === "fixedArray") {
+      const place2 = this.placeOfSubject(at, value);
+      if (place2 === undefined) {
+        return;
+      }
+      let accumulator = this.#u64Const(at, FNV_OFFSET_BASIS);
+      for (let i = 0;i < type.length; i += 1) {
+        const index = this.temporaryTyped(at, USIZE, {
+          kind: "Use",
+          value: {
+            kind: "Const",
+            value: { kind: "Int", bits: BigInt(i), ty: this.outer.tyOf(USIZE, at) }
+          }
+        });
+        const read = {
+          operand: {
+            kind: this.needsCallerCopy(type.element) ? "Borrow" : "Copy",
+            value: {
+              local: place2.local,
+              projection: [
+                ...place2.projection,
+                { kind: "Index", value: index.temporary ?? LocalId(0) }
+              ]
+            }
+          },
+          type: type.element
+        };
+        const part = this.#hashValue(at, read);
+        if (part === undefined) {
+          return;
+        }
+        accumulator = this.#foldHash(at, accumulator, part);
+      }
+      return accumulator;
+    }
+    this.outer.error(at, "GF0405", `there is no hash for a \`${renderType(type)}\`. ` + (type.kind === "class" ? `Declare \`${HASH_METHOD}(): u64\` and ` + `\`${EQUALS_METHOD}(other: Reference<${renderType(type)}>): boolean\` on ` + "it — a class has a vtable and slices when it is copied, so what its " + "identity is has to be said rather than guessed." : type.kind === "array" ? "Hashing one needs a loop over a length known only at run time, " + "which every other case here avoids. Hash something derived from it." : "The types that have one are the scalars, `boolean`, enums, " + "pointers, `CString`, `string`, and structs and fixed arrays of " + "those."));
+    return;
+  }
+  #foldHash(at, accumulator, part) {
+    const mixed = this.temporaryTyped(at, U64, {
+      kind: "Binary",
+      op: "BitXor",
+      lhs: this.forRead(accumulator),
+      rhs: this.forRead(part)
+    });
+    return this.temporaryTyped(at, U64, {
+      kind: "Binary",
+      op: "Mul",
+      lhs: this.forRead(mixed),
+      rhs: this.forRead(this.#u64Const(at, FNV_PRIME))
+    });
+  }
+  #u64Const(at, bits) {
+    return {
+      operand: { kind: "Const", value: { kind: "Int", bits, ty: this.outer.tyOf(U64, at) } },
+      type: U64
+    };
+  }
+  #widenToU64(at, value) {
+    if (value.type.kind === "scalar" && value.type.name === "u64") {
+      return value;
+    }
+    return this.temporaryTyped(at, U64, {
+      kind: "Cast",
+      op: "IntToInt",
+      operand: this.forRead(value),
+      to: this.outer.tyOf(U64, at)
+    });
+  }
+  #equalsOf(expression) {
+    const [left, right] = expression.arguments;
+    if (expression.arguments.length !== 2 || left === undefined || right === undefined) {
+      this.outer.error(expression, "GF0002", `\`${EQUALS_OF}\` takes exactly two values.`);
+      return;
+    }
+    const a = this.#keyOperand(expression, left);
+    if (a === undefined) {
+      return;
+    }
+    const b = this.expressionTyped(right, a.type);
+    if (b === undefined) {
+      return;
+    }
+    return this.#equalValues(expression, a, b);
+  }
+  #equalValues(at, a, b) {
+    const left = this.#throughReference(at, a);
+    const right = this.#throughReference(at, b);
+    if (left === "reported" || right === "reported") {
+      return;
+    }
+    if (left !== undefined || right !== undefined) {
+      return this.#equalValues(at, left ?? a, right ?? b);
+    }
+    const type = a.type;
+    const asClass = this.asClass(a);
+    if (asClass !== undefined && asClass.info.methods.has(EQUALS_METHOD)) {
+      const other = this.placeOfSubject(at, b);
+      if (other === undefined) {
+        return;
+      }
+      return this.#callKeyMethod(at, asClass, EQUALS_METHOD, [
+        this.refTo(at, other, { kind: "class", name: asClass.info.name })
+      ]);
+    }
+    if (isMachineComparable(type) || type.kind === "string") {
+      return this.temporaryTyped(at, BOOL, {
+        kind: "Binary",
+        op: "Eq",
+        lhs: this.forRead(a),
+        rhs: this.forRead(b)
+      });
+    }
+    if (type.kind === "struct" || type.kind === "fixedArray") {
+      const left2 = this.placeOfSubject(at, a);
+      const right2 = this.placeOfSubject(at, b);
+      if (left2 === undefined || right2 === undefined) {
+        return;
+      }
+      const parts = type.kind === "struct" ? type.fields.map((field, index) => ({ type: field.type, index })) : Array.from({ length: type.length }, (_, index) => ({
+        type: type.element,
+        index
+      }));
+      let answer = {
+        operand: { kind: "Const", value: this.boolConst(true) },
+        type: BOOL
+      };
+      for (const part of parts) {
+        const step = this.#equalValues(at, this.#partOf(at, left2, type, part.type, part.index), this.#partOf(at, right2, type, part.type, part.index));
+        if (step === undefined) {
+          return;
+        }
+        answer = this.temporaryTyped(at, BOOL, {
+          kind: "Select",
+          cond: this.forRead(answer),
+          ifTrue: this.forRead(step),
+          ifFalse: { kind: "Const", value: this.boolConst(false) }
+        });
+      }
+      return answer;
+    }
+    this.outer.error(at, "GF0406", `there is no equality for a \`${renderType(type)}\`. ` + (type.kind === "class" ? `Declare \`${EQUALS_METHOD}(other: Reference<${renderType(type)}>): ` + `boolean\` on it, and \`${HASH_METHOD}(): u64\` beside it.` : "The types that have one are the scalars, `boolean`, enums, " + "pointers, `CString`, `string`, and structs and fixed arrays of those."));
+    return;
+  }
+  #partOf(at, place2, whole, part, index) {
+    const projection2 = whole.kind === "struct" ? [...place2.projection, { kind: "Field", value: FieldId(index) }] : [
+      ...place2.projection,
+      {
+        kind: "Index",
+        value: this.temporaryTyped(at, USIZE, {
+          kind: "Use",
+          value: {
+            kind: "Const",
+            value: {
+              kind: "Int",
+              bits: BigInt(index),
+              ty: this.outer.tyOf(USIZE, at)
+            }
+          }
+        }).temporary ?? LocalId(0)
+      }
+    ];
+    return {
+      operand: {
+        kind: this.needsCallerCopy(part) ? "Borrow" : "Copy",
+        value: { local: place2.local, projection: projection2 }
+      },
+      type: part
+    };
+  }
+  #callKeyMethod(at, asClass, name, extra) {
+    const method = asClass.info.methods.get(name);
+    if (method === undefined) {
+      return;
+    }
+    const record = this.outer.fn(method.symbol);
+    if (record === undefined || record.kind !== "defined") {
+      this.outer.unsupported(at, `a call to \`${method.symbol}\``);
+      return;
+    }
+    if (record.signature.params.length !== extra.length + 1) {
+      this.outer.error(at, name === HASH_METHOD ? "GF0405" : "GF0406", `\`${asClass.info.name}.${name}\` takes ` + `${record.signature.params.length - 1} argument(s), and ` + `\`${name === HASH_METHOD ? HASH_OF : EQUALS_OF}\` calls it with ` + `${extra.length}.`);
+      return;
+    }
+    return this.emitCall(at, { kind: "Virtual", slot: method.slot, sig: record.sig }, [this.refTo(at, asClass.place, { kind: "class", name: asClass.info.name }), ...extra], record.signature.returns);
+  }
   #methodCall(expression, access) {
     if (access.expression.kind === import_typescript13.default.SyntaxKind.SuperKeyword) {
       return this.#superMethodCall(expression, access);
@@ -181375,6 +181880,8 @@ class BodyLowerer extends BoundaryLowerer {
           return this.arrayPop(expression, array, element);
         case "forEach":
           return this.arrayForEach(expression, array, element);
+        case "reserve":
+          return this.arrayReserve(expression, array, element);
         default:
           this.outer.unsupported(expression, `\`${access.name.text}\` on an array`);
           return;
@@ -181729,7 +182236,7 @@ class BodyLowerer extends BoundaryLowerer {
       return;
     }
     if (!import_typescript13.default.isIdentifier(argument)) {
-      this.outer.unsupported(argument, "moving out of anything but a local");
+      this.outer.error(argument, "GF0002", "`move` empties a *name*, and what makes that safe is that the name " + "cannot be read afterwards — which is checkable for a binding and is " + `not for an element or a field. \`${TAKE}\` is the one for a place: it ` + "hands back the value and leaves the default behind, so what stays " + "there is a real value rather than a hole.");
       return;
     }
     const binding = this.scopes.lookup(argument.text);
@@ -181750,6 +182257,53 @@ class BodyLowerer extends BoundaryLowerer {
     }
     this.#moved.set(binding.local, argument.text);
     return { operand: { kind: "Move", value: bindingPlace(binding) }, type: binding.type };
+  }
+  #take(expression) {
+    const argument = expression.arguments[0];
+    if (expression.arguments.length !== 1 || argument === undefined) {
+      this.outer.error(expression, "GF0002", `\`${TAKE}\` takes exactly one place.`);
+      return;
+    }
+    if (!import_typescript13.default.isIdentifier(argument) && !import_typescript13.default.isElementAccessExpression(argument) && !import_typescript13.default.isPropertyAccessExpression(argument)) {
+      this.outer.error(argument, "GF0002", `\`${TAKE}\` needs somewhere to put the default back — a name, an element ` + "or a field. This expression is a value rather than a place, and it is " + "already yours: use it directly.");
+      return;
+    }
+    if (import_typescript13.default.isIdentifier(argument)) {
+      const binding = this.scopes.lookup(argument.text);
+      if (binding === undefined) {
+        this.outer.unsupported(argument, `the name \`${argument.text}\``);
+        return;
+      }
+      if (this.#readMoved(argument, binding.local, argument.text)) {
+        return;
+      }
+      if (this.#isOwningParameter(binding)) {
+        this.outer.error(argument, "GF0236", `\`${argument.text}\` is a by-value parameter, and the caller releases ` + `it when the call ends — so \`${TAKE}\` here would free the same buffer ` + "twice. Copy it instead (assigning it is a copy), or take a " + `\`Reference<${renderType(binding.type)}>\` if the caller should keep ` + "ownership and this should not.");
+        return;
+      }
+    }
+    const value = this.value(argument, undefined);
+    if (value === undefined) {
+      return;
+    }
+    const place2 = this.placeOfSubject(argument, value);
+    if (place2 === undefined) {
+      return;
+    }
+    const type = value.type;
+    if (!this.#owns(type)) {
+      return { operand: { kind: "Copy", value: place2 }, type };
+    }
+    if (type.kind === "class") {
+      this.outer.error(argument, "GF0002", `\`${TAKE}\` would leave a \`${renderType(type)}\` whose constructor never ` + `ran, and no such object exists in this language — \`${NATIVE_ZEROED}\` ` + "refuses to make one for the same reason. Take a field of it, hold it " + `behind a \`Pointer<${renderType(type)}>\`, or copy it.`);
+      return;
+    }
+    const taken = this.temporaryTyped(argument, type, {
+      kind: "Use",
+      value: { kind: "Move", value: place2 }
+    });
+    this.push({ kind: "Init", place: place2, rvalue: { kind: "Default" } });
+    return taken;
   }
   #isOwningParameter(binding) {
     if (!this.#owns(binding.type)) {
@@ -181773,6 +182327,9 @@ class BodyLowerer extends BoundaryLowerer {
 
 // src/lower/module.ts
 var MAX_INSTANTIATION_DEPTH = 64;
+function normalisePath(path) {
+  return path.replaceAll("\\", "/").toLowerCase();
+}
 
 class Lowerer {
   #program;
@@ -182050,6 +182607,24 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
     }
     return symbol.declarations?.some(import_typescript14.default.isFunctionDeclaration) ?? false;
   }
+  shadowsPrelude(expression) {
+    if (!import_typescript14.default.isIdentifier(expression)) {
+      return false;
+    }
+    let symbol = this.#checker.getSymbolAtLocation(expression);
+    if (symbol === undefined) {
+      return false;
+    }
+    if ((symbol.flags & import_typescript14.default.SymbolFlags.Alias) !== 0) {
+      symbol = this.#checker.getAliasedSymbol(symbol);
+    }
+    const declarations = symbol.declarations ?? [];
+    if (declarations.length === 0) {
+      return false;
+    }
+    const prelude = normalisePath(globalDeclarations());
+    return declarations.every((declaration2) => normalisePath(declaration2.getSourceFile().fileName) !== prelude);
+  }
   functionValueAt(expression) {
     if (import_typescript14.default.isPropertyAccessExpression(expression) && import_typescript14.default.isIdentifier(expression.expression)) {
       const info = this.#classes.get(expression.expression.text);
@@ -182102,7 +182677,7 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
     return (resolved.flags & import_typescript14.default.SymbolFlags.Module) !== 0;
   }
   run() {
-    const sources = this.#program.getSourceFiles().filter((file) => !file.isDeclarationFile && !this.#program.isSourceFileFromExternalLibrary(file));
+    const sources = this.#program.getSourceFiles().filter((file) => !file.isDeclarationFile);
     this.#declarePreludeExterns();
     this.#collectAddressTaken(sources);
     const classBodies = this.#declareClasses();
@@ -182612,6 +183187,10 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
     const path = fileName.replaceAll("\\", "/");
     if (this.#root !== "" && path.startsWith(`${this.#root}/`)) {
       return path.slice(this.#root.length + 1);
+    }
+    const std = stdLibrary().replaceAll("\\", "/");
+    if (std !== "" && path.startsWith(`${std}/`)) {
+      return `std/${path.slice(std.length + 1)}`;
     }
     return path;
   }
@@ -183391,10 +183970,12 @@ function lower(program, checker, moduleName, options = {}) {
 import { accessSync, constants, statSync } from "node:fs";
 import { delimiter, isAbsolute as isAbsolute2, join as join3, sep } from "node:path";
 function required(kind) {
+  const probe = locateLinker(kind);
   return [
     onPath(process.env["GOBLIN_CLANG"] ?? "clang", "compiles the LLVM IR the backend emits", "GOBLIN_CLANG"),
+    ...probe.probed ? [onPath(msvcClang(), "compiles the C in the runtime's dependencies")] : [],
     onPath("cargo", "builds the Goblin runtime for your target"),
-    linker(kind)
+    linker(kind, probe)
   ];
 }
 function onPath(name, what, override2) {
@@ -183406,10 +183987,9 @@ function onPath(name, what, override2) {
     ...override2 === undefined ? {} : { remedy: `\`${override2}\` names a specific one` }
   };
 }
-function linker(kind) {
+function linker(kind, probe) {
   const archiving = kind === "static-lib";
   const what = archiving ? "bundles the objects into an archive" : "links the artefact";
-  const probe = locateLinker(kind);
   if (!probe.probed) {
     return archiving ? onPath(process.env["AR"] ?? "ar", what, "AR") : onPath(process.env["CC"] ?? "cc", what, "CC");
   }
@@ -183619,7 +184199,7 @@ class Compiler {
     let runtimeImage;
     let runtimeImportLibrary;
     if (shared && runtime.shared !== undefined) {
-      const beside = dirname3(report.output);
+      const beside = dirname4(report.output);
       runtimeImage = join4(beside, basename(runtime.shared.image));
       const stub = runtime.shared.link;
       const wantsStub = kind === "shared-lib" && stub !== runtime.shared.image;
@@ -183655,7 +184235,7 @@ class Compiler {
   }
   #outputPath(kind) {
     const base = this.#resolve(this.#options.output);
-    const dir = dirname3(base);
+    const dir = dirname4(base);
     let name = basename(base);
     const prefix = outputPrefix(kind);
     if (prefix !== "" && !name.startsWith(prefix)) {
@@ -183683,7 +184263,7 @@ function fromBackend(diagnostic) {
   };
 }
 function basenameWithoutExtension(path) {
-  const base = path.slice(dirname3(path).length + 1);
+  const base = path.slice(dirname4(path).length + 1);
   const dot = base.lastIndexOf(".");
   return dot <= 0 ? base : base.slice(0, dot);
 }
@@ -183786,11 +184366,12 @@ function output(command, args) {
   return said === "" ? undefined : said;
 }
 // src/packaged.ts
-var here = dirname4(fileURLToPath2(import.meta.url));
+var here = dirname5(fileURLToPath2(import.meta.url));
 useRuntimeFiles({
   globalDeclarations: join6(here, "global.d.ts"),
   tsconfigBase: join6(here, "tsconfig.base.json"),
-  runtimeCrate: join6(here, "native")
+  runtimeCrate: join6(here, "native"),
+  stdLibrary: join6(here, "std")
 });
 export {
   CODES,
