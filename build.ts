@@ -283,6 +283,77 @@ function renderManifest(compiled: readonly { entry: EntryPoint; counts: Counts }
 }
 
 // ---------------------------------------------------------------------------
+// The glTF loader.
+//
+// `tools/gltf` is a Rust cdylib around the `gltf` crate. Built here rather than
+// checked in, for the same reason `tools/shadercc` is: it is part of this
+// program and it is one `cargo build` away.
+//
+// Two files come out of that build and both are needed, which is the only
+// awkward part. Cargo names a Windows cdylib's import library
+// `encke_gltf.dll.lib`, and `systemLib` looks for `encke_gltf.lib` — the name
+// the linker would spell without platform decoration — so it is copied under
+// that name into a directory of its own rather than pointing the search at
+// `target/release`, where the `.dll.lib` sitting beside it would never be
+// found.
+// ---------------------------------------------------------------------------
+
+const windows = process.platform === "win32";
+
+const GLTF_MANIFEST = "tools/gltf/Cargo.toml";
+const GLTF_TARGET = "tools/gltf/target/release";
+const GLTF_LIBRARY = "encke_gltf";
+/** Where the import library is copied so `systemLib` can find it by name. */
+const GLTF_LINK_DIR = "build/gltf";
+
+/** The runtime library's filename on this platform. */
+function gltfSharedName(): string {
+    if (windows) {
+        return `${GLTF_LIBRARY}.dll`;
+    }
+    return process.platform === "darwin" ? `lib${GLTF_LIBRARY}.dylib` : `lib${GLTF_LIBRARY}.so`;
+}
+
+/**
+ * Build the loader and put its two halves where they are needed.
+ *
+ * The shared library goes beside the executable, because that is where the
+ * loader looks at run time; the link-time stub goes into `build/gltf`, because
+ * that is where `systemLib` is told to look. Returns the latter.
+ */
+async function buildGltfLoader(): Promise<string> {
+    const result = await Bun.$`cargo build --quiet --release --manifest-path ${GLTF_MANIFEST}`
+        .quiet()
+        .nothrow();
+
+    if (result.exitCode !== 0) {
+        console.error(result.stderr.toString());
+        console.error(result.stdout.toString());
+        throw new Error("cargo failed building tools/gltf");
+    }
+
+    await mkdir(GLTF_LINK_DIR, { recursive: true });
+
+    const shared = gltfSharedName();
+    await Bun.write(`bin/${shared}`, Bun.file(`${GLTF_TARGET}/${shared}`));
+
+    if (windows) {
+        await Bun.write(
+            `${GLTF_LINK_DIR}/${GLTF_LIBRARY}.lib`,
+            Bun.file(`${GLTF_TARGET}/${GLTF_LIBRARY}.dll.lib`),
+        );
+    } else {
+        // ELF and Mach-O link against the shared object itself, so the copy in
+        // `bin/` would serve — but keeping the search directory the same on
+        // every platform means one `systemLib` call rather than a branch.
+        await Bun.write(`${GLTF_LINK_DIR}/${shared}`, Bun.file(`${GLTF_TARGET}/${shared}`));
+    }
+
+    console.log(`gltf: ${shared} -> bin/`);
+    return resolve(import.meta.dir, GLTF_LINK_DIR);
+}
+
+// ---------------------------------------------------------------------------
 // SDL3, and the Goblin program itself.
 // ---------------------------------------------------------------------------
 
@@ -374,10 +445,11 @@ async function copyRuntimeLibraries(dep: NativeDependency, lib: string): Promise
 
 await buildShaders();
 
-const windows = process.platform === "win32";
 const libraryDirectories = windows
     ? await Promise.all(DEPENDENCIES.map((dep) => ensureDevelPackage(dep)))
     : [];
+
+const gltfLinkDirectory = await buildGltfLoader();
 
 const result = await compile({
     entry: "./src/main.ts",
@@ -389,11 +461,14 @@ const result = await compile({
     optLevel: "O2",
     debugInfo: true,
 
-    nativeLibs: DEPENDENCIES.map((dep, index) =>
-        windows
-            ? systemLib(dep.name, { search: [libraryDirectories[index]!] })
-            : systemLib(dep.name, { pkgConfig: dep.pkgConfig }),
-    ),
+    nativeLibs: [
+        ...DEPENDENCIES.map((dep, index) =>
+            windows
+                ? systemLib(dep.name, { search: [libraryDirectories[index]!] })
+                : systemLib(dep.name, { pkgConfig: dep.pkgConfig }),
+        ),
+        systemLib(GLTF_LIBRARY, { search: [gltfLinkDirectory] }),
+    ],
 
     outDir: "./build",
     root: import.meta.dir,

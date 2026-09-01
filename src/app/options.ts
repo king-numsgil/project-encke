@@ -36,6 +36,25 @@ export class Options {
      */
     lights: u32;
 
+    /**
+     * A `.gltf` or `.glb` to load beside the test scene. Empty for none.
+     *
+     * Beside, not instead of: the procedural geometry is what the renderer is
+     * tuned against and a model dropped into it is easier to judge next to
+     * surfaces whose materials are already known-good.
+     */
+    model: string;
+
+    /**
+     * Uniform scale applied to {@link model}.
+     *
+     * glTF's unit is the metre and a well-authored asset needs no help — but
+     * "well-authored" covers a range of two or three orders of magnitude in
+     * practice, and a model that loaded correctly and is a millimetre across
+     * looks exactly like one that failed to load.
+     */
+    modelScale: f32;
+
     /** Report frame timing statistics on exit. */
     bench: boolean;
 
@@ -81,6 +100,8 @@ export class Options {
         this.screenshot = "";
         this.frames = 0;
         this.lights = 160;
+        this.model = "";
+        this.modelScale = 1.0;
         this.debug = 0;
         this.bench = false;
         this.overlay = true;
@@ -104,6 +125,51 @@ function parseInteger(text: string): i32 {
         value = value * 10 + digit;
     }
     return value;
+}
+
+/**
+ * Parse a positive decimal number, integer or fractional. `-1` when it is not one.
+ *
+ * Only what a scale factor needs: digits, one optional point, no sign and no
+ * exponent. Accumulated as `f64` and narrowed once at the end rather than
+ * summing in `f32`, so `0.001` is the nearest `f32` to a tenth of a percent
+ * rather than the nearest `f32` to a sum of three `f32` divisions.
+ */
+function parseNumber(text: string): f32 {
+    if (text.length === 0) {
+        return -1.0;
+    }
+
+    let value: f64 = 0.0;
+    let fraction: f64 = 0.0;
+    let seenPoint = false;
+
+    for (let i: usize = 0; i < text.length; i++) {
+        const code = cast<i32>(text.codePointAt(i));
+
+        if (code === 46) {
+            if (seenPoint) {
+                return -1.0;
+            }
+            seenPoint = true;
+            fraction = 1.0;
+            continue;
+        }
+
+        const digit = code - 48;
+        if (digit < 0 || digit > 9) {
+            return -1.0;
+        }
+
+        if (seenPoint) {
+            fraction = fraction * 0.1;
+            value = value + cast<f64>(digit) * fraction;
+        } else {
+            value = value * 10.0 + cast<f64>(digit);
+        }
+    }
+
+    return cast<f32>(value);
 }
 
 /** Whether `text` names a debug view. Asked before {@link debugViewFrom}. */
@@ -199,6 +265,18 @@ export function parseOptions(args: string[]): Options {
                 options.debug = debugViewFrom(args[i + 1]);
             }
             i += 2;
+        } else if (flag === "--model" && hasValue) {
+            options.model = args[i + 1];
+            i += 2;
+        } else if (flag === "--model-scale" && hasValue) {
+            const value = parseNumber(args[i + 1]);
+            if (value <= 0.0) {
+                console.log(`options: --model-scale wants a positive number, got '${args[i + 1]}'`);
+                options.invalid = true;
+            } else {
+                options.modelScale = value;
+            }
+            i += 2;
         } else if (flag === "--screenshot" && hasValue) {
             options.screenshot = args[i + 1];
             i += 2;
@@ -250,6 +328,8 @@ export function printUsage(): void {
     console.log("  --present MODE       mailbox (default, falls back to vsync), vsync, immediate");
     console.log("  --screenshot PATH    write a PNG once the scene has settled, then exit");
     console.log("  --lights N           point lights in the test scene, default 160 (cap 380)");
+    console.log("  --model PATH         a .gltf or .glb to load beside the test scene");
+    console.log("  --model-scale N      uniform scale for --model, default 1");
     console.log("  --frames N           stop after N frames");
     console.log("  --bench N            run N frames and report frame timing");
     console.log("  --debug VIEW         off (default), clusters, ao, cascades");

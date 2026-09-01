@@ -9,15 +9,22 @@
 // the slot of the texture at its own rank. So:
 //
 //     SDL slot 0..2   textures     shadow_atlas, spot_atlas, occlusion
-//     SDL slot 3..6   textures     color_map, normal_map, roughness_map, ao_map
+//     SDL slot 3..7   textures     color_map, normal_map, orm_map, ao_map,
+//                                  emissive_map
 //                     + samplers   one per texture, at matching rank
 //     SDL slot 0,1,2  storage      lights, light_count, light_index
 //     SDL slot 0,1,2  uniforms     frame, shadows, material
 //
 // Reordering the `@binding` numbers within a kind silently rebinds the shader.
 //
-// Slots 0-2 are bound once per pass; **3-6 are rebound per draw**, because they
+// Slots 0-2 are bound once per pass; **3-7 are rebound per draw**, because they
 // are the material's. That split is why the material maps come last.
+//
+// The five material maps are **glTF's own texture set**, and deliberately all
+// five: `emissiveFactor` defaults to black, so a material that names an emissive
+// texture is one whose factor is a multiplier rather than a colour. Honouring
+// the factor and dropping the map turns every emissive model into a uniformly
+// glowing white one, which is a worse answer than not supporting emission.
 
 //!include "frame.wgsl"
 //!include "cluster.wgsl"
@@ -43,7 +50,14 @@ struct Object {
 struct Material {
     /** `rgb`: base colour, linear. `a`: unused. */
     albedo : vec4<f32>,
-    /** `x`: metallic. `y`: roughness. `z`: how much SSAO applies. `w`: unused. */
+    /**
+     * `x`: metallic. `y`: roughness. `z`: how much SSAO applies. `w`: unused.
+     *
+     * All three are **factors**, multiplied by the maps below rather than
+     * replaced by them. That is glTF's rule and it is what lets a material with
+     * no maps at all take the identical code path: an absent map binds a 1x1
+     * white texture, multiplies by one, and the number stands alone.
+     */
     params : vec4<f32>,
     /** `rgb`: emissive radiance. `a`: unused. */
     emissive : vec4<f32>,
@@ -108,20 +122,33 @@ fn vs_main(
 // textures existed — see `renderer/assets/material_set.ts`.
 @group(2) @binding(3) var color_map : texture_2d<f32>;
 @group(2) @binding(4) var normal_map : texture_2d<f32>;
-@group(2) @binding(5) var roughness_map : texture_2d<f32>;
+/**
+ * glTF's `metallicRoughnessTexture`: `g` is roughness, `b` is metallic.
+ *
+ * One texture for two channels because that is how the format packs them, and
+ * because roughness and metalness vary together across a surface — a scratch
+ * through paint reveals metal and changes the gloss at the same texel. `r` is
+ * unused here and is where an author packs occlusion, which is why an ORM map
+ * can be bound to this slot and to {@link ao_map} at once.
+ */
+@group(2) @binding(5) var orm_map : texture_2d<f32>;
+/** glTF's `occlusionTexture`: `r` is the baked occlusion factor. */
 @group(2) @binding(6) var ao_map : texture_2d<f32>;
+/** glTF's `emissiveTexture`, sRGB. Multiplies the emissive factor. */
+@group(2) @binding(7) var emissive_map : texture_2d<f32>;
 
-@group(2) @binding(7) var shadow_sampler : sampler_comparison;
-@group(2) @binding(8) var spot_sampler : sampler_comparison;
-@group(2) @binding(9) var occlusion_sampler : sampler;
-@group(2) @binding(10) var color_sampler : sampler;
-@group(2) @binding(11) var normal_sampler : sampler;
-@group(2) @binding(12) var roughness_sampler : sampler;
-@group(2) @binding(13) var ao_sampler : sampler;
+@group(2) @binding(8) var shadow_sampler : sampler_comparison;
+@group(2) @binding(9) var spot_sampler : sampler_comparison;
+@group(2) @binding(10) var occlusion_sampler : sampler;
+@group(2) @binding(11) var color_sampler : sampler;
+@group(2) @binding(12) var normal_sampler : sampler;
+@group(2) @binding(13) var orm_sampler : sampler;
+@group(2) @binding(14) var ao_sampler : sampler;
+@group(2) @binding(15) var emissive_sampler : sampler;
 
-@group(2) @binding(14) var<storage, read> lights : array<Light>;
-@group(2) @binding(15) var<storage, read> light_count : array<u32>;
-@group(2) @binding(16) var<storage, read> light_index : array<u32>;
+@group(2) @binding(16) var<storage, read> lights : array<Light>;
+@group(2) @binding(17) var<storage, read> light_count : array<u32>;
+@group(2) @binding(18) var<storage, read> light_index : array<u32>;
 
 @group(3) @binding(0) var<uniform> frame_fs : Frame;
 @group(3) @binding(1) var<uniform> shadows : Shadows;
@@ -212,11 +239,17 @@ fn fs_main(in : VertexOut) -> @location(0) vec4<f32> {
     // The colour map is sampled through an `_SRGB` texture format, so what
     // arrives here is already linear and no conversion belongs in the shader.
     let albedo = material.albedo.rgb * textureSample(color_map, color_sampler, in.uv).rgb;
-    let roughness = material.params.y * textureSample(roughness_map, roughness_sampler, in.uv).g;
+
+    // One sample, two channels, in glTF's own packing: `g` roughness, `b`
+    // metallic. Sampling them separately would mean two textures and two
+    // fetches for numbers that are authored in one image and vary together.
+    let orm = textureSample(orm_map, orm_sampler, in.uv);
+    let roughness = material.params.y * orm.g;
+    let metallic = material.params.x * orm.b;
 
     let surface = make_surface(
         albedo,
-        material.params.x,
+        metallic,
         roughness,
         normal,
         view_dir,
@@ -325,7 +358,12 @@ fn fs_main(in : VertexOut) -> @location(0) vec4<f32> {
     // metal's specular response to uniform surroundings really is close to `f0`,
     // and it costs one add. Dielectrics gain 0.04 of ambient, which is invisible.
     let indirect = frame_fs.sun_color.a * (surface.diffuse + surface.f0) * ao;
-    color = color + indirect + material.emissive.rgb;
+
+    // Emission is added last and is unaffected by lights, shadows and occlusion
+    // — it is radiance leaving the surface, not radiance arriving at it. The map
+    // is sRGB, so what arrives here is already linear.
+    let emissive = material.emissive.rgb * textureSample(emissive_map, emissive_sampler, in.uv).rgb;
+    color = color + indirect + emissive;
 
     return vec4<f32>(color, 1.0);
 }

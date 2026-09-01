@@ -13,10 +13,20 @@
 //     lose lights every frame instead of settling into a fixed assignment.
 //   * **Spheres of varying roughness**, because a specular lobe sliding across a
 //     curved surface is where a wrong BRDF shows up first.
+//   * **Fifty scattered helmets**, loaded from one glTF file. They are the only
+//     geometry here that nobody in this repository authored, which is the point:
+//     real content has UV seams, a normal map that disagrees with the geometry
+//     at the silhouette, and fifteen thousand triangles where a crate has twelve.
+//
+// Everything placed here is **deterministic**, the scattering included. A
+// benchmark whose scene differs between runs is a benchmark that cannot be
+// compared with itself, so the helmets come from a seeded generator rather than
+// from anything the platform provides.
 
 import { fmat4, fvec3 } from "std/linalg";
-import { fcos, fpi, fsin } from "std/math";
+import { fcos, fpi, fsin, fsqrt, ftau } from "std/math";
 import type { SDL_GPUDevice } from "../bindings/SDL3";
+import { loadGltf } from "../renderer/assets/gltf.ts";
 import { Fallbacks, MaterialTextures } from "../renderer/assets/material_set.ts";
 import { makeBox } from "../renderer/geometry/box.ts";
 import { GpuMesh } from "../renderer/geometry/mesh.ts";
@@ -29,6 +39,87 @@ import { Scene } from "../renderer/scene/scene.ts";
 /** Minimum thickness a mesh must have on every axis, in world units. */
 function minimumThickness(): f32 {
     return 0.05;
+}
+
+/** The glTF model the scene scatters, and how many of it. */
+function helmetPath(): string {
+    return "assets/models/DamagedHelmet.glb";
+}
+
+function helmetCount(): u32 {
+    return 50;
+}
+
+/**
+ * xorshift32, and the only source of randomness in this file.
+ *
+ * Seeded with a constant, so the scene is the same in every run on every
+ * machine — see the note at the top. `next` returns `[0, 1)` from the top 24
+ * bits, which is every bit an `f32` mantissa can hold; taking the low bits
+ * instead is the classic way to get a generator whose last digit is periodic.
+ */
+class Rng {
+    private state: u32;
+
+    constructor() {
+        // Any non-zero seed will do; xorshift is stuck at zero forever.
+        this.state = 0x9e3779b9;
+    }
+
+    next(): f32 {
+        let x = this.state;
+        x ^= x << 13;
+        x ^= x >> 17;
+        x ^= x << 5;
+        this.state = x;
+        return cast<f32>(x >> 8) / 16777216.0;
+    }
+
+    range(low: f32, high: f32): f32 {
+        return low + (high - low) * this.next();
+    }
+}
+
+/**
+ * A prop's footprint on the floor, for keeping the scattered helmets out of it.
+ *
+ * A circle in `xz` rather than the instance's own bounding sphere, and that is
+ * the whole reason this exists: a pillar is 1.2 wide and 6 tall, so the sphere
+ * around it has a radius of 3.1, and rejecting against *that* would clear a
+ * five-metre disc around every pillar and leave nowhere on the floor to stand.
+ * Height is irrelevant to whether two things on a floor collide.
+ */
+class Footprint {
+    x: f32;
+    z: f32;
+    radius: f32;
+
+    constructor() {
+        this.x = 0.0;
+        this.z = 0.0;
+        this.radius = 0.0;
+    }
+}
+
+function footprint(x: f32, z: f32, radius: f32): Footprint {
+    const mark = new Footprint();
+    mark.x = x;
+    mark.z = z;
+    mark.radius = radius;
+    return mark;
+}
+
+/** Whether a disc at `(x, z)` touches anything already claimed. */
+function collides(claimed: Reference<Footprint[]>, x: f32, z: f32, radius: f32): boolean {
+    for (let i: usize = 0; i < claimed.length; i++) {
+        const dx = claimed[i].x - x;
+        const dz = claimed[i].z - z;
+        const reach = claimed[i].radius + radius;
+        if (dx * dx + dz * dz < reach * reach) {
+            return true;
+        }
+    }
+    return false;
 }
 
 /** Load one folder of maps and register it as a material. */
@@ -132,6 +223,11 @@ export function buildTestScene(
         makeMetal(fvec3.one(), 1.0),
     );
 
+    // Every prop's footprint on the floor, filled in as it is placed and read
+    // by the helmet scatter at the end. Collected here rather than recomputed
+    // there so that moving a pillar cannot leave a helmet standing inside it.
+    const claimed: Footprint[] = [];
+
     // -- the floor --
     scene.add(floor, concrete, fmat4.fromTranslation(new fvec3(0.0, -0.2, 0.0)));
 
@@ -143,6 +239,9 @@ export function buildTestScene(
             }
             const position = new fvec3(cast<f32>(x) * 8.0, 3.0, cast<f32>(z) * 8.0);
             scene.add(pillar, (x + z) % 2 === 0 ? concrete : paint, fmat4.fromTranslation(position));
+            // Half the diagonal of a 1.2 square, so a rotated helmet clears the
+            // corners and not just the faces.
+            claimed.push(footprint(position.x, position.z, 0.85));
         }
     }
 
@@ -159,6 +258,7 @@ export function buildTestScene(
         // dielectric with fine grain, and a metal.
         const material = i % 3 === 0 ? bricks : (i % 3 === 1 ? planks : plates);
         scene.add(crate, material, transform);
+        claimed.push(footprint(position.x, position.z, 1.14));
     }
 
     // -- spheres, sweeping roughness across the metals --
@@ -172,10 +272,16 @@ export function buildTestScene(
         );
         const position = new fvec3(-10.5 + cast<f32>(i) * 3.0, 1.0, -12.0);
         scene.add(sphere, material, fmat4.fromTranslation(position));
+        claimed.push(footprint(position.x, position.z, 0.9));
     }
 
     scene.add(sphere, copper, fmat4.fromTranslation(new fvec3(0.0, 1.4, 0.0)));
     scene.add(sphere, steel, fmat4.fromTranslation(new fvec3(3.0, 1.4, 2.0)));
+    claimed.push(footprint(0.0, 0.0, 0.9));
+    claimed.push(footprint(3.0, 2.0, 0.9));
+
+    // -- helmets, scattered --
+    scatterHelmets(device, scene, fallbacks, claimed);
 
     // -- lights --
     populateLights(scene, 0.0, pointLights);
@@ -184,6 +290,80 @@ export function buildTestScene(
         `scene: ${scene.instances.length} instances, ${scene.meshes.length} meshes, ${scene.lights.length} lights`,
     );
     return scene;
+}
+
+/**
+ * Drop {@link helmetCount} helmets on the floor, clear of everything else.
+ *
+ * **One load, many placements.** The file is read, uploaded and decoded exactly
+ * once and every helmet is another `Instance` over the same mesh, material and
+ * five textures — which is the split `Scene` is built around and the reason
+ * fifty of a fifteen-thousand-triangle model is a reasonable thing to put in a
+ * test scene at all.
+ *
+ * Positions come from rejection sampling against {@link claimed}: a candidate is
+ * thrown away if its footprint touches a prop or a helmet already placed. That
+ * can fail to find room, so the attempt count is bounded and a short scene is
+ * reported rather than a hang — the failure mode of an unbounded rejection loop
+ * is a program that never starts.
+ *
+ * Radial positions are `sqrt`-distributed. Sampling the radius uniformly would
+ * pack the helmets into the middle, because a disc has more area further out.
+ */
+function scatterHelmets(
+    device: Pointer<SDL_GPUDevice>,
+    scene: Reference<Scene>,
+    fallbacks: Reference<Fallbacks>,
+    claimed: Reference<Footprint[]>,
+): void {
+    // Inside the 48-unit floor with room for a helmet at the rim.
+    const reach: f32 = 22.0;
+    const wanted = helmetCount();
+
+    const rng = new Rng();
+    const placements: fmat4[] = [];
+
+    let attempts: u32 = 0;
+    while (cast<u32>(placements.length) < wanted && attempts < 20000) {
+        attempts += 1;
+
+        const scale = rng.range(0.7, 1.05);
+        // The model is roughly two units across, so this is its own footprint.
+        const radius = scale * 1.0;
+
+        const distance = fsqrt(rng.next()) * reach;
+        const bearing = rng.next() * ftau();
+        const x = fcos(bearing) * distance;
+        const z = fsin(bearing) * distance;
+
+        if (collides(claimed, x, z, radius)) {
+            continue;
+        }
+        claimed.push(footprint(x, z, radius));
+
+        // A full turn of yaw, and a tilt of up to about twenty degrees about a
+        // random horizontal axis — enough that no two read as the same object
+        // and that the normal map is exercised against the sun from every angle,
+        // without any of them looking like they are floating.
+        const yaw = rng.next() * ftau();
+        const tiltAxis = rng.next() * ftau();
+        const tilt = rng.range(0.0, 0.35);
+
+        const transform = fmat4.fromTranslation(new fvec3(x, 0.95 * scale, z))
+            .mul(fmat4.fromRotationY(yaw))
+            .mul(fmat4.fromAxisAngle(new fvec3(fcos(tiltAxis), 0.0, fsin(tiltAxis)), tilt))
+            .mul(fmat4.fromScale(fvec3.splat(scale)));
+
+        placements.push(transform);
+    }
+
+    if (cast<u32>(placements.length) < wanted) {
+        console.log(
+            `scene: only found room for ${placements.length} of ${wanted} helmets in ${attempts} attempts`,
+        );
+    }
+
+    loadGltf(device, scene, fallbacks, helmetPath(), placements);
 }
 
 /**

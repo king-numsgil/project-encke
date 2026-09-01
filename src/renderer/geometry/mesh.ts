@@ -1,9 +1,10 @@
 // A mesh on the GPU: one vertex buffer, one index buffer, and the draw.
 //
 // Indices are 32-bit throughout. 16-bit would halve the index buffer and is the
-// usual advice, but it caps a mesh at 65536 vertices and this renderer has no
-// mesh loader yet — so the cap would exist to save a few kilobytes of procedural
-// geometry. Revisit when glTF arrives and meshes stop being boxes.
+// usual advice, but it caps a mesh at 65536 vertices — and now that meshes
+// arrive from glTF rather than only from `makeBox`, that cap is one an imported
+// model reaches routinely. A narrowing pass that picked the smaller width per
+// mesh would be worth having; a blanket 16 bits is not.
 
 import { fvec3 } from "std/linalg";
 import {

@@ -5,7 +5,7 @@
 // about *when* a frame happens lives here, and everything about *what* is in one
 // lives under `renderer/`.
 
-import { fvec3 } from "std/linalg";
+import { fmat4, fvec3 } from "std/linalg";
 import {
     SDL_AcquireGPUCommandBuffer,
     SDL_BlitGPUTexture,
@@ -28,6 +28,7 @@ import {
 } from "../bindings/SDL3";
 import { Clock, Stopwatch } from "../core/clock.ts";
 import { Input } from "../core/input.ts";
+import { loadGltf } from "../renderer/assets/gltf.ts";
 import { cameraFar, cameraFovY, cameraNear } from "../renderer/config.ts";
 import { Profiler } from "../renderer/profiler.ts";
 import { Renderer } from "../renderer/renderer.ts";
@@ -85,6 +86,19 @@ export function run(options: Reference<Options>): i32 {
     }
 
     const scene = buildTestScene(device, renderer.fallbacks, options.lights);
+
+    // Dropped into the test scene rather than replacing it, and placed on the
+    // floor in front of the pillar grid: a loaded model is easiest to judge next
+    // to surfaces whose materials are already known to be right. One placement,
+    // where the scene's own helmets are fifty of them.
+    if (options.model.length > 0) {
+        const placements: fmat4[] = [];
+        placements.push(
+            fmat4.fromTranslation(new fvec3(0.0, 0.0, 7.0))
+                .mul(fmat4.fromScale(fvec3.splat(options.modelScale))),
+        );
+        loadGltf(device, scene, renderer.fallbacks, options.model, placements);
+    }
 
     const camera = new Camera();
     camera.fovY = cameraFovY();

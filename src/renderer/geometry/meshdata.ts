@@ -83,6 +83,35 @@ export class MeshData {
         return index;
     }
 
+    /**
+     * Append an already-interleaved stream, as `tools/gltf` bakes one.
+     *
+     * The loader emits exactly this layout on the Rust side, so there is
+     * nothing to convert here — but the bytes live in the loader's scene and die
+     * with it, and this class is what everything downstream expects, so they are
+     * copied in. That copy is a few megabytes once per model at load time, and
+     * what it buys is that a loaded mesh is a `MeshData` like any other:
+     * {@link bounds} finds its extent for culling and {@link warnIfPaperThin}
+     * gets to complain about it, neither of which a raw pointer would allow.
+     *
+     * Indices are shifted by the vertices already here, so several primitives
+     * can be appended into one mesh. Nothing does that yet — a glTF primitive is
+     * one mesh here, because each carries its own material.
+     */
+    appendRaw(vertices: Pointer<f32>, floats: usize, indices: Pointer<u32>, count: usize): void {
+        const base = this.vertexCount();
+
+        this.vertices.reserve(this.vertices.length + floats);
+        for (let i: usize = 0; i < floats; i++) {
+            this.vertices.push(vertices[i]);
+        }
+
+        this.indices.reserve(this.indices.length + count);
+        for (let i: usize = 0; i < count; i++) {
+            this.indices.push(base + indices[i]);
+        }
+    }
+
     addTriangle(a: u32, b: u32, c: u32): void {
         this.indices.push(a);
         this.indices.push(b);

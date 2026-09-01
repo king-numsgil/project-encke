@@ -208,9 +208,9 @@ export class ForwardPass {
         SDL_PushGPUFragmentUniformData(cmd, 0, frame, frameBytes);
         SDL_PushGPUFragmentUniformData(cmd, 1, shadows, shadowBytes);
 
-        // Rebound per draw, at slots 3..6 — the four material maps. Allocated
+        // Rebound per draw, at slots 3..7 — the five material maps. Allocated
         // once outside the loop and refilled, since the shape never changes.
-        const maps = allocArray<SDL_GPUTextureSamplerBinding>(4);
+        const maps = allocArray<SDL_GPUTextureSamplerBinding>(5);
 
         this.frustum.build(frame.viewProj);
 
@@ -230,11 +230,13 @@ export class ForwardPass {
             maps[0].sampler = materialSampler;
             maps[1].texture = world.textures[which].normal;
             maps[1].sampler = materialSampler;
-            maps[2].texture = world.textures[which].roughness;
+            maps[2].texture = world.textures[which].orm;
             maps[2].sampler = materialSampler;
             maps[3].texture = world.textures[which].occlusion;
             maps[3].sampler = materialSampler;
-            SDL_BindGPUFragmentSamplers(pass, 3, maps, 4);
+            maps[4].texture = world.textures[which].emissive;
+            maps[4].sampler = materialSampler;
+            SDL_BindGPUFragmentSamplers(pass, 3, maps, 5);
 
             world.meshes[world.instances[i].mesh].draw(pass);
         }

@@ -1,8 +1,10 @@
 // Metallic-roughness material parameters.
 //
-// Constants per instance, not textures. Phase 1 has no asset loading, so there
-// is nothing to sample from; when glTF arrives these become the factors a
-// texture is multiplied by, which is the same struct with more work behind it.
+// These are **factors**, not colours: the shader multiplies each by the matching
+// channel of the material's maps, so a material with no maps at all shades from
+// these numbers alone and a fully textured one uses them as tints. That is
+// glTF's rule, and following it is what lets an imported material and a
+// hand-written one be the same struct — see `assets/material_set.ts`.
 
 import { fvec3 } from "std/linalg";
 

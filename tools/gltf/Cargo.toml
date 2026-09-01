@@ -1,0 +1,39 @@
+[package]
+name = "encke-gltf"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[lib]
+name = "encke_gltf"
+# A **cdylib**, not a staticlib, and the reason is the Goblin runtime.
+#
+# encke already links one Rust archive — `goblin-runtime`, which is `no_std` and
+# carries mimalloc. A second Rust archive in the same link would bring its own
+# copy of everything `std` needs, and the two would meet at the linker. A DLL
+# keeps this crate's `std` to itself and exports six C functions.
+#
+# The cost is that the heap is now on the wrong side of a boundary, which is
+# what `alloc.rs` exists to undo.
+crate-type = ["cdylib"]
+
+[dependencies]
+# `default-features = false` drops `import`, which is the whole point.
+#
+# `import` resolves buffers and images for you — and pulls in the `image` crate
+# to *decode* the images, which is work this crate must not do: encke decodes
+# through SDL3_image so that one library owns every pixel format the program can
+# read. Dropping it takes `image`, `png`, `zune-jpeg` and their transitive
+# colour-management crates out of the build, and costs the fifty lines of
+# `uri.rs`.
+#
+# `utils` is the accessor readers, which is the reason to use this crate at all.
+# `names` is `.name()`, which becomes the GPU object labels in a capture.
+gltf = { version = "1.4", default-features = false, features = ["utils", "names"] }
+
+base64 = "0.22"
+percent-encoding = "2"
+
+[profile.release]
+opt-level = 3
+lto = true

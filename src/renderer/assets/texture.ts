@@ -1,4 +1,4 @@
-// Decoding an image file into a sampled GPU texture, with mipmaps.
+// Decoding an image into a sampled GPU texture, with mipmaps.
 //
 // Not `IMG_LoadGPUTexture`, which would be one call instead of this whole file.
 // That call gives back a texture with a single mip level, and a single mip level
@@ -12,6 +12,13 @@
 // filtering; roughness, occlusion and normals are linear data and must not be.
 // Getting that backwards is not subtle — an sRGB roughness map reads as a
 // mirror — and `IMG_LoadGPUTexture` has no parameter to say which is which.
+//
+// Images arrive two ways and both end at the same `textureFromSurface`: a path
+// on disk, for the material folders under `assets/materials/`, and a block of
+// still-encoded bytes, for the images inside a glTF file. SDL3_image decodes
+// both, which is the point of handing the bytes across the loader boundary
+// rather than decoding them in Rust — one library in this program knows what a
+// JPEG is.
 
 import {
     SDL_AcquireGPUCommandBuffer,
@@ -33,6 +40,7 @@ import {
     type SDL_GPUTransferBuffer,
     type SDL_GPUTransferBufferCreateInfo,
     SDL_GPUTransferBufferUsage,
+    SDL_IOFromConstMem,
     SDL_MapGPUTransferBuffer,
     SDL_PixelFormat,
     SDL_ReleaseGPUTexture,
@@ -44,7 +52,7 @@ import {
     SDL_UploadToGPUTexture,
     SDL_WaitForGPUIdle,
 } from "../../bindings/SDL3";
-import { IMG_Load } from "../../bindings/SDL3_image";
+import { IMG_Load, IMG_Load_IO } from "../../bindings/SDL3_image";
 
 /**
  * How many mip levels a texture of this size has, down to 1x1.
@@ -63,58 +71,63 @@ function mipLevelCount(width: u32, height: u32): u32 {
 }
 
 /**
- * Load an image file as a sampled texture with a full mip chain.
+ * Whatever the file held, as four bytes per pixel in a known order.
  *
- * `srgb` must be true for colour maps and false for anything the shader reads as
- * data. Blocking — this is a load-time call and the texture is ready to bind
- * when it returns.
+ * `RGBA32` is SDL's endianness-correct spelling of that, so this is a no-op
+ * copy on a file that already matched. Consumes `decoded` either way.
  */
-export function loadTexture(
-    device: Pointer<SDL_GPUDevice>,
-    path: string,
-    srgb: boolean,
-    optional: boolean,
-    name: string,
-): Pointer<SDL_GPUTexture> | null {
+function toRgba(decoded: Pointer<SDL_Surface> | null, label: string): Pointer<SDL_Surface> | null {
+    if (decoded === null) {
+        return null;
+    }
+
+    const surface = SDL_ConvertSurface(decoded, SDL_PixelFormat.RGBA32);
+    SDL_DestroySurface(decoded);
+
+    if (surface === null) {
+        console.log(`texture: cannot convert ${label} : ${stringFromCString(SDL_GetError())}`);
+    }
+    return surface;
+}
+
+/**
+ * Decode a file into an RGBA surface, or null.
+ *
+ * A material set is allowed to be missing a channel and the caller has a
+ * fallback ready, so an absent `optional` map is not worth a line that reads
+ * like a failure. Anything else is.
+ */
+function decodeFile(path: string, optional: boolean): Pointer<SDL_Surface> | null {
     const decoded = IMG_Load(cstring(path));
     if (decoded === null) {
-        // A material set is allowed to be missing a channel, and the caller has
-        // a fallback ready — so an absent optional map is not worth a line that
-        // reads like a failure. Anything else is.
         if (!optional) {
             console.log(`texture: cannot load ${path} : ${stringFromCString(SDL_GetError())}`);
         }
         return null;
     }
+    return toRgba(decoded, path);
+}
 
-    // Whatever the file held, the upload path wants four bytes per pixel in a
-    // known order. `RGBA32` is SDL's endianness-correct spelling of that, so
-    // this is a no-op copy on a file that already matched.
-    const surface = SDL_ConvertSurface(decoded, SDL_PixelFormat.RGBA32);
-    SDL_DestroySurface(decoded);
-
-    if (surface === null) {
-        console.log(`texture: cannot convert ${path} : ${stringFromCString(SDL_GetError())}`);
+/**
+ * Decode an encoded image already in memory, or null.
+ *
+ * `closeio` is true, so the stream SDL wraps around the block is released
+ * whether the decode worked or not. The block itself is the caller's — a glTF
+ * image belongs to the loader until the whole scene is freed.
+ */
+function decodeMemory(bytes: Pointer<u8>, length: usize, label: string): Pointer<SDL_Surface> | null {
+    const io = SDL_IOFromConstMem(bytes, length);
+    if (io === null) {
+        console.log(`texture: cannot wrap ${label} : ${stringFromCString(SDL_GetError())}`);
         return null;
     }
 
-    const width = cast<u32>(surface.w);
-    const height = cast<u32>(surface.h);
-    const texture = createTarget(device, width, height, srgb, name);
-
-    if (texture === null) {
-        SDL_DestroySurface(surface);
+    const decoded = IMG_Load_IO(io, true);
+    if (decoded === null) {
+        console.log(`texture: cannot decode ${label} : ${stringFromCString(SDL_GetError())}`);
         return null;
     }
-
-    if (!uploadAndGenerateMips(device, texture, surface, width, height)) {
-        SDL_DestroySurface(surface);
-        SDL_ReleaseGPUTexture(device, texture);
-        return null;
-    }
-
-    SDL_DestroySurface(surface);
-    return texture;
+    return toRgba(decoded, label);
 }
 
 /**
@@ -151,11 +164,165 @@ function createTarget(
     return texture;
 }
 
-/** Copy level 0 up, then let the driver build the rest. */
+/** One decoded surface, uploaded as a texture with a full mip chain. */
+function textureFromSurface(
+    device: Pointer<SDL_GPUDevice>,
+    surface: Pointer<SDL_Surface>,
+    srgb: boolean,
+    name: string,
+): Pointer<SDL_GPUTexture> | null {
+    const width = cast<u32>(surface.w);
+    const height = cast<u32>(surface.h);
+    const texture = createTarget(device, width, height, srgb, name);
+
+    if (texture === null) {
+        return null;
+    }
+
+    if (!uploadAndGenerateMips(device, texture, surface, null, width, height)) {
+        SDL_ReleaseGPUTexture(device, texture);
+        return null;
+    }
+
+    return texture;
+}
+
+/**
+ * Load an image file as a sampled texture with a full mip chain.
+ *
+ * `srgb` must be true for colour maps and false for anything the shader reads as
+ * data. Blocking — this is a load-time call and the texture is ready to bind
+ * when it returns.
+ */
+export function loadTexture(
+    device: Pointer<SDL_GPUDevice>,
+    path: string,
+    srgb: boolean,
+    optional: boolean,
+    name: string,
+): Pointer<SDL_GPUTexture> | null {
+    const surface = decodeFile(path, optional);
+    if (surface === null) {
+        return null;
+    }
+
+    const texture = textureFromSurface(device, surface, srgb, name);
+    SDL_DestroySurface(surface);
+    return texture;
+}
+
+/**
+ * The same, for an image that is already in memory rather than on disk.
+ *
+ * This is the glTF path: a `.glb` carries its textures in its own binary chunk
+ * and a `.gltf` may inline them as data URIs, so there is frequently no file to
+ * open. `tools/gltf` hands the encoded bytes over untouched and they land here.
+ */
+export function loadTextureFromMemory(
+    device: Pointer<SDL_GPUDevice>,
+    bytes: Pointer<u8>,
+    length: usize,
+    srgb: boolean,
+    name: string,
+): Pointer<SDL_GPUTexture> | null {
+    const surface = decodeMemory(bytes, length, name);
+    if (surface === null) {
+        return null;
+    }
+
+    const texture = textureFromSurface(device, surface, srgb, name);
+    SDL_DestroySurface(surface);
+    return texture;
+}
+
+/**
+ * Two grayscale maps, packed into glTF's metallic-roughness layout.
+ *
+ * The shader samples one texture for both channels — `g` roughness, `b`
+ * metallic — because that is how glTF packs them and because the two vary
+ * together across a real surface. A folder under `assets/materials/` authors
+ * them as separate grayscale files, so they are combined here rather than by
+ * asking whoever produced the maps to re-export them.
+ *
+ * **Either may be absent**, and the missing channel becomes 255 rather than 0:
+ * these are factors the shader multiplies its numeric parameters by, so one is
+ * the identity and zero would silently pin a metal to a dielectric. That is the
+ * same reasoning as the 1x1 white fallback, applied one channel at a time.
+ *
+ * A metallic map whose size disagrees with the roughness map is dropped with a
+ * line in the log. Resampling it would be a legitimate thing to do and is not
+ * worth the code for a case that means the two maps were authored apart.
+ */
+export function loadOrmTexture(
+    device: Pointer<SDL_GPUDevice>,
+    roughnessPath: string,
+    metallicPath: string,
+    name: string,
+): Pointer<SDL_GPUTexture> | null {
+    const roughness = decodeFile(roughnessPath, true);
+    let metallic = decodeFile(metallicPath, true);
+
+    if (roughness === null) {
+        // Nothing to size the texture by. A metallic map on its own is not a
+        // case worth inventing a size for.
+        if (metallic !== null) {
+            console.log(`texture: '${name}' has a metallic map but no roughness map — both ignored`);
+            SDL_DestroySurface(metallic);
+        }
+        return null;
+    }
+
+    if (metallic !== null && (metallic.w !== roughness.w || metallic.h !== roughness.h)) {
+        console.log(
+            `texture: '${name}' metallic is ${metallic.w}x${metallic.h} and roughness is ` +
+            `${roughness.w}x${roughness.h} — the metallic map is ignored`,
+        );
+        SDL_DestroySurface(metallic);
+        metallic = null;
+    }
+
+    const width = cast<u32>(roughness.w);
+    const height = cast<u32>(roughness.h);
+
+    // Never sRGB. Both channels are numbers the BRDF uses directly, and a
+    // transfer curve applied to a roughness is the classic way to get a
+    // material that looks subtly, unfixably wrong.
+    const texture = createTarget(device, width, height, false, name);
+    if (texture === null) {
+        SDL_DestroySurface(roughness);
+        if (metallic !== null) {
+            SDL_DestroySurface(metallic);
+        }
+        return null;
+    }
+
+    const ok = uploadAndGenerateMips(device, texture, roughness, metallic, width, height);
+
+    SDL_DestroySurface(roughness);
+    if (metallic !== null) {
+        SDL_DestroySurface(metallic);
+    }
+
+    if (!ok) {
+        SDL_ReleaseGPUTexture(device, texture);
+        return null;
+    }
+    return texture;
+}
+
+/**
+ * Copy level 0 up, then let the driver build the rest.
+ *
+ * `metallic` is the packing case and is null for an ordinary texture. When it
+ * is present the upload stops being a copy: `source`'s red channel becomes
+ * green and `metallic`'s becomes blue, which is glTF's metallic-roughness
+ * layout — see {@link loadOrmTexture}.
+ */
 function uploadAndGenerateMips(
     device: Pointer<SDL_GPUDevice>,
     texture: Pointer<SDL_GPUTexture>,
-    surface: Pointer<SDL_Surface>,
+    source: Pointer<SDL_Surface>,
+    metallic: Pointer<SDL_Surface> | null,
     width: u32,
     height: u32,
 ): boolean {
@@ -174,7 +341,7 @@ function uploadAndGenerateMips(
     }
 
     const mapped = SDL_MapGPUTransferBuffer(device, transfer, false);
-    const pixels = surface.pixels;
+    const pixels = source.pixels;
     if (mapped === null || pixels === null) {
         console.log(`texture: map failed : ${stringFromCString(SDL_GetError())}`);
         SDL_ReleaseGPUTransferBuffer(device, transfer);
@@ -185,15 +352,40 @@ function uploadAndGenerateMips(
     // necessarily `w * 4` — SDL pads rows for alignment, and copying the whole
     // block would shear the image by the padding on every row after the first.
     const destination = mapped.reify<u8>();
-    const source = pixels.reify<u8>();
-    const pitch = cast<usize>(surface.pitch);
+    const from = pixels.reify<u8>();
+    const pitch = cast<usize>(source.pitch);
     const rowBytes = cast<usize>(width) * 4;
 
-    for (let y: usize = 0; y < cast<usize>(height); y++) {
-        const from = y * pitch;
-        const to = y * rowBytes;
-        for (let x: usize = 0; x < rowBytes; x++) {
-            destination[to + x] = source[from + x];
+    if (metallic === null) {
+        for (let y: usize = 0; y < cast<usize>(height); y++) {
+            const start = y * pitch;
+            const to = y * rowBytes;
+            for (let x: usize = 0; x < rowBytes; x++) {
+                destination[to + x] = from[start + x];
+            }
+        }
+    } else {
+        // A decoded surface with no pixels is not a case that happens, but the
+        // binding says it can be null and the loop below must not ask twice.
+        const metallicPixels = metallic.pixels;
+        const metal = metallicPixels === null ? from : metallicPixels.reify<u8>();
+        const metalPitch = metallicPixels === null ? pitch : cast<usize>(metallic.pitch);
+        const haveMetal = metallicPixels !== null;
+
+        for (let y: usize = 0; y < cast<usize>(height); y++) {
+            const roughRow = y * pitch;
+            const metalRow = y * metalPitch;
+            const to = y * rowBytes;
+
+            for (let x: usize = 0; x < cast<usize>(width); x++) {
+                // Red is where an author would pack occlusion. Nothing samples
+                // it out of this texture — the occlusion map has a slot of its
+                // own — so it is left at the identity rather than at zero.
+                destination[to + x * 4] = 255;
+                destination[to + x * 4 + 1] = from[roughRow + x * 4];
+                destination[to + x * 4 + 2] = haveMetal ? metal[metalRow + x * 4] : 255;
+                destination[to + x * 4 + 3] = 255;
+            }
         }
     }
 
@@ -214,7 +406,7 @@ function uploadAndGenerateMips(
         return false;
     }
 
-    const from = alloc<SDL_GPUTextureTransferInfo>({
+    const region = alloc<SDL_GPUTextureTransferInfo>({
         transfer_buffer: transfer,
         pixels_per_row: width,
         rows_per_layer: height,
@@ -226,9 +418,9 @@ function uploadAndGenerateMips(
         d: 1,
     });
 
-    SDL_UploadToGPUTexture(pass, from, to, false);
+    SDL_UploadToGPUTexture(pass, region, to, false);
     SDL_EndGPUCopyPass(pass);
-    from.free();
+    region.free();
     to.free();
 
     // Outside the copy pass, on the command buffer itself — mipmap generation
@@ -246,10 +438,10 @@ function uploadAndGenerateMips(
  *
  * The point is that shading needs no branch: a white albedo map multiplies to
  * the material's own colour, a flat `(0.5, 0.5, 1)` normal map decodes to
- * "unchanged", and a white roughness or occlusion map leaves the numeric
- * parameter alone. So an untextured material takes exactly the same code path
- * as a textured one and comes out looking exactly as it did before textures
- * existed.
+ * "unchanged", and a white metallic-roughness or occlusion map leaves the
+ * numeric parameters alone. So an untextured material takes exactly the same
+ * code path as a textured one and comes out looking exactly as it did before
+ * textures existed.
  */
 export function createSolidTexture(
     device: Pointer<SDL_GPUDevice>,

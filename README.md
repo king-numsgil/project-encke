@@ -3,6 +3,9 @@
 A clustered forward (Forward+) renderer on SDL3's GPU API, written in Goblin —
 TypeScript syntax lowered to native code through LLVM.
 
+Apache-2.0, except for the models under `assets/models/` — one of those carries a
+non-commercial clause. See [Licence](#licence).
+
 ```bash
 bun install
 bun run compile      # shaders, then the program
@@ -19,6 +22,8 @@ bun run execute      # bin/encke
 --present MODE       mailbox (default, falls back to vsync), vsync, immediate
 --screenshot PATH    write a PNG once the scene has settled, then exit
 --lights N           point lights in the test scene, default 160 (cap 380)
+--model PATH         a .gltf or .glb to load beside the test scene
+--model-scale N      uniform scale for --model, default 1
 --frames N           stop after N frames
 --bench N            run N frames and report frame timing
 --debug VIEW         off (default), clusters, ao, cascades
@@ -93,22 +98,64 @@ otherwise be solid black everywhere a punctual highlight does not land.
 
 ### Materials
 
-Four maps per material — colour, normal, roughness, occlusion — in a folder
-under `assets/materials/`, loaded by filename. Any of them may be absent: a
-missing map binds a 1x1 texture that is the identity for its channel, so an
-untextured material takes exactly the same shader path with no branch and no
-flag. Maps multiply the numeric parameters rather than replacing them, which is
-the glTF convention and what makes that work.
+**Five maps per material, and they are glTF's own set** — base colour, normal,
+metallic-roughness, occlusion, emissive. That is not a coincidence: a folder
+under `assets/materials/` and a loaded `.glb` produce the same five textures, so
+the forward pass cannot tell a procedural material from an imported one and there
+is no second path to keep working.
 
-**Only the colour map is sRGB.** The other three carry data, not light, and are
-uploaded as `UNORM` so no transfer curve is applied to them. Every map gets a
-full mip chain and an anisotropic repeating sampler; without mips a 1K map on a
-distant crate crawls as the camera moves.
+Any of them may be absent: a missing map binds a 1x1 texture that is the identity
+for its channel, so an untextured material takes exactly the same shader path
+with no branch and no flag. Maps multiply the numeric parameters rather than
+replacing them, which is the glTF convention and what makes that work.
+
+Metalness and roughness share one texture — `g` roughness, `b` metallic — because
+that is how glTF packs them and because the two vary together on a real surface:
+a scratch through paint reveals metal and changes the gloss at the same texel.
+The material folders author them as separate grayscale files and
+`loadOrmTexture` combines them at load, which is the only place the two sources
+disagree.
+
+**Only the colour and emissive maps are sRGB.** The others carry data, not light,
+and are uploaded as `UNORM` so no transfer curve is applied to them. Every map
+gets a full mip chain and an anisotropic repeating sampler; without mips a 1K map
+on a distant crate crawls as the camera moves.
 
 Normal mapping needs a tangent basis, so vertices carry `tangent.xyzw` where `w`
-is the bitangent's handedness. The generators compute it — they know their own
-UV layout exactly, where the fragment shader would have to recover it from
-screen-space derivatives every frame.
+is the bitangent's handedness. The procedural generators compute it — they know
+their own UV layout exactly, where the fragment shader would have to recover it
+from screen-space derivatives every frame — and `tools/gltf` generates one for
+any imported primitive whose file did not carry `TANGENT`.
+
+### Loading glTF
+
+`--model` reads a `.gltf` or `.glb` through `tools/gltf`, a Rust cdylib around
+the `gltf` crate. **All of the glTF is on that side**: accessors, the node tree,
+triangulation, and tangent generation. What crosses the C ABI is already this
+renderer's own vertex layout — twelve interleaved floats and 32-bit indices — one
+world transform per instance, metallic-roughness factors, and every image *still
+encoded*, so SDL3_image stays the one library in this program that knows a pixel
+format.
+
+glTF is Y-up, right-handed, `-Z` forward and counter-clockwise wound, which is
+exactly what this renderer is, so there is no basis change anywhere in the path.
+The one conversion that does happen is winding: a node whose global transform has
+a negative determinant mirrors, and its triangles are re-wound on the loader side
+because back faces are culled here and a mirrored instance would otherwise show
+its inside.
+
+**The loader has no allocator of its own.** It is a DLL and this is an
+executable, so linking it the ordinary way would put two heaps in one process,
+and the side that frees a block must be the side that allocated it.
+`encke_gltf_set_allocator` hands it goblin-forge's own `mi_malloc_aligned`,
+`mi_realloc_aligned` and `mi_free` before anything else is called, so every `Vec`
+it builds is a block this process already owns and `GOBLIN_LEAK_CHECK` still
+tells the truth. Allocating before that handshake aborts rather than guessing.
+
+Not read: skins, morph targets, animation, alpha blending and masking, a second
+UV set, and the sampler half of a glTF `texture` — this renderer has one sampler
+configuration. Materials are collapsed onto *image* indices for that reason, so
+an image cited by several textures is decoded once.
 
 ### Shadows
 
@@ -149,6 +196,14 @@ better, since a plane has no inside to rasterise.
 This is a content rule the renderer cannot enforce, only report:
 `warnIfPaperThin` logs any mesh thinner than a threshold on any axis. A floor is
 a very flat box and never a quad; there is deliberately no plane primitive.
+
+The test scene's boxes and spheres are generated; its **fifty helmets are loaded**
+from one glTF file and scattered by rejection sampling against the props already
+placed, from a seeded generator so that the scene is identical in every run. They
+are the only geometry here nobody in this repository authored, which is the
+point — real content has UV seams, no tangents, and fifteen thousand triangles
+where a crate has twelve. They cost about 1.1 ms a frame at 1600x900, and they
+are one mesh and one material between them.
 
 ### Overlay
 
@@ -201,6 +256,7 @@ build.ts                    shaders -> SPIR-V -> manifest, then the program
 assets/
   fonts/                    the overlay's two faces, and their licences
   materials/                PBR maps, one folder per material
+  models/                   one glTF sample, for --model
 shaders/
   include/                  frame, cluster, light, pbr, shadow, fullscreen
   *.wgsl                    one file per pass
@@ -211,9 +267,11 @@ src/
   bindings/SDL3/            SDL3 bindings
   bindings/SDL3_image/      SDL3_image bindings
   bindings/SDL3_ttf/        SDL3_ttf bindings
+  bindings/encke_gltf/      the glTF loader's C ABI
   renderer/
     config.ts               every tunable, mirrored against a shader
     renderer.ts             the frame graph
+    assets/                 texture decode, material sets, glTF import
     cluster/                the cluster buffers
     frame/                  uniform layouts, render targets
     geometry/               mesh data, box, sphere, GPU upload
@@ -223,6 +281,7 @@ src/
     ui/                     overlay atlas, draw list, debug HUD
 tools/
   shadercc/                 WGSL -> SPIR-V, in SDL's binding layout
+  gltf/                     glTF -> encke meshes, a Rust cdylib
   goblin-forge/             the compiler
 ```
 
@@ -241,6 +300,20 @@ is copied.
 
 SDL3_image has no `IMG_Init`; decoders come up on first use. SDL3_ttf does have
 `TTF_Init`, and nothing in it works before that call succeeds.
+
+`tools/gltf` is the fourth native library and the only one built rather than
+fetched: `cargo build --release`, then the shared library beside the executable
+and the link-time stub into `build/gltf/`. Two files rather than one because
+cargo names a Windows cdylib's import library `encke_gltf.dll.lib` while
+`systemLib` looks for `encke_gltf.lib`, so it is copied under the name the linker
+would spell.
+
+**`bin/encke_gltf.dll` and `bin/encke.exe` are one unit and must be rebuilt
+together.** They share a struct layout that no compiler checks — there is no
+header, only `tools/gltf/src/scene.rs` and `src/bindings/encke_gltf/types.ts`
+saying the same thing twice — and a stale DLL reads the fields at the wrong
+offsets rather than failing. `encke_gltf_abi_version` exists to turn that into a
+line in the log, and is bumped whenever either side changes shape.
 
 The `SDL_Renderer` entry points are deliberately unbound in both —
 `IMG_LoadTexture*` in one, `TTF_*RendererTextEngine` and `TTF_DrawRendererText`
@@ -264,7 +337,23 @@ parses those counts back out of shadercc's own report and generates
 the SDL object with the numbers baked in. There is no second place for them to be
 wrong.
 
+## Licence
+
+Apache-2.0. Copyright 2026 the encke authors; the full text is in `LICENSE`.
+
+Two exceptions, both under `assets/`:
+
+* **`assets/models/`** — Khronos glTF sample assets, under their own terms.
+  `MetalRoughSpheresNoTextures.glb` is CC0. **`DamagedHelmet.glb` derives from a
+  CC BY-NC 4.0 model and may not be used commercially**, whatever the licence on
+  the code around it. `assets/models/README.md` carries the attribution and
+  Khronos' own licence file sits beside the model. Anyone shipping something
+  built on this should delete it and put their own content in its place.
+* **`assets/fonts/` and `assets/materials/`** — SIL OFL and CC0 respectively,
+  each with its licence in the folder.
+
 ## Not in this phase
 
-Mesh and glTF loading (geometry is procedural), transparency, moment shadow maps
-or any non-CSM technique, HBAO (tried, cost more, looked worse), upscaling.
+Transparency, moment shadow maps or any non-CSM technique, HBAO (tried, cost
+more, looked worse), upscaling, and the parts of glTF listed above — skinning,
+morph targets and animation chief among them.

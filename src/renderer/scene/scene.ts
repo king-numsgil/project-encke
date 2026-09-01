@@ -12,9 +12,10 @@
 // lie about which work is actually being measured.
 
 import { fmat4, fvec3, fvec4 } from "std/linalg";
-import type { SDL_GPUDevice } from "../../bindings/SDL3";
+import type { SDL_GPUDevice, SDL_GPUTexture } from "../../bindings/SDL3";
 import { Fallbacks, MaterialTextures } from "../assets/material_set.ts";
 import { GpuMesh } from "../geometry/mesh.ts";
+import { releaseTexture } from "../gpu/texture.ts";
 import { Light } from "./light.ts";
 import { Material } from "./material.ts";
 
@@ -59,6 +60,19 @@ export class Scene {
      * into one is always valid in the other.
      */
     textures: MaterialTextures[];
+
+    /**
+     * Textures the scene itself owns, rather than any one material.
+     *
+     * A folder of maps belongs to the one `MaterialTextures` that loaded it, and
+     * that is the ordinary case. A glTF image is not: an ORM map is routinely
+     * both the metallic-roughness and the occlusion texture of one material, and
+     * a base-colour map is often shared between several — so it is decoded once
+     * and *borrowed* by every slot that cites it. Nothing among the borrowers
+     * can be the one that frees it, which leaves the scene.
+     */
+    ownedTextures: Pointer<SDL_GPUTexture>[];
+
     instances: Instance[];
     lights: Light[];
 
@@ -83,6 +97,7 @@ export class Scene {
         this.meshes = [];
         this.materials = [];
         this.textures = [];
+        this.ownedTextures = [];
         this.instances = [];
         this.lights = [];
         this.sunDirection = new fvec3(0.0, 1.0, 0.0);
@@ -117,6 +132,17 @@ export class Scene {
         this.materials.push(material);
         this.textures.push(maps);
         return this.materials.length - 1;
+    }
+
+    /**
+     * Take ownership of a texture several materials borrow.
+     *
+     * See {@link ownedTextures}. Released with the scene, after every
+     * `MaterialTextures` has released what it does own — which is safe in either
+     * order, since a borrowed slot is never in both lists.
+     */
+    adoptTexture(texture: Pointer<SDL_GPUTexture>): void {
+        this.ownedTextures.push(texture);
     }
 
     /**
@@ -163,6 +189,9 @@ export class Scene {
         // renderer's and outlive the scene.
         for (let i: usize = 0; i < this.textures.length; i++) {
             this.textures[i].release(device);
+        }
+        for (let i: usize = 0; i < this.ownedTextures.length; i++) {
+            releaseTexture(device, this.ownedTextures[i]);
         }
     }
 }
