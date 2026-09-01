@@ -339,7 +339,8 @@ wrong.
 
 ## Licence
 
-Apache-2.0. Copyright 2026 the encke authors; the full text is in `LICENSE`.
+Apache-2.0. Copyright 2026 Daniel "King Numsgil" Grondin; the full text is in
+`LICENSE`.
 
 Two exceptions, both under `assets/`:
 
