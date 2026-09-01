@@ -170154,8 +170154,8 @@ if (!nativeBinding) {
 var { Backend, locateLinker, outputExtension, outputPrefix, schemaFingerprint } = nativeBinding;
 
 // ../backend/js/mir.generated.ts
-var SCHEMA_FINGERPRINT = 0x68e525a01305da29n;
-var SCHEMA_FINGERPRINT_HEX = "68e525a01305da29";
+var SCHEMA_FINGERPRINT = 0xfb0eb16471f939bbn;
+var SCHEMA_FINGERPRINT_HEX = "fb0eb16471f939bb";
 var UTF8 = new TextEncoder;
 
 class Writer {
@@ -170452,6 +170452,7 @@ function writeInterfaceMethod(w, v) {
 }
 function writeInterfaceDef(w, v) {
   writeSymId(w, v.name);
+  w.varintBig(v.key);
   w.varint(v.methods.length);
   for (const item of v.methods) {
     writeInterfaceMethod(w, item);
@@ -171287,6 +171288,7 @@ class ModuleBuilder {
     const id = InterfaceId(this.#interfaces.length);
     this.#interfaces.push({
       name: this.sym(options.name),
+      key: options.key,
       methods: [],
       span: options.span ?? SYNTHETIC
     });
@@ -173410,6 +173412,16 @@ function withArguments(checker, name, args, state) {
 function layoutKey(type) {
   return keyOf(type, []);
 }
+function layoutKeyHash(type) {
+  let hash = 0xcbf29ce484222325n;
+  for (const byte of new TextEncoder().encode(layoutKey(type))) {
+    hash ^= BigInt(byte);
+    hash &= 0xffffffffffffffffn;
+    hash *= 0x00000100000001b3n;
+    hash &= 0xffffffffffffffffn;
+  }
+  return hash;
+}
 function keyOf(type, open) {
   switch (type.kind) {
     case "void":
@@ -173672,6 +173684,7 @@ var CARGO_OPT_LEVEL = {
   Oz: "z"
 };
 var cache = new Map;
+var forShell = (args) => process.platform === "win32" ? args.map((arg) => /\s/.test(arg) ? `"${arg}"` : arg) : [...args];
 var RUNTIME_CRATE = () => runtimeCrate();
 function buildRuntime(target, optLevel = "O2") {
   const key = `${target ?? "<host>"}|${optLevel}`;
@@ -173686,7 +173699,7 @@ function buildRuntime(target, optLevel = "O2") {
   }
   args.push("--", "-C", "target-cpu=x86-64-v3");
   args.push("--print", "native-static-libs");
-  const result = spawnSync("cargo", args, {
+  const result = spawnSync("cargo", forShell(args), {
     cwd: RUNTIME_CRATE(),
     encoding: "utf8",
     shell: process.platform === "win32",
@@ -174361,9 +174374,46 @@ Rename one of them. A generic carries its arguments in its ` + "name already, so
     }
     named.set(name, id);
   }
+  const forward = new Set(recursive);
+  const nameThrough = (ty2) => {
+    const kind = module.types[ty2]?.kind;
+    if (kind === undefined) {
+      return;
+    }
+    if (kind.kind === "Struct") {
+      forward.add(kind.value);
+      return;
+    }
+    if (kind.kind === "Pointer" || kind.kind === "Reference" || kind.kind === "Array") {
+      nameThrough(kind.value);
+      return;
+    }
+    if (kind.kind === "FixedArray") {
+      nameThrough(kind.element);
+      return;
+    }
+    if (kind.kind === "FnPtr") {
+      const signature2 = module.sigs[kind.value];
+      for (const param of signature2?.params ?? []) {
+        nameThrough(param.ty);
+      }
+      if (signature2 !== undefined) {
+        nameThrough(signature2.ret);
+      }
+    }
+  };
+  for (const sig of fnPtrs) {
+    const signature2 = module.sigs[sig];
+    for (const param of signature2?.params ?? []) {
+      nameThrough(param.ty);
+    }
+    if (signature2 !== undefined) {
+      nameThrough(signature2.ret);
+    }
+  }
   const out = [];
   for (const id of order) {
-    if (!recursive.has(id)) {
+    if (!forward.has(id)) {
       continue;
     }
     const name = identifier(sym2(module, module.structs[id]?.name ?? 0));
@@ -174372,21 +174422,21 @@ Rename one of them. A generic carries its arguments in its ` + "name already, so
   if (out.length > 0) {
     out.push("");
   }
+  for (const sig of [...fnPtrs].sort((a, b) => a - b)) {
+    out.push(`typedef ${functionPointer(module, sig, fnPtrName(sig))};`);
+    out.push("");
+  }
   for (const id of order) {
     const def = module.structs[id];
     if (def === undefined) {
       continue;
     }
     const name = identifier(sym2(module, def.name));
-    out.push(recursive.has(id) ? `struct ${name} {` : `typedef struct ${name} {`);
+    out.push(forward.has(id) ? `struct ${name} {` : `typedef struct ${name} {`);
     for (const field of def.fields) {
       out.push(`    ${member(module, field.ty, identifier(sym2(module, field.name)))};`);
     }
-    out.push(recursive.has(id) ? "};" : `} ${name};`);
-    out.push("");
-  }
-  for (const sig of [...fnPtrs].sort((a, b) => a - b)) {
-    out.push(`typedef ${functionPointer(module, sig, fnPtrName(sig))};`);
+    out.push(forward.has(id) ? "};" : `} ${name};`);
     out.push("");
   }
   if (out.length > 0) {
@@ -174735,6 +174785,10 @@ function buildClass(node, name, bindings, analyse, checker, report) {
       return;
     }
     if (member2.typeParameters !== undefined && member2.typeParameters.length > 0) {
+      if (!isStatic(member2) && methods.has(member2.name.text)) {
+        report.refuse(member2, `\`${name}.${member2.name.text}\` is generic, and the base's ` + "method of that name is not. A generic method has no vtable slot — " + "it is compiled once per set of type arguments — so this cannot take " + "over the slot it would inherit, and a call through a base reference " + "would run the base's body while a call on this class ran this one. " + "A generic method neither overrides nor is overridden: drop the type " + "parameters, or give them to the base's method too.");
+        return;
+      }
       const parameters = typeParametersOf(member2, checker);
       if (parameters === undefined) {
         report.unsupported(member2, "a method whose type parameters tsc could not resolve");
@@ -174759,6 +174813,11 @@ function buildClass(node, name, bindings, analyse, checker, report) {
       continue;
     }
     const methodName = member2.name.text;
+    const inheritedTemplate = methodTemplates.get(methodName);
+    if (inheritedTemplate !== undefined && !inheritedTemplate.isStatic) {
+      report.refuse(member2, `\`${name}.${methodName}\` is not generic, and the base's method ` + "of that name is. A generic method has no vtable slot — it is compiled " + "once per set of type arguments — so there is no slot for this to take " + "over, and a call through a base reference would resolve the base's copy " + "statically while a call on this class dispatched here. A generic method " + "neither overrides nor is overridden: give this one the base's type " + "parameters, or rename it.");
+      return;
+    }
     const symbol = `${name}$${methodName}`;
     const inherited = methods.get(methodName);
     const slot = inherited?.slot ?? slots.length;
@@ -175487,6 +175546,7 @@ class Emitter {
     return value.operand;
   }
   forRead(value) {
+    this.#refuseLostMove(value);
     if (!this.needsCallerCopy(value.type)) {
       return value.operand;
     }
@@ -175496,6 +175556,7 @@ class Emitter {
     return { kind: "Borrow", value: value.operand.value };
   }
   repeatable(value) {
+    this.#refuseLostMove(value);
     if (value.temporary !== undefined) {
       return { kind: "Copy", value: placeOf(value.temporary) };
     }
@@ -175503,6 +175564,13 @@ class Emitter {
       return value.operand;
     }
     return { kind: "Copy", value: value.operand.value };
+  }
+  #refuseLostMove(value) {
+    if (value.moveAt === undefined) {
+      return;
+    }
+    const name = value.moveAt.arguments[0]?.getText() ?? "…";
+    this.outer.error(value.moveAt, "GF0002", `\`move(${name})\` is only read here, so nothing takes what the move hands ` + "over — the move would be discarded, while still marking the name " + "moved-from, so every later use of it would report a move that never " + "happened. Drop the `move()`, or hand the value to something that keeps " + "it: a binding, a call, a return.");
   }
   forArgument(at, value) {
     if (!this.needsCallerCopy(value.type)) {
@@ -180800,7 +180868,7 @@ class BodyLowerer extends BoundaryLowerer {
       return {
         place: {
           local: base.local,
-          projection: [...base.projection, { kind: "ConstIndex", value: BigInt(argument.getText()) }]
+          projection: [...base.projection, { kind: "ConstIndex", value: BigInt(literalDigits(argument.getText())) }]
         },
         element
       };
@@ -182256,7 +182324,11 @@ class BodyLowerer extends BoundaryLowerer {
       return;
     }
     this.#moved.set(binding.local, argument.text);
-    return { operand: { kind: "Move", value: bindingPlace(binding) }, type: binding.type };
+    return {
+      operand: { kind: "Move", value: bindingPlace(binding) },
+      type: binding.type,
+      moveAt: expression
+    };
   }
   #take(expression) {
     const argument = expression.arguments[0];
@@ -183888,7 +183960,11 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
     if (existing !== undefined) {
       return existing;
     }
-    const id = this.#mir.declareInterface({ name: type.name, span: this.span(at) });
+    const id = this.#mir.declareInterface({
+      name: type.name,
+      key: layoutKeyHash(type),
+      span: this.span(at)
+    });
     this.#interfaces.set(key, id);
     this.#interfaceInfo.set(key, type);
     const ty2 = this.#mir.ty({ kind: "Interface", value: id });
