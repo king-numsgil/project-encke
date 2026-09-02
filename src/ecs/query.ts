@@ -15,19 +15,21 @@
 // at: a query costs nothing on a world whose shape has settled, and a query
 // **built before the archetypes it matches** picks them up the moment they exist.
 //
-// ## What a wildcard term resolves to
+// ## Relationships are ordinary terms
 //
-// `has(pair(ChildOf, wildcard))` matches a table holding any `(ChildOf, x)`, and
-// the iterator resolves the term to the **first** such id in signature order.
-// An entity holding two pairs of one relation is therefore visited once, for the
-// lower-sorted target, and `Iter.idAt` is how the body learns which. That is a
-// real limitation rather than a subtlety: flecs returns a table once per matching
-// id and this returns it once. It is the right first cut — `ChildOf` is exclusive,
-// so the common case has exactly one match — and the place to change it is here,
-// by yielding per resolved id instead of per table.
+// A relation's target lives in a column, so `has(childOf)` is "everything with a
+// parent" — one exact id, one table, and `it.column<u64>(n)` hands the body a
+// contiguous run of parent handles. There are no wildcards here and nothing that
+// needs them.
+//
+// "Everything parented to *this* ship" is deliberately not a query at all. It is
+// `world.related(childOf, ship, out)`, an index lookup that costs the number of
+// parts. Making it a query term would mean putting the target back in the
+// signature, which is a table per ship: measured at 22 times slower to iterate
+// at 2,000 ships, and it is why that design is gone.
 
 import { type Archetype } from "./archetype.ts";
-import { hasWildcard, matches, noneId } from "./id.ts";
+import { noneId } from "./id.ts";
 import { type World } from "./world.ts";
 
 /** What a term demands of a table. */
@@ -292,23 +294,13 @@ export class Query {
 }
 
 /**
- * Where `pattern` matches in `table`'s signature, or -1.
+ * Where `id` sits in `table`'s signature, or -1. A binary search.
  *
- * An exact id is a binary search. A pattern with a wildcard in it is a scan,
- * because the ids it matches are not contiguous in general — though every pair
- * *is* in one run at the end of the signature, since a pair sets bit 63, so a
- * wildcard pair term could start from there. Signatures are a dozen ids; that is
- * an optimisation for the day a profile asks for it.
+ * There is nothing else to it any more. An earlier design had relationships in
+ * the signature as `(ChildOf, ship)` ids, so a term could carry a wildcard and
+ * this had to scan for a match; with the target in a column, "has a parent" is
+ * `has(childOf)` — one exact id — and the wildcard has nothing left to do.
  */
-function resolve(table: Pointer<Archetype>, pattern: u64): isize {
-    if (!hasWildcard(pattern)) {
-        return table.indexOfId(pattern);
-    }
-
-    for (let i: usize = 0; i < table.signature.length; i++) {
-        if (matches(pattern, table.signature[i])) {
-            return cast<isize>(i);
-        }
-    }
-    return -1;
+function resolve(table: Pointer<Archetype>, id: u64): isize {
+    return table.indexOfId(id);
 }

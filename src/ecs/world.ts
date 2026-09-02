@@ -33,22 +33,15 @@ import {
 import { type ComponentInfo, infoOf, tagInfo } from "./component.ts";
 import { Entities } from "./entities.ts";
 import {
-    childOfId,
     componentId,
     deleteId,
-    exclusiveId,
     firstUserIndex,
     indexOf,
-    isPair,
     noneId,
-    onDeleteId,
-    pair,
-    relationOf,
+    relationId,
     removeId,
-    targetOf,
-    wildcardId,
 } from "./id.ts";
-import { TargetIndex } from "./relation.ts";
+import { RelationIndex, View } from "./relation.ts";
 
 /** The archetype with an empty signature, where every entity starts. */
 function rootTable(): u32 {
@@ -68,8 +61,14 @@ export class World {
     /** Component and relation names, for diagnostics only. Nothing branches on one. */
     private names: HashMap<u64, string>;
 
-    /** Which tables hold a pair to which target. What `destroy` needs; see `relation.ts`. */
-    private targets: TargetIndex;
+    /** Who points at whom, from the target's end. See `relation.ts`. */
+    private links: RelationIndex;
+
+    /** Registered relations, and what each does when a target is destroyed. */
+    private relations: HashMap<u64, u64>;
+
+    /** The registered relations in order, for the destroy path to walk. */
+    private relationList: u64[];
 
     constructor() {
         this.entities = new Entities();
@@ -77,7 +76,9 @@ export class World {
         this.byHash = new HashMap<u64, u32>();
         this.infos = new HashMap<u64, ComponentInfo>();
         this.names = new HashMap<u64, string>();
-        this.targets = new TargetIndex();
+        this.links = new RelationIndex();
+        this.relations = new HashMap<u64, u64>();
+        this.relationList = [];
 
         // Table 0, empty, before anything can want one.
         const empty: u64[] = [];
@@ -94,26 +95,10 @@ export class World {
             }
         }
 
-        this.names.set(wildcardId(), "*");
-        this.names.set(childOfId(), "ChildOf");
         this.names.set(componentId(), "Component");
-        this.names.set(exclusiveId(), "Exclusive");
-        this.names.set(onDeleteId(), "OnDelete");
+        this.names.set(relationId(), "Relation");
         this.names.set(removeId(), "Remove");
         this.names.set(deleteId(), "Delete");
-
-        // `OnDelete` is exclusive so that setting a policy replaces the previous
-        // one rather than leaving two on the relation and a coin toss over which
-        // is read. It is the mechanism explaining itself: the thing that stops a
-        // relation having two policies is the same thing that stops an entity
-        // having two parents.
-        this.add(onDeleteId(), exclusiveId());
-
-        // A child has one parent, and deleting the parent deletes the child.
-        // Both are ordinary ids on an ordinary entity — `ChildOf` is special
-        // only in that this constructor configures it.
-        this.add(childOfId(), exclusiveId());
-        this.add(childOfId(), pair(onDeleteId(), deleteId()));
     }
 
     /**
@@ -143,21 +128,21 @@ export class World {
     }
 
     /**
-     * Retire an entity, drop its components, and deal with every pair that named
-     * it. `false` if it was not alive.
+     * Retire an entity, drop its components, and settle everything that pointed
+     * at it. `false` if it was not alive.
      *
-     * A pair records its target by index and has no generation, so nothing about
-     * `(ChildOf, ship)` goes stale when the ship does — it has to be found and
-     * acted on. Which action is the relation's `(OnDelete, …)` policy: `Remove`
-     * strips the pair and leaves the entity alone, `Delete` deletes the entity
-     * too. `ChildOf` is configured with `Delete` in the constructor, so deleting
-     * a ship deletes its crew, and their children, and so on down.
+     * A relation's target is stored as a **full handle**, generation included, so
+     * a turret whose ship has died already reads as pointing at something dead —
+     * `targetOf` says so without anyone having to clean up first. This pass is
+     * therefore about *policy* rather than about correctness: `Remove` clears the
+     * relation so the holder is not left pointing at a ghost, and `Delete`
+     * destroys the holder as well, which is what makes a ship take its turrets
+     * with it.
      *
      * **Worklist, not recursion.** A hierarchy is as deep as the content makes
-     * it, and a cycle in `ChildOf` — which nothing forbids — would be a recursion
-     * that does not end. Here it terminates on the liveness check, because the
-     * entity that closed the cycle is already dead by the time it comes back
-     * round.
+     * it, and a cycle — which nothing forbids — would be a recursion that does
+     * not end. Here it terminates on the liveness check, because the entity that
+     * closed the cycle is already dead by the time it comes back round.
      */
     destroy(handle: u64): boolean {
         if (!this.entities.isAlive(handle)) {
@@ -178,7 +163,8 @@ export class World {
                 continue;
             }
 
-            this.settleTargets(current, doomed);
+            this.settleHolders(current, doomed);
+            this.forgetLinks(current);
             this.removeEntity(current);
         }
 
@@ -214,18 +200,71 @@ export class World {
         return id;
     }
 
-    /**
-     * Register an id with no data: an entity either has it or has not.
-     *
-     * Also how a **relation** is made — `ChildOf` is a tag that happens to be
-     * used as the left half of a pair. Nothing distinguishes the two at
-     * registration, and nothing needs to.
-     */
+    /** Register an id with no data: an entity either has it or has not. */
     tag(name: string): u64 {
         const id = this.create();
         this.names.set(id, name);
         this.add(id, componentId());
         return id;
+    }
+
+    /**
+     * Register a relation, and hand back its id.
+     *
+     *     const childOf = world.relation("ChildOf");
+     *     world.setOnDelete(childOf, deleteId());
+     *
+     *     world.relate(turret, childOf, ship);
+     *
+     * A relation **is a component whose value is an entity handle**. That is the
+     * whole implementation: relating writes the target into a `u64` column on
+     * the holder, so every entity with a parent shares one table however many
+     * parents exist, and the targets are readable as a contiguous column by an
+     * ordinary query.
+     *
+     * The reverse direction — "what points at this ship" — is the index in
+     * `relation.ts`, which relating and unrelating keep up to date.
+     *
+     * **One target at a time.** Relating to a second replaces the first, because
+     * a column holds one value. A relation that should hold several at once is
+     * not here; the id layout keeps flag bits reserved for marking one.
+     */
+    relation(name: string): u64 {
+        const id = this.create();
+        // The value is an entity handle, so the column is `u64` wide and its
+        // rows are copied and dropped like any other plain data.
+        this.infos.set(id, infoOf<u64>());
+        this.names.set(id, name);
+        this.add(id, componentId());
+        this.add(id, relationId());
+
+        this.relations.set(id, removeId());
+        this.relationList.push(id);
+        return id;
+    }
+
+    /** Whether `id` was registered with {@link relation}. */
+    isRelation(id: u64): boolean {
+        return this.relations.has(id);
+    }
+
+    /**
+     * Say what happens to the entities pointing at a target when it is destroyed.
+     *
+     * {@link removeId} — the default — clears the relation and leaves the holder
+     * alone. {@link deleteId} destroys the holder too, which is what makes a
+     * hierarchy behave like one: deleting a ship deletes its turrets, and
+     * anything parented to those.
+     */
+    setOnDelete(relation: u64, policy: u64): void {
+        if (this.relations.has(relation)) {
+            this.relations.set(relation, policy);
+        }
+    }
+
+    /** What `relation` does when a target dies. {@link removeId} by default. */
+    onDeleteOf(relation: u64): u64 {
+        return this.relations.getOr(relation, removeId());
     }
 
     /** What something was registered as. Empty for anything unnamed. */
@@ -258,20 +297,6 @@ export class World {
         const source = this.tables[cast<usize>(from)];
         if (source.has(id)) {
             return false;
-        }
-
-        // An exclusive relation admits one target, so a second `(ChildOf, x)`
-        // replaces the first. Both changes happen in **one** move rather than a
-        // remove followed by an add — re-parenting is common enough that copying
-        // the row twice for it would be a shame. The cost is that this route
-        // hashes a signature instead of following a cached edge, which is the
-        // right way round: the graph is there for the shapes a program takes
-        // over and over, and this is not one of them.
-        const replaced = this.exclusiveConflict(source, id);
-        if (replaced !== noneId()) {
-            const signature = signatureWith(signatureWithout(source.signature, replaced), id);
-            this.moveEntity(handle, this.findOrCreateTable(signature));
-            return true;
         }
 
         this.moveEntity(handle, this.tableAfterAdding(source, from, id));
@@ -341,112 +366,135 @@ export class World {
     // -- relationships -------------------------------------------------------
 
     /**
-     * Mark a relation exclusive: adding a second target replaces the first.
+     * Point `holder` at `target` through `relation`, replacing any previous one.
      *
-     *     const dockedTo = world.tag("DockedTo");
-     *     world.markExclusive(dockedTo);
+     *     world.relate(turret, childOf, ship);
+     *     world.relate(ship, orbiting, luna);
      *
-     * `ChildOf` is one already. A relation that is not exclusive admits any
-     * number of targets at once, which is what `(Likes, alice)` and
-     * `(Likes, bob)` on one entity means.
+     * `false` when either entity is dead or `relation` was never registered.
+     *
+     * The whole operation is a column write plus two index updates. **It does not
+     * move the entity between tables** unless this is the first time it has held
+     * this relation at all — which is why two thousand ships cost one table
+     * rather than two thousand.
      */
-    markExclusive(relation: u64): void {
-        this.add(relation, exclusiveId());
+    relate(holder: u64, relation: u64, target: u64): boolean {
+        if (!this.entities.isAlive(holder) || !this.entities.isAlive(target)) {
+            return false;
+        }
+        if (!this.relations.has(relation)) {
+            return false;
+        }
+
+        // One target at a time: whatever was there stops being pointed at.
+        const previous = this.targetOf(holder, relation);
+        if (previous === target) {
+            return true;
+        }
+        if (previous !== noneId()) {
+            this.links.remove(relation, previous, holder);
+        }
+
+        this.add(holder, relation);
+        const slot = this.get<u64>(holder, relation);
+        if (slot === null) {
+            return false;
+        }
+        slot[0] = target;
+
+        this.links.add(relation, target, holder);
+        return true;
     }
 
     /**
-     * Say what happens to this relation's pairs when a **target** is destroyed.
+     * Stop `holder` pointing at anything through `relation`. `false` if it was
+     * not.
      *
-     * `removeId()` — the default — strips the pair and leaves the holder alone.
-     * `deleteId()` destroys the holder too, which is what makes a hierarchy
-     * behave like one. `OnDelete` is itself exclusive, so this replaces any
-     * previous policy rather than adding a second.
+     * The entity leaves the relation's table, because it no longer has the id at
+     * all — a relation with no target is not a relation held with a null in it.
      */
-    setOnDelete(relation: u64, policy: u64): void {
-        this.add(relation, pair(onDeleteId(), policy));
-    }
-
-    /** Whether `relation` admits one target at a time. */
-    isExclusive(relation: u64): boolean {
-        return this.has(relation, exclusiveId());
-    }
-
-    /** What `relation` does when a target dies. {@link removeId} unless it says otherwise. */
-    onDeleteOf(relation: u64): u64 {
-        if (!this.entities.isAlive(relation)) {
-            return removeId();
+    unrelate(holder: u64, relation: u64): boolean {
+        const target = this.targetOf(holder, relation);
+        if (target === noneId()) {
+            return false;
         }
 
-        const table = this.tableOf(relation);
-        const marker = indexOf(onDeleteId());
-        for (let i: usize = 0; i < table.signature.length; i++) {
-            const id = table.signature[i];
-            if (isPair(id) && relationOf(id) === marker) {
-                return this.entities.handleAt(targetOf(id));
-            }
-        }
-        return removeId();
+        this.links.remove(relation, target, holder);
+        this.remove(holder, relation);
+        return true;
     }
 
     /**
-     * The entity `child` is a `ChildOf`, or {@link noneId}.
+     * What `holder` points at through `relation`, or {@link noneId}.
      *
-     * A scan of the child's own signature, which is a dozen ids — no index is
-     * needed in this direction because the answer is already in the table the
-     * entity is sitting in.
+     * One load out of a column. The value is a **full handle**, so a target that
+     * has since been destroyed comes back as a handle that fails `isAlive` — the
+     * staleness is detectable without anything having had to clean up first,
+     * which is the property a target packed into an id could not have.
      */
-    parentOf(child: u64): u64 {
-        if (!this.entities.isAlive(child)) {
+    targetOf(holder: u64, relation: u64): u64 {
+        const slot = this.get<u64>(holder, relation);
+        if (slot === null) {
             return noneId();
         }
-        return this.targetOfRelation(this.tableOf(child), indexOf(childOfId()));
+        return slot[0];
+    }
+
+    /** Whether `holder` points at anything through `relation`. */
+    hasRelation(holder: u64, relation: u64): boolean {
+        return this.has(holder, relation);
     }
 
     /**
-     * Append every entity holding `(ChildOf, parent)` onto `out`.
+     * Append everything pointing at `target` through `relation` onto `out`.
      *
-     * Through the target index, so this costs the number of children rather than
-     * the size of the world — which is the payoff for a pair being an id that
-     * sits in a signature, rather than a row in a side table.
+     *     const parts: u64[] = [];
+     *     world.related(childOf, ship, parts);
      *
-     * Appended into a caller's array rather than iterated with a callback,
-     * because what a caller does with children is usually to destroy or reparent
-     * them, and doing that from inside a walk of the tables would renumber the
-     * rows underneath it. A snapshot is what the operation needs.
+     * One hash lookup and a copy of that target's list, so it costs the number of
+     * parts rather than the size of the world.
+     *
+     * A copy into the caller's array rather than a borrow, because what a caller
+     * does with a ship's parts is usually to destroy or re-relate them, and doing
+     * that while walking the index would move entries under the cursor.
+     * {@link view} is the version that keeps the copy and only re-takes it when
+     * something has changed.
      */
-    childrenOf(parent: u64, out: Reference<u64[]>): void {
-        this.holdersOf(pair(childOfId(), parent), out);
+    related(relation: u64, target: u64, out: Reference<u64[]>): void {
+        this.links.collect(relation, target, out);
+    }
+
+    /** How many entities point at `target` through `relation`. */
+    relatedCount(relation: u64, target: u64): usize {
+        return this.links.countFor(relation, target);
     }
 
     /**
-     * Append every entity holding `id` — which should be a pair — onto `out`.
+     * A cached, self-maintaining list of everything pointing at `target`.
      *
-     * Exact ids only, no wildcards: this is the index lookup, and a pattern is a
-     * {@link Query}'s job.
+     *     const parts = world.view(childOf, ship);
+     *     world.walk(parts, (part) => { … });
+     *
+     * Spends one `u64` per member to make repeated walks a contiguous array with
+     * no lookup: while nothing is relating or unrelating, a walk costs one
+     * integer comparison; when something changes, the next walk re-copies once.
+     *
+     * Hold it for as long as it is useful. It is an ordinary value with no
+     * registration behind it, so dropping one costs nothing and nothing has to be
+     * told.
      */
-    holdersOf(id: u64, out: Reference<u64[]>): void {
-        if (!isPair(id)) {
-            return;
-        }
-
-        const tables: u32[] = [];
-        this.targets.collectTables(targetOf(id), tables);
-
-        for (let i: usize = 0; i < tables.length; i++) {
-            const table = this.tables[cast<usize>(tables[i])];
-            if (!table.has(id)) {
-                continue;
-            }
-            out.reserve(out.length + table.count);
-            for (let row: usize = 0; row < table.count; row++) {
-                out.push(table.entities[row]);
-            }
-        }
+    view(relation: u64, target: u64): View {
+        return new View(relation, target);
     }
 
-    /** How many tables hold a pair naming `target`. For tests and diagnostics. */
-    tablesNaming(target: u64): usize {
-        return this.targets.tableCountFor(indexOf(target));
+    /** Sync `view` against the world and call `body` with every member. */
+    walk(view: Reference<View>, body: LocalFn<(member: u64) => void>): void {
+        view.walk(this.links, body);
+    }
+
+    /** Sync `view` without walking it, so {@link View.at} can be used directly. */
+    sync(view: Reference<View>): void {
+        view.sync(this.links);
     }
 
     // -- what the tests and the query layer look at ------------------------------
@@ -474,15 +522,11 @@ export class World {
     /**
      * How big `id`'s data is, and how to move it.
      *
-     * A pair takes its layout from its **relation**: `(Orbits, Earth)` carries an
-     * `Orbits` if that was registered with data, and is a tag otherwise. That is
-     * flecs' rule minus the half where the target can supply it instead, which
-     * is not needed until something wants two different payloads on one relation.
+     * One lookup, and a relation is not a special case: it was registered with a
+     * `u64` layout, so its column holds one entity handle per row exactly as a
+     * `Position` column holds three floats.
      */
     infoFor(id: u64): ComponentInfo {
-        if (isPair(id)) {
-            return this.infos.getOr(this.entities.handleAt(relationOf(id)), tagInfo());
-        }
         return this.infos.getOr(id, tagInfo());
     }
 
@@ -493,95 +537,57 @@ export class World {
     }
 
     /**
-     * The first pair in `table` whose relation index is `relation`, resolved to
-     * its target handle. {@link noneId} when there is none.
-     */
-    private targetOfRelation(table: Pointer<Archetype>, relation: u32): u64 {
-        for (let i: usize = 0; i < table.signature.length; i++) {
-            const id = table.signature[i];
-            if (isPair(id) && relationOf(id) === relation) {
-                return this.entities.handleAt(targetOf(id));
-            }
-        }
-        return noneId();
-    }
-
-    /**
-     * The pair `id` would displace, if its relation is exclusive.
+     * Act on everything pointing at `handle`, before it stops existing.
      *
-     * {@link noneId} when `id` is not a pair, when its relation is not
-     * exclusive, or when the entity holds no other pair of that relation — which
-     * is to say, in every ordinary case.
-     */
-    private exclusiveConflict(source: Pointer<Archetype>, id: u64): u64 {
-        if (!isPair(id)) {
-            return noneId();
-        }
-
-        const relation = this.entities.handleAt(relationOf(id));
-        if (relation === noneId() || !this.has(relation, exclusiveId())) {
-            return noneId();
-        }
-
-        for (let i: usize = 0; i < source.signature.length; i++) {
-            const held = source.signature[i];
-            if (isPair(held) && relationOf(held) === relationOf(id)) {
-                return held;
-            }
-        }
-        return noneId();
-    }
-
-    /**
-     * Act on every pair naming `handle` as a target, before it stops existing.
+     * One index lookup per registered relation — a handful — rather than a scan
+     * of anything. `Delete`-policy holders go onto `doomed` for the caller's
+     * worklist; `Remove`-policy holders are unrelated here and now.
      *
-     * `Delete`-policy holders go onto `doomed` for the caller's worklist;
-     * `Remove`-policy holders have the pair stripped here and now.
-     *
-     * **The tables are read completely before anything is changed.** Stripping a
-     * pair moves an entity to another table, which swap-removes a row and
-     * renumbers the ones after it — doing that inside the scan would walk past
-     * entities that had been shuffled behind the cursor. So the scan collects
-     * and the loop after it acts, which is the same discipline `Query.each`
-     * asks of its body.
+     * **The lists are copied before anything is changed.** Unrelating moves an
+     * entity out of the relation's table and removes it from the very list being
+     * walked, so acting inside the walk would step over entries. `related` takes
+     * a snapshot for exactly this reason.
      */
-    private settleTargets(handle: u64, doomed: Reference<u64[]>): void {
-        const target = indexOf(handle);
-        const tables: u32[] = [];
-        this.targets.collectTables(target, tables);
-        if (tables.length === 0) {
-            return;
-        }
-
-        const holders: u64[] = [];
-        const stripped: u64[] = [];
-
-        for (let i: usize = 0; i < tables.length; i++) {
-            const table = this.tables[cast<usize>(tables[i])];
-            if (table.count === 0) {
+    private settleHolders(handle: u64, doomed: Reference<u64[]>): void {
+        for (let i: usize = 0; i < this.relationList.length; i++) {
+            const relation = this.relationList[i];
+            if (this.links.countFor(relation, handle) === 0) {
                 continue;
             }
 
-            for (let s: usize = 0; s < table.signature.length; s++) {
-                const id = table.signature[s];
-                if (!isPair(id) || targetOf(id) !== target) {
-                    continue;
-                }
+            const holders: u64[] = [];
+            this.links.collect(relation, handle, holders);
 
-                const cascades = this.onDeleteOf(this.entities.handleAt(relationOf(id))) === deleteId();
-                for (let row: usize = 0; row < table.count; row++) {
-                    if (cascades) {
-                        doomed.push(table.entities[row]);
-                    } else {
-                        holders.push(table.entities[row]);
-                        stripped.push(id);
-                    }
+            const cascades = this.onDeleteOf(relation) === deleteId();
+            for (let h: usize = 0; h < holders.length; h++) {
+                if (cascades) {
+                    doomed.push(holders[h]);
+                } else {
+                    this.unrelate(holders[h], relation);
                 }
             }
         }
+    }
 
-        for (let i: usize = 0; i < holders.length; i++) {
-            this.remove(holders[i], stripped[i]);
+    /**
+     * Take `handle` out of the index for everything **it** points at.
+     *
+     * The other direction from {@link settleHolders}, and easy to forget: a
+     * turret that dies has to stop being listed among its ship's parts, or the
+     * ship keeps handing out a handle to something that no longer exists. Cheap,
+     * because the targets are in the entity's own columns.
+     */
+    private forgetLinks(handle: u64): void {
+        const table = this.tableOf(handle);
+        for (let i: usize = 0; i < table.signature.length; i++) {
+            const id = table.signature[i];
+            if (!this.relations.has(id)) {
+                continue;
+            }
+            const target = this.targetOf(handle, id);
+            if (target !== noneId()) {
+                this.links.remove(id, target, handle);
+            }
         }
     }
 
@@ -691,13 +697,6 @@ export class World {
         const table = alloc(Archetype, id);
         for (let i: usize = 0; i < signature.length; i++) {
             table.push(signature[i], this.infoFor(signature[i]));
-
-            // The only place the target index is written. A signature never
-            // changes after this loop, so a registration is never withdrawn and
-            // the lists need no holes — which is what lets them be plain arrays.
-            if (isPair(signature[i])) {
-                this.targets.add(targetOf(signature[i]), id);
-            }
         }
 
         if (bucket >= 0) {

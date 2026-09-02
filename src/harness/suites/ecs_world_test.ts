@@ -13,7 +13,7 @@
 // order — and the graph edges that make the second traversal of a route cheap.
 
 import { signatureWith, signatureWithout } from "../../ecs/archetype.ts";
-import { childOfId, componentId, indexOf, pair } from "../../ecs/id.ts";
+import { componentId, indexOf } from "../../ecs/id.ts";
 import { World } from "../../ecs/world.ts";
 import type { Tester } from "../testing.ts";
 
@@ -89,8 +89,8 @@ export function testEcsWorld(t: Reference<Tester>): void {
     // in. They all get `Component` in the constructor of nothing, so the count
     // is small and stable; what matters is that a table exists at all.
     t.ok("a fresh world has a root table", world.tableCount >= 1);
-    t.ok("ChildOf is alive in it", world.isAlive(childOfId()));
-    t.equalText("and is named", world.nameOf(childOfId()), "ChildOf");
+    t.ok("the reserved builtins are alive in it", world.isAlive(componentId()));
+    t.equalText("and named", world.nameOf(componentId()), "Component");
 
     const position = world.component<Position>("Position");
     const velocity = world.component<Velocity>("Velocity");
@@ -303,54 +303,37 @@ export function testEcsWorld(t: Reference<Tester>): void {
     }
     t.equalUsize("removing it from all of them leaves none", remaining, 0);
 
-    // -- pairs are ordinary ids to the storage --------------------------------------
+    // -- a relation is a component whose value is a handle -----------------------------
     //
-    // Nothing in `world.ts` treats a pair specially except `infoFor`, which
-    // takes a pair's layout from its relation. Everything below is the ordinary
-    // add/remove path, and it working is the whole reason a pair is an id.
+    // Nothing in `world.ts` gives a relation a path of its own: `relate` is an
+    // `add` plus a column write, so everything checked above about moving between
+    // tables applies to it unchanged. That is the point of storing the target as
+    // data — there is one storage mechanism, not two.
 
+    const childOf = world.relation("ChildOf");
     const ship = world.create();
     const child = world.create();
-    const childOfShip = pair(childOfId(), ship);
 
-    t.ok("a pair can be added", world.add(child, childOfShip));
-    t.ok("and is there", world.has(child, childOfShip));
-    t.ok("and it is a tag, since ChildOf carries no data", world.get<Position>(child, childOfShip) === null);
+    t.equalUsize("a relation's column is one handle wide", world.infoFor(childOf).size, 8);
+    t.ok("relating works", world.relate(child, childOf, ship));
+    t.ok("and shows up as an ordinary id", world.has(child, childOf));
 
-    const other = world.create();
-    t.ok("a pair to a different target is a different id", !world.has(child, pair(childOfId(), other)));
+    // The target is readable through `get` like any other component, because
+    // that is exactly what it is.
+    const stored = world.get<u64>(child, childOf);
+    t.ok("and the target is readable as data", stored !== null && stored[0] === ship);
 
-    // A relation registered *with* data gives its pairs that data — which is
-    // what makes `(Orbits, Earth)` able to carry the orbit.
-    const orbits = world.component<Velocity>("Orbits");
-    const earth = world.create();
-    const moon = world.create();
-    const orbitsEarth = pair(orbits, earth);
-
-    t.equalUsize("a pair takes its layout from the relation", world.infoFor(orbitsEarth).size, 8);
-    t.ok("so it can be set", world.set<Velocity>(moon, orbitsEarth, {dx: 384.4, dy: 27.3}));
-
-    const orbit = world.get<Velocity>(moon, orbitsEarth);
-    if (orbit === null) {
-        t.fail("reading a pair's data", "returned null");
-    } else {
-        t.equalF32("and read back", orbit[0].dx, 384.4);
-        t.equalF32("and read back", orbit[0].dy, 27.3);
-    }
-
-    // Two pairs with the same relation and different targets are two ids, and an
-    // entity can hold both — which is what makes a non-exclusive relation useful
-    // and what `Exclusive` will later opt out of.
-    const mars = world.create();
-    world.set<Velocity>(moon, pair(orbits, mars), {dx: 1.0, dy: 2.0});
-    t.ok("an entity can hold two pairs of one relation", world.has(moon, orbitsEarth));
-    t.ok("an entity can hold two pairs of one relation", world.has(moon, pair(orbits, mars)));
-
-    const stillEarth = world.get<Velocity>(moon, orbitsEarth);
-    t.ok(
-        "and they do not share storage",
-        stillEarth !== null && stillEarth[0].dx === 384.4,
+    // Which means the entity moved tables exactly once, on the first relate, and
+    // relating to a different ship afterwards moves it nowhere at all.
+    const settledTable = world.tableIndexOf(child);
+    const secondShip = world.create();
+    world.relate(child, childOf, secondShip);
+    t.equalUsize(
+        "changing target moves the entity nowhere",
+        cast<usize>(world.tableIndexOf(child)),
+        cast<usize>(settledTable),
     );
+    t.equalU64("but the value changed", world.targetOf(child, childOf), secondShip);
 
     // -- churn does not grow storage -------------------------------------------------------
     //
@@ -377,71 +360,60 @@ export function testEcsWorld(t: Reference<Tester>): void {
         spawnColumn,
     );
 
-    // -- an archetype is never destroyed, and a pair is part of the signature ----------------
+    // -- the number this redesign exists for -----------------------------------------------
     //
-    // This is the cost side of relationships being ids, and it is worth pinning
-    // because it is the one place entity churn *can* grow memory.
+    // An archetype is never destroyed, so anything that creates one per *value*
+    // grows the world without bound. An earlier version put the relationship
+    // target in the table's identity, which did exactly that: two thousand ships
+    // meant two thousand tables, each holding thirteen parts, and iterating them
+    // measured 22 times slower than the same entities in one table.
     //
-    // `(ChildOf, parent)` is built from the parent's **index**, so a recycled
-    // index maps back to the same id and therefore to the same table. A spawner
-    // that parents each thing to a short-lived owner reuses one archetype
-    // forever, which is the first check below. A world holding many parents
-    // alive at once needs one archetype each, which is the second — and those
-    // tables are **not** given back when the parents die, because nothing here
-    // destroys an archetype.
+    // The target is data now, so the count below is flat. It is the check that
+    // would fail if anybody ever moved it back.
 
-    const recycled = new World();
+    const many_parents = new World();
+    const parentOf = many_parents.relation("ParentOf");
+    const anchors: u64[] = [];
 
-    // Warmed up first, because the count settles at *two* rather than one and
-    // the reason is worth knowing: the cascade frees the parent and then the
-    // child, and a stack hands them back in the opposite order — so the two
-    // indices swap roles every iteration and the loop alternates between
-    // `(ChildOf, a)` and `(ChildOf, b)`. Bounded, reused, and not one.
-    for (let i: usize = 0; i < 10; i++) {
-        const parent = recycled.create();
-        const kid = recycled.create();
-        recycled.add(kid, pair(childOfId(), parent));
-        recycled.destroy(parent);
+    // One parent first, so the table for "has ParentOf" exists and the baseline
+    // is not measuring its creation.
+    const firstAnchor = many_parents.create();
+    many_parents.relate(many_parents.create(), parentOf, firstAnchor);
+    const flat = many_parents.tableCount;
+
+    for (let i: usize = 0; i < 2000; i++) {
+        const anchor = many_parents.create();
+        anchors.push(anchor);
+        for (let c: usize = 0; c < 5; c++) {
+            many_parents.relate(many_parents.create(), parentOf, anchor);
+        }
     }
-    const settled = recycled.tableCount;
 
-    for (let i: usize = 0; i < 1000; i++) {
-        const parent = recycled.create();
-        const kid = recycled.create();
-        recycled.add(kid, pair(childOfId(), parent));
-        // Cascades to the child, so both indices come back and the next
-        // iteration rebuilds a pair id that already has a table.
-        recycled.destroy(parent);
+    t.equalUsize("two thousand live parents cost no tables at all", many_parents.tableCount, flat);
+    t.equalUsize("with ten thousand children between them", many_parents.relatedCount(parentOf, anchors[7]), 5);
+
+    // And every one of the ten thousand children is in the same table, which is
+    // what makes the iteration flat as well as the memory.
+    let together: usize = 0;
+    const sample: u64[] = [];
+    many_parents.related(parentOf, anchors[0], sample);
+    many_parents.related(parentOf, anchors[1999], sample);
+    for (let i: usize = 0; i < sample.length; i++) {
+        if (many_parents.tableIndexOf(sample[i]) === many_parents.tableIndexOf(sample[0])) {
+            together += 1;
+        }
     }
-    t.equalUsize("a thousand short-lived parents build no new archetypes", recycled.tableCount, settled);
-    t.ok("and the whole loop used only a handful of tables", settled <= 6);
+    t.equalUsize("children of different parents share one table", together, sample.length);
 
-    const alive = new World();
-    const beforeParents = alive.tableCount;
-    const held: u64[] = [];
-    for (let i: usize = 0; i < 50; i++) {
-        const parent = alive.create();
-        held.push(parent);
-        const kid = alive.create();
-        alive.add(kid, pair(childOfId(), parent));
+    // Killing the parents gives the links back, because they are entries in a
+    // map rather than tables.
+    for (let i: usize = 0; i < anchors.length; i++) {
+        many_parents.destroy(anchors[i]);
     }
-    t.equalUsize(
-        "fifty live parents need fifty archetypes",
-        alive.tableCount,
-        beforeParents + 50,
-    );
+    t.equalUsize("and the table count is still flat afterwards", many_parents.tableCount, flat);
+    t.equalUsize("with the links gone", many_parents.relatedCount(parentOf, anchors[7]), 0);
 
-    for (let i: usize = 0; i < held.length; i++) {
-        alive.destroy(held[i]);
-    }
-    t.equalUsize(
-        "and killing them gives none of it back",
-        alive.tableCount,
-        beforeParents + 50,
-    );
-
-    recycled.release();
-    alive.release();
+    many_parents.release();
 
     // -- dead entities ----------------------------------------------------------------
 

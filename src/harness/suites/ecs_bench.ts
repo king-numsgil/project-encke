@@ -16,7 +16,6 @@
 // need building; where it does — create and destroy are the same measurement
 // from either end — the build is part of what is being measured and is said so.
 
-import { childOfId, pair, wildcardId } from "../../ecs/id.ts";
 import { has, Query } from "../../ecs/query.ts";
 import { World } from "../../ecs/world.ts";
 import type { Bench } from "../bench.ts";
@@ -128,21 +127,25 @@ export function benchEcs(b: Reference<Bench>): void {
 
     const tree = new World();
     const treePosition = tree.component<Position>("Position");
+    const childOf = tree.relation("ChildOf");
 
     const parents: u64[] = [];
-    for (let i: usize = 0; i < 100; i++) {
+    for (let i: usize = 0; i < 4000; i++) {
         parents.push(tree.create());
     }
     for (let i: usize = 0; i < 50000; i++) {
         const child = tree.create();
         tree.set<Position>(child, treePosition, {x: cast<f32>(i), y: 0.0, z: 0.0});
-        tree.add(child, pair(childOfId(), parents[i % 100]));
+        tree.relate(child, childOf, parents[i % 4000]);
     }
 
-    const anyParent = new Query([has(treePosition), has(pair(childOfId(), wildcardId()))]);
+    // Four thousand parents, twelve or thirteen children each — the shape a ship
+    // full of doors and turrets actually has, and the shape the old design was
+    // worst at.
+    const anyParent = new Query([has(treePosition), has(childOf)]);
     anyParent.refresh(tree);
 
-    b.run("ecs/iterate (ChildOf, *) over 50k", 20, 50000, (count) => {
+    b.run("ecs/iterate everything with a parent, 50k", 20, 50000, (count) => {
         anyParent.each(tree, (it) => {
             const p = it.column<Position>(0);
             if (p === null) {
@@ -155,16 +158,50 @@ export function benchEcs(b: Reference<Bench>): void {
     });
 
     console.log(
-        `    over ${anyParent.count(tree)} entities in ${anyParent.tableCount} tables ` +
-        `— one per parent, which is what a pair being part of the signature costs`,
+        `    over ${anyParent.count(tree)} entities in ${anyParent.tableCount} table(s), ` +
+        `across ${parents.length} parents`,
     );
 
-    // The index lookup, which is the other way to ask the same question and the
-    // one that does not care how many tables there are.
-    b.run("ecs/childrenOf one parent", 20, 2000, (count) => {
+    // Reading the parent out while iterating, which is what the column buys and
+    // the old design could not do at all.
+    b.run("ecs/iterate and read each parent, 50k", 20, 50000, (count) => {
+        let sum: u64 = 0;
+        anyParent.each(tree, (it) => {
+            const targets = it.column<u64>(1);
+            if (targets === null) {
+                return;
+            }
+            for (let i: usize = 0; i < it.count; i++) {
+                sum += targets[i];
+            }
+        });
+        if (sum === 1) {
+            console.log("unreachable");
+        }
+    });
+
+    // The index lookup: one parent's children, which is the operation a view
+    // caches and the one that costs the number of parts rather than the world.
+    b.run("ecs/related, one parent of 12", 20, 2000, (count) => {
         for (let i: usize = 0; i < count; i++) {
             const children: u64[] = [];
-            tree.childrenOf(parents[i % 100], children);
+            tree.related(childOf, parents[i % 4000], children);
+        }
+    });
+
+    // The same question through a view, which pays memory to skip the lookup and
+    // the copy while nothing is changing.
+    const view = tree.view(childOf, parents[0]);
+    tree.sync(view);
+    b.run("ecs/walk a settled view of 12", 20, 2000, (count) => {
+        let seen: usize = 0;
+        for (let i: usize = 0; i < count; i++) {
+            tree.walk(view, (member) => {
+                seen += 1;
+            });
+        }
+        if (seen === 1) {
+            console.log("unreachable");
         }
     });
 

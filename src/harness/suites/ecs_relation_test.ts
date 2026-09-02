@@ -1,27 +1,22 @@
-// Relationships: exclusivity, delete policies, and the cascade.
+// Relationships: targets in columns, the reverse index, views, and cleanup.
 //
-// This is the suite that decides whether relationships are a feature or a
-// footgun. A pair packs two entity references into 64 bits, which leaves nothing
-// for a generation, so `(ChildOf, ship)` names the ship by index and goes on
-// naming it after the ship is gone. A stale *handle* is detectable; a stale pair
-// is not. Everything below is about the machinery that finds those pairs before
-// the target stops existing.
+// A relation is a component whose value is an entity handle. Relating a turret
+// to a ship writes the ship's handle into the turret's row, so every turret in
+// the game shares one table however many ships there are — which is the whole
+// reason this design replaced the one that put the target in the table's
+// identity and cost a table per ship.
 //
-// The cases that matter are the ones where the obvious implementation is wrong:
-// a hierarchy deep enough to blow a recursive delete, a cycle that a recursive
-// delete never leaves, and stripping a pair while walking the very tables the
-// stripping reorders.
+// Two consequences get most of the attention here:
+//
+//   * a column holds a **full handle, generation included**, so a turret whose
+//     ship has died reads as pointing at something dead all by itself. Cleanup
+//     is policy, not correctness, and that distinction is worth pinning.
+//   * the reverse direction — "what are this ship's parts" — is an index, and an
+//     index is a thing that goes wrong quietly. Every operation that changes a
+//     link has to update it, including the ones nobody thinks about: an entity
+//     being destroyed has to stop being listed among its ship's parts.
 
-import {
-    childOfId,
-    deleteId,
-    exclusiveId,
-    noneId,
-    onDeleteId,
-    pair,
-    removeId,
-    wildcardId,
-} from "../../ecs/id.ts";
+import { deleteId, noneId, removeId } from "../../ecs/id.ts";
 import { has, Query } from "../../ecs/query.ts";
 import { World } from "../../ecs/world.ts";
 import type { Tester } from "../testing.ts";
@@ -44,149 +39,159 @@ function livingOf(world: Reference<World>, handles: Reference<u64[]>): usize {
 }
 
 export function testEcsRelation(t: Reference<Tester>): void {
-    // -- what ChildOf is configured as ----------------------------------------
-
     const world = new World();
+    const childOf = world.relation("ChildOf");
+    world.setOnDelete(childOf, deleteId());
 
-    t.ok("ChildOf is exclusive", world.isExclusive(childOfId()));
-    t.equalU64("and cascades on delete", world.onDeleteOf(childOfId()), deleteId());
-    t.ok("OnDelete is itself exclusive", world.isExclusive(onDeleteId()));
-
-    // An ordinary relation is neither, which is the right default: a pair that
-    // deleted its holder by surprise would be much worse than one that lingered.
-    const likes = world.tag("Likes");
-    t.ok("a fresh relation is not exclusive", !world.isExclusive(likes));
-    t.equalU64("and only strips on delete", world.onDeleteOf(likes), removeId());
-    t.equalU64("as does an unregistered id", world.onDeleteOf(999999), removeId());
-
-    // -- exclusivity -----------------------------------------------------------
-
-    const alice = world.create();
-    const bob = world.create();
-    const carol = world.create();
-
-    // Not exclusive: several targets at once.
-    world.add(alice, pair(likes, bob));
-    world.add(alice, pair(likes, carol));
-    t.ok("a plain relation holds two targets", world.has(alice, pair(likes, bob)));
-    t.ok("a plain relation holds two targets", world.has(alice, pair(likes, carol)));
-
-    // Exclusive: the second replaces the first.
-    const ship = world.create();
-    const station = world.create();
-    const crate = world.create();
-
-    world.add(crate, pair(childOfId(), ship));
-    t.equalU64("the parent is the one that was set", world.parentOf(crate), ship);
-
-    world.add(crate, pair(childOfId(), station));
-    t.ok("adding a second parent removed the first", !world.has(crate, pair(childOfId(), ship)));
-    t.ok("and installed the second", world.has(crate, pair(childOfId(), station)));
-    t.equalU64("so parentOf says the new one", world.parentOf(crate), station);
-
-    // Re-adding the same parent is not a replacement and not a move.
-    const settled = world.tableIndexOf(crate);
-    t.ok("re-adding the same parent does nothing", !world.add(crate, pair(childOfId(), station)));
-    t.equalUsize(
-        "and does not move the entity",
-        cast<usize>(world.tableIndexOf(crate)),
-        cast<usize>(settled),
-    );
-
-    // Exclusivity is a property of the relation, applied to any of them.
-    const dockedTo = world.tag("DockedTo");
-    world.markExclusive(dockedTo);
-    t.ok("a relation can be made exclusive", world.isExclusive(dockedTo));
-
-    world.add(ship, pair(dockedTo, station));
-    world.add(ship, pair(dockedTo, crate));
-    t.ok("and then behaves like one", !world.has(ship, pair(dockedTo, station)));
-    t.ok("and then behaves like one", world.has(ship, pair(dockedTo, crate)));
-
-    // The replacement carries the entity's other components with it, because it
-    // is one ordinary archetype move.
+    const orbiting = world.relation("Orbiting");
+    const insideSystem = world.relation("InsideSystem");
     const position = world.component<Position>("Position");
-    world.set<Position>(crate, position, {x: 7.0, y: 8.0, z: 9.0});
-    world.add(crate, pair(childOfId(), ship));
 
-    const moved = world.get<Position>(crate, position);
-    t.ok("re-parenting keeps the other components", moved !== null && moved[0].x === 7.0);
-    t.ok("and it really re-parented", world.parentOf(crate) === ship);
+    t.ok("a relation is a relation", world.isRelation(childOf));
+    t.ok("a component is not", !world.isRelation(position));
+    t.equalText("and it is named", world.nameOf(childOf), "ChildOf");
+    t.equalU64("ChildOf cascades", world.onDeleteOf(childOf), deleteId());
+    t.equalU64("a fresh relation only clears", world.onDeleteOf(orbiting), removeId());
+    t.equalU64("and an unregistered id does too", world.onDeleteOf(999999), removeId());
 
-    // -- the target index ---------------------------------------------------------
+    // -- one ship, thirteen parts ----------------------------------------------
+    //
+    // The shape this design exists for: many parents, few children each.
 
-    t.ok("the index knows a table names the ship", world.tablesNaming(ship) >= 1);
-    t.equalUsize("and knows nothing names a fresh entity", world.tablesNaming(world.create()), 0);
-
-    // -- looking children up --------------------------------------------------------
-
-    const crew: u64[] = [];
-    for (let i: usize = 0; i < 6; i++) {
-        const member = world.create();
-        world.add(member, pair(childOfId(), i < 4 ? ship : station));
-        crew.push(member);
+    const ship = world.create();
+    const parts: u64[] = [];
+    for (let i: usize = 0; i < 13; i++) {
+        const part = world.create();
+        world.relate(part, childOf, ship);
+        parts.push(part);
     }
 
-    const children: u64[] = [];
-    world.childrenOf(ship, children);
-    // Four crew plus the crate, which was re-parented to the ship above.
-    t.equalUsize("the ship has five children", children.length, 5);
+    t.equalU64("a part knows its ship", world.targetOf(parts[0], childOf), ship);
+    t.ok("and says it has one", world.hasRelation(parts[0], childOf));
+    t.ok("the ship does not", !world.hasRelation(ship, childOf));
+    t.equalU64("and asking gives none", world.targetOf(ship, childOf), noneId());
 
-    const stationChildren: u64[] = [];
-    world.childrenOf(station, stationChildren);
-    t.equalUsize("the station has two", stationChildren.length, 2);
+    t.equalUsize("the ship has thirteen parts", world.relatedCount(childOf, ship), 13);
 
-    const noChildren: u64[] = [];
-    world.childrenOf(crew[0], noChildren);
-    t.equalUsize("a leaf has none", noChildren.length, 0);
+    const found: u64[] = [];
+    world.related(childOf, ship, found);
+    t.equalUsize("and the lookup returns all of them", found.length, 13);
 
-    // Every child agrees about who its parent is, which is the other direction
-    // of the same fact and the check that the index is not just plausible.
     let agreed: usize = 0;
-    for (let i: usize = 0; i < children.length; i++) {
-        if (world.parentOf(children[i]) === ship) {
+    for (let i: usize = 0; i < found.length; i++) {
+        if (world.targetOf(found[i], childOf) === ship) {
             agreed += 1;
         }
     }
-    t.equalUsize("and every one of them says so", agreed, 5);
+    t.equalUsize("every one of them points back", agreed, 13);
 
-    t.equalU64("an entity with no parent says none", world.parentOf(alice), noneId());
-    t.equalU64("and so does a dead handle", world.parentOf(makeDead(world)), noneId());
+    // **One table.** This is the number the whole redesign is about.
+    const parentedTable = world.tableIndexOf(parts[0]);
+    let sameTable: usize = 0;
+    for (let i: usize = 0; i < parts.length; i++) {
+        if (world.tableIndexOf(parts[i]) === parentedTable) {
+            sameTable += 1;
+        }
+    }
+    t.equalUsize("all thirteen live in one table", sameTable, 13);
 
-    // -- the Remove policy ------------------------------------------------------------
+    // A second ship adds no table at all, where the old design added one per ship.
+    const tablesBefore = world.tableCount;
+    const secondShip = world.create();
+    for (let i: usize = 0; i < 13; i++) {
+        world.relate(world.create(), childOf, secondShip);
+    }
+    t.equalUsize("a second ship adds no tables", world.tableCount, tablesBefore);
+    t.equalUsize("and has its own thirteen", world.relatedCount(childOf, secondShip), 13);
+    t.equalUsize("without disturbing the first", world.relatedCount(childOf, ship), 13);
+
+    // -- several relations at once ------------------------------------------------
     //
-    // The default. The pair goes, the holder stays. `alice` likes `bob` and
-    // `carol`; deleting `bob` must leave `alice` alive and still liking `carol`.
+    // The ship is inside a system and orbiting a moon, and neither has anything
+    // to do with the other or with its parts.
 
-    t.ok("bob is deleted", world.destroy(bob));
-    t.ok("alice survives", world.isAlive(alice));
-    t.ok("and no longer likes bob", !world.has(alice, pair(likes, bob)));
-    t.ok("but still likes carol", world.has(alice, pair(likes, carol)));
+    const sol = world.create();
+    const luna = world.create();
+    world.relate(ship, insideSystem, sol);
+    world.relate(ship, orbiting, luna);
 
-    // -- the Delete policy ---------------------------------------------------------------
+    t.equalU64("the ship is in a system", world.targetOf(ship, insideSystem), sol);
+    t.equalU64("and orbiting a moon", world.targetOf(ship, orbiting), luna);
+    t.equalUsize("the system knows its ship", world.relatedCount(insideSystem, sol), 1);
+    t.equalUsize("and the moon knows too", world.relatedCount(orbiting, luna), 1);
+    t.equalUsize("but not through the wrong relation", world.relatedCount(childOf, sol), 0);
+
+    // -- one target at a time -------------------------------------------------------
+
+    const mars = world.create();
+    world.relate(ship, orbiting, mars);
+    t.equalU64("relating again replaces", world.targetOf(ship, orbiting), mars);
+    t.equalUsize("the old target is forgotten", world.relatedCount(orbiting, luna), 0);
+    t.equalUsize("and the new one knows", world.relatedCount(orbiting, mars), 1);
+
+    // Relating to the same target twice is a no-op, not a duplicate entry.
+    world.relate(ship, orbiting, mars);
+    t.equalUsize("relating twice does not duplicate", world.relatedCount(orbiting, mars), 1);
+
+    // -- unrelating ---------------------------------------------------------------------
+
+    t.ok("unrelating says it happened", world.unrelate(ship, orbiting));
+    t.ok("again says it did not", !world.unrelate(ship, orbiting));
+    t.equalU64("the target is gone", world.targetOf(ship, orbiting), noneId());
+    t.ok("and the relation with it", !world.hasRelation(ship, orbiting));
+    t.equalUsize("the old target is empty", world.relatedCount(orbiting, mars), 0);
+    t.equalU64("while the other relation is untouched", world.targetOf(ship, insideSystem), sol);
+
+    // -- a stale target is detectable on its own -----------------------------------------
     //
-    // `ChildOf` cascades, so deleting the station deletes its two children.
+    // The property a target packed into an id could not have. A column holds the
+    // whole 64-bit handle, so the generation is there and `isAlive` answers
+    // without anything having had to clean up first.
 
-    const stationCrew: u64[] = [];
-    world.childrenOf(station, stationCrew);
-    t.equalUsize("the station has two children before", stationCrew.length, 2);
+    const doomedMoon = world.create();
+    const orbiter = world.create();
+    world.relate(orbiter, orbiting, doomedMoon);
 
-    t.ok("the station is deleted", world.destroy(station));
-    t.equalUsize("and its children with it", livingOf(world, stationCrew), 0);
-    t.ok("while the ship's crew is untouched", world.isAlive(crew[0]));
+    // Reach past the world's own bookkeeping by reading the column, so this
+    // tests the *storage* rather than the cleanup that follows a destroy.
+    const held = world.targetOf(orbiter, orbiting);
+    t.ok("the target is alive to start", world.isAlive(held));
+    t.equalU64("and is exactly the handle that was stored", held, doomedMoon);
 
-    // -- a deep hierarchy -----------------------------------------------------------------
+    // -- delete policies -------------------------------------------------------------------
+
+    // `Remove` — the default. The link goes, the holder stays.
+    world.destroy(doomedMoon);
+    t.ok("the holder survives a Remove-policy target", world.isAlive(orbiter));
+    t.ok("with the relation cleared", !world.hasRelation(orbiter, orbiting));
+    t.equalU64("and nothing left to point at", world.targetOf(orbiter, orbiting), noneId());
+
+    // `Delete` — the holder goes too.
+    t.ok("the ship is destroyed", world.destroy(ship));
+    t.equalUsize("and every part with it", livingOf(world, parts), 0);
+    t.equalUsize("the ship's list is empty", world.relatedCount(childOf, ship), 0);
+    t.equalUsize("while the other ship is untouched", world.relatedCount(childOf, secondShip), 13);
+
+    // Destroying the ship also took it out of the system's list, which is the
+    // direction that is easy to forget: a dead entity has to stop being listed
+    // among the things pointing at *its* targets.
+    t.equalUsize("a dead entity leaves its target's list", world.relatedCount(insideSystem, sol), 0);
+
+    // -- a deep chain -------------------------------------------------------------------------
     //
     // Two hundred deep, which a recursive delete would be entitled to survive
-    // and a badly written one would not. The worklist makes the depth irrelevant.
+    // and a badly written one would not.
 
     const deep = new World();
+    const deepChild = deep.relation("ChildOf");
+    deep.setOnDelete(deepChild, deleteId());
+
     const chain: u64[] = [];
     let previous = deep.create();
     chain.push(previous);
     for (let i: usize = 0; i < 200; i++) {
         const next = deep.create();
-        deep.add(next, pair(childOfId(), previous));
+        deep.relate(next, deepChild, previous);
         chain.push(next);
         previous = next;
     }
@@ -195,75 +200,75 @@ export function testEcsRelation(t: Reference<Tester>): void {
     t.ok("deleting the root works", deep.destroy(chain[0]));
     t.equalUsize("and takes the whole chain", livingOf(deep, chain), 0);
 
-    // -- a wide hierarchy -------------------------------------------------------------------
-    //
-    // One parent, five hundred children, each also holding a component — so the
-    // cascade is stripping and destroying across a table it is walking.
+    // -- a wide fan-out -------------------------------------------------------------------------
 
     const wide = new World();
+    const wideChild = wide.relation("ChildOf");
+    wide.setOnDelete(wideChild, deleteId());
     const widePosition = wide.component<Position>("Position");
+
     const root = wide.create();
     const brood: u64[] = [];
     for (let i: usize = 0; i < 500; i++) {
         const child = wide.create();
         wide.set<Position>(child, widePosition, {x: cast<f32>(i), y: 0.0, z: 0.0});
-        wide.add(child, pair(childOfId(), root));
+        wide.relate(child, wideChild, root);
         brood.push(child);
     }
 
     t.equalUsize("five hundred children", livingOf(wide, brood), 500);
     wide.destroy(root);
     t.equalUsize("all deleted with the parent", livingOf(wide, brood), 0);
-    t.ok("and the root is gone", !wide.isAlive(root));
 
-    const orphanQuery = new Query([has(pair(childOfId(), wildcardId()))]);
-    t.equalUsize("nothing has a parent any more", orphanQuery.count(wide), 0);
+    const stillParented = new Query([has(wideChild)]);
+    t.equalUsize("and nothing has a parent any more", stillParented.count(wide), 0);
 
     // -- a cycle -------------------------------------------------------------------------------
     //
-    // Nothing forbids `a` being a child of `b` and `b` a child of `a`. A
+    // Nothing forbids `a` pointing at `c` pointing at `b` pointing at `a`. A
     // recursive delete would not come back; the worklist terminates because the
     // entity that closes the cycle is already dead when it comes round again.
 
     const looped = new World();
+    const loopChild = looped.relation("ChildOf");
+    looped.setOnDelete(loopChild, deleteId());
+
     const a = looped.create();
     const b = looped.create();
     const c = looped.create();
-    looped.add(a, pair(childOfId(), c));
-    looped.add(b, pair(childOfId(), a));
-    looped.add(c, pair(childOfId(), b));
+    looped.relate(a, loopChild, c);
+    looped.relate(b, loopChild, a);
+    looped.relate(c, loopChild, b);
 
-    t.ok("a three-way cycle is allowed", looped.parentOf(a) === c);
+    t.equalU64("a three-way cycle is allowed", looped.targetOf(a, loopChild), c);
     t.ok("deleting into it terminates", looped.destroy(a));
     t.ok("and takes the whole cycle", !looped.isAlive(a) && !looped.isAlive(b) && !looped.isAlive(c));
 
-    // A self-parent, which is the degenerate case of the same thing.
+    // A self-reference, which is the degenerate case of the same thing.
     const selfish = looped.create();
-    looped.add(selfish, pair(childOfId(), selfish));
-    t.ok("an entity can be its own parent", looped.parentOf(selfish) === selfish);
+    looped.relate(selfish, loopChild, selfish);
+    t.equalU64("an entity can point at itself", looped.targetOf(selfish, loopChild), selfish);
     t.ok("and deleting it terminates", looped.destroy(selfish));
     t.ok("and it is gone", !looped.isAlive(selfish));
 
-    // -- mixed policies through one delete -------------------------------------------------------
-    //
-    // One entity is both a parent and the target of an ordinary relation, so the
-    // cascade and the strip both run for the same delete.
+    // -- mixed policies through one delete ---------------------------------------------------------
 
     const mixed = new World();
-    const admires = mixed.tag("Admires");
-    const captain = mixed.create();
+    const mixedChild = mixed.relation("ChildOf");
+    mixed.setOnDelete(mixedChild, deleteId());
+    const admires = mixed.relation("Admires");
 
+    const captain = mixed.create();
     const followers: u64[] = [];
     for (let i: usize = 0; i < 3; i++) {
         const child = mixed.create();
-        mixed.add(child, pair(childOfId(), captain));
+        mixed.relate(child, mixedChild, captain);
         followers.push(child);
     }
-
     const admirers: u64[] = [];
     for (let i: usize = 0; i < 4; i++) {
         const fan = mixed.create();
-        mixed.add(fan, pair(admires, captain));
+        mixed.relate(fan, admires, captain);
         admirers.push(fan);
     }
 
@@ -273,97 +278,113 @@ export function testEcsRelation(t: Reference<Tester>): void {
 
     let stillAdmiring: usize = 0;
     for (let i: usize = 0; i < admirers.length; i++) {
-        if (mixed.has(admirers[i], pair(admires, captain))) {
+        if (mixed.hasRelation(admirers[i], admires)) {
             stillAdmiring += 1;
         }
     }
-    t.equalUsize("but the pair is stripped from all of them", stillAdmiring, 0);
+    t.equalUsize("but the relation is cleared on all of them", stillAdmiring, 0);
 
-    // A grandchild through the cascade: deleting the captain deletes the
-    // followers, and deleting a follower deletes *its* children in turn.
-    const generations = new World();
-    const grandparent = generations.create();
-    const parent = generations.create();
-    const grandchild = generations.create();
-    generations.add(parent, pair(childOfId(), grandparent));
-    generations.add(grandchild, pair(childOfId(), parent));
-
-    generations.destroy(grandparent);
-    t.ok("the cascade reaches a grandchild", !generations.isAlive(grandchild));
-
-    // -- setOnDelete ---------------------------------------------------------------------------------
-
-    const configured = new World();
-    const carries = configured.tag("Carries");
-    configured.setOnDelete(carries, deleteId());
-    t.equalU64("the policy took", configured.onDeleteOf(carries), deleteId());
-
-    const cargo = configured.create();
-    const hold = configured.create();
-    configured.add(cargo, pair(carries, hold));
-    configured.destroy(hold);
-    t.ok("and a custom cascade works", !configured.isAlive(cargo));
-
-    // Set again, to the other policy, and the exclusivity of OnDelete means it
-    // replaces rather than accumulates.
-    configured.setOnDelete(carries, removeId());
-    t.equalU64("the policy can be changed back", configured.onDeleteOf(carries), removeId());
-    t.ok("and OnDelete did not accumulate", configured.has(carries, pair(onDeleteId(), removeId())));
-    t.ok("and OnDelete did not accumulate", !configured.has(carries, pair(onDeleteId(), deleteId())));
-
-    const kept = configured.create();
-    const gone = configured.create();
-    configured.add(kept, pair(carries, gone));
-    configured.destroy(gone);
-    t.ok("so the holder survives now", configured.isAlive(kept));
-    t.ok("with the pair stripped", !configured.has(kept, pair(carries, gone)));
-
-    // -- an exclusive relation with a data payload -----------------------------------------------------
+    // -- views ---------------------------------------------------------------------------------------
     //
-    // The replacement is one archetype move, so the *old* pair's data goes and
-    // the new pair's starts at its default. Anything else would be a value
-    // carried across two different relationships by accident.
+    // A cached list that re-copies only when the underlying one has changed. The
+    // memory-for-speed trade, and the checks below are that it is *correct* under
+    // change rather than merely fast when nothing moves.
 
-    const payload = new World();
-    const orbits = payload.component<Position>("Orbits");
-    payload.markExclusive(orbits);
+    const viewed = new World();
+    const partOf = viewed.relation("PartOf");
+    const hull = viewed.create();
 
-    const moon = payload.create();
-    const earth = payload.create();
-    const mars = payload.create();
+    const view = viewed.view(partOf, hull);
+    t.equalUsize("a view of nothing is empty", view.length, 0);
 
-    payload.set<Position>(moon, pair(orbits, earth), {x: 384.4, y: 0.0, z: 0.0});
-    const around = payload.get<Position>(moon, pair(orbits, earth));
-    t.ok("an exclusive relation can carry data", around !== null && around[0].x === 384.4);
+    const bits: u64[] = [];
+    for (let i: usize = 0; i < 5; i++) {
+        const bit = viewed.create();
+        viewed.relate(bit, partOf, hull);
+        bits.push(bit);
+    }
 
-    payload.set<Position>(moon, pair(orbits, mars), {x: 1.0, y: 2.0, z: 3.0});
-    t.ok("switching targets removed the old pair", !payload.has(moon, pair(orbits, earth)));
-    t.ok("and reading it gives null", payload.get<Position>(moon, pair(orbits, earth)) === null);
+    let walked: usize = 0;
+    viewed.walk(view, (member) => {
+        walked += 1;
+    });
+    t.equalUsize("and picks up five added after it was made", walked, 5);
+    t.equalUsize("with the length to match", view.length, 5);
 
-    const now = payload.get<Position>(moon, pair(orbits, mars));
-    t.ok("while the new one holds its own value", now !== null && now[0].x === 1.0);
+    // Walking again with nothing changed must give the same answer — this is the
+    // path where the version check short-circuits the copy.
+    walked = 0;
+    viewed.walk(view, (member) => {
+        walked += 1;
+    });
+    t.equalUsize("a second walk with nothing changed agrees", walked, 5);
 
-    // -- the builtins are ordinary entities --------------------------------------------------------------
+    // Adding one is seen.
+    const extra = viewed.create();
+    viewed.relate(extra, partOf, hull);
+    walked = 0;
+    viewed.walk(view, (member) => {
+        walked += 1;
+    });
+    t.equalUsize("adding a member is seen", walked, 6);
 
-    t.ok("Exclusive is on ChildOf as a plain id", world.has(childOfId(), exclusiveId()));
-    t.ok(
-        "and OnDelete is on it as a plain pair",
-        world.has(childOfId(), pair(onDeleteId(), deleteId())),
-    );
+    // Removing one is seen.
+    viewed.unrelate(bits[0], partOf);
+    walked = 0;
+    viewed.walk(view, (member) => {
+        walked += 1;
+    });
+    t.equalUsize("removing one is seen", walked, 5);
 
-    payload.release();
-    configured.release();
-    generations.release();
+    // Destroying one is seen, which goes through a different path again.
+    viewed.destroy(bits[1]);
+    walked = 0;
+    let allAlive = true;
+    viewed.walk(view, (member) => {
+        walked += 1;
+        if (!viewed.isAlive(member)) {
+            allAlive = false;
+        }
+    });
+    t.equalUsize("destroying one is seen", walked, 4);
+    t.ok("and the view holds no dead handles", allAlive);
+
+    // Two views of the same thing agree, and a view of something else does not
+    // pick up the first one's members.
+    const second = viewed.view(partOf, hull);
+    viewed.sync(second);
+    t.equalUsize("a second view of the same target agrees", second.length, 4);
+
+    const elsewhere = viewed.view(partOf, extra);
+    viewed.sync(elsewhere);
+    t.equalUsize("a view of a different target is empty", elsewhere.length, 0);
+
+    t.equalU64("a view remembers what it is of", view.of, hull);
+    t.equalU64("and through what", view.through, partOf);
+
+    // Indexed access after an explicit sync, which is the other way to read one.
+    viewed.sync(view);
+    let byIndex: usize = 0;
+    for (let i: usize = 0; i < view.length; i++) {
+        if (viewed.targetOf(view.at(i), partOf) === hull) {
+            byIndex += 1;
+        }
+    }
+    t.equalUsize("every member reads back through the column", byIndex, 4);
+
+    // -- relating things that are not there ------------------------------------------------------------
+
+    const dead = viewed.create();
+    viewed.destroy(dead);
+    t.ok("relating a dead holder fails", !viewed.relate(dead, partOf, hull));
+    t.ok("relating to a dead target fails", !viewed.relate(hull, partOf, dead));
+    t.ok("relating through a component fails", !viewed.relate(hull, viewed.tag("NotARelation"), hull));
+    t.equalU64("and a dead entity has no target", viewed.targetOf(dead, partOf), noneId());
+
+    viewed.release();
     mixed.release();
     looped.release();
     wide.release();
     deep.release();
     world.release();
-}
-
-/** A handle that was alive and is not. */
-function makeDead(world: Reference<World>): u64 {
-    const doomed = world.create();
-    world.destroy(doomed);
-    return doomed;
 }

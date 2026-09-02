@@ -8,7 +8,7 @@
 // wrap is tested here rather than hoped about.
 
 import { Entities, noArchetype } from "../../ecs/entities.ts";
-import { childOfId, firstUserIndex, generationOf, indexOf, makeEntity, noneId } from "../../ecs/id.ts";
+import { componentId, firstUserIndex, generationOf, indexOf, makeEntity, noneId } from "../../ecs/id.ts";
 import type { Tester } from "../testing.ts";
 
 export function testEcsEntities(t: Reference<Tester>): void {
@@ -24,7 +24,7 @@ export function testEcsEntities(t: Reference<Tester>): void {
     );
 
     t.ok("the null id is not alive", !entities.isAlive(noneId()));
-    t.ok("ChildOf is alive", entities.isAlive(childOfId()));
+    t.ok("a reserved builtin is alive", entities.isAlive(componentId()));
     t.ok("a handle past the end is not alive", !entities.isAlive(makeEntity(99999, 0)));
 
     // -- creating --------------------------------------------------------------

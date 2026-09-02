@@ -16,11 +16,7 @@
 // the signature has to have a canonical form, and ascending is it. Two things
 // fall out and both get used:
 //
-//   * membership is a binary search rather than a scan;
-//   * **every pair sorts after every plain id**, because a pair sets bit 63 and
-//     the comparison is unsigned. So "does this table hold any relationship"
-//     is a look at one end of the array, and the pairs are one contiguous run
-//     that `relation.ts` can walk without touching the components.
+// Membership is then a binary search rather than a scan.
 //
 // ## Rows are reused; tables are not
 //
@@ -35,27 +31,19 @@
 // about six allocations and a few hundred bytes. That is fine when the number of
 // distinct shapes is the number of distinct shapes a program has: a few dozen.
 //
-// It is worth more attention when relationships are involved, because **a pair
-// is part of the signature**, so `(ChildOf, a)` and `(ChildOf, b)` are different
-// archetypes. The bound is the number of distinct *target indices* ever used,
-// and two things keep that small in practice:
+// **Relationships do not add to that count**, and it took a redesign to make
+// that true. An earlier version put the target in the signature — `(ChildOf,
+// ship)` as an id — so every ship was its own archetype: two thousand ships
+// holding thirteen parts each meant two thousand tables of thirteen rows, and
+// iterating them measured 22 times slower than the same entities in one table,
+// because the query paid per-table setup for thirteen entities at a time. The
+// target is a column now, so a relation contributes exactly one id to a
+// signature however many targets exist. See `relation.ts`.
 //
-//   * a pair is built from an index, not a handle, so a **recycled** index maps
-//     back to the same pair id and the same table. A spawner parenting things to
-//     short-lived owners cycles through a handful of tables forever.
-//   * so the real bound is the **high-water mark of concurrent targets**, not the
-//     total ever created — fifty ships alive at once is fifty tables, whether
-//     that is the same fifty all session or five thousand in turn.
-//
-// The exception, and the reason this is written down: an index that
-// `entities.ts` **retires** never comes back, so `(ChildOf, retired)` is a table
-// that can never be reused either. Retirement is one index per 65,536 destroys,
-// so it is slow — but it converts entity-index growth into archetype growth at
-// one to one for anything used as a relationship target.
-//
-// Nothing reclaims an empty table. See the compaction note at the top of
-// `entities.ts`; it is the same problem from the other end, and the same answer
-// — a `World.reset()` at a level boundary — solves both.
+// The only remaining growth is one table per distinct *shape*, which is the
+// number of shapes a program has. Nothing reclaims an empty one; see the
+// compaction note at the top of `entities.ts`, which is the same problem from
+// the other end and has the same answer — a `World.reset()` at a level boundary.
 
 import { HashMap } from "std/collection";
 import { Column } from "./column.ts";

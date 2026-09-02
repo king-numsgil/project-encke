@@ -309,24 +309,14 @@ doing both at once would make a renderer regression and an ECS bug look identica
 
 ### Everything is one u64
 
-An entity is an id, a component type is an id, a relationship kind is an id, and
-so is a **pair** like `(ChildOf, Ship)`. That last one is the decision the design
-turns on: a pair being an ordinary id is what lets it sit in an archetype's
-signature beside the plain components, be matched by a query with the same code,
-and be looked up in the same index. The alternative is a relationship table off
-to one side that every other mechanism has to learn about separately.
+An entity is an id, a component type is an id, and a relationship kind is an id.
+All three are the same thing, which is what lets one query engine, one storage
+layer and one cleanup pass serve them all.
 
 ```
-plain id
-  [63]      PAIR, clear
-  [62..48]  15 flag bits, spare
+  [63..48]  16 flag bits, all reserved
   [47..32]  generation, 16 bits
   [31..0]   index, 32 bits
-
-pair id
-  [63]      PAIR, set
-  [62..32]  relation index, 31 bits
-  [31..0]   target index, 32 bits
 ```
 
 4,294,967,295 entities, and 65,536 of them per index — because that is all the
@@ -361,10 +351,13 @@ One entity costs **12 bytes** of index — `archetype: u32, row: u32,
 generation: u16, flags: u16`, with no padding — plus whatever its components
 weigh. `Entities.retiredCount` and `.freeCount` are the gauges.
 
-**A pair spends the flag and generation space on its relation**, because two full
-entity references do not fit in 64 bits with room left over. So a pair records
-both ends *by index*, with no generation, and a dead target cannot be detected by
-looking at the pair. It has to be found — which is what the cleanup below is.
+The sixteen flag bits are reserved and nothing sets one. An earlier design spent
+bit 63 marking an id as a **pair** — `(ChildOf, ship)` packed into a single id
+that sat in the archetype signature, the way flecs does it — and that is gone.
+See [Relationships](#relationships) for why, and for the measurement that decided
+it. The bits stay reserved because the next thing to want one is a marker for a
+relation holding several targets at once, and renumbering an id layout is not
+something to do twice.
 
 ### Storage
 
@@ -375,9 +368,7 @@ branch. The price is paid when an entity's *shape* changes: adding a component
 moves its whole row to a different table. That trade is the right way round for a
 simulation, where shape changes are rare and iteration happens every frame.
 
-Signatures sort ascending, which makes membership a binary search and — because a
-pair sets bit 63 and the comparison is unsigned — puts every relationship in one
-contiguous run at the end.
+Signatures sort ascending, which makes membership a binary search.
 
 Columns are **type-erased bytes with a hand-rolled vtable**: a size, an alignment,
 and `init`/`copy`/`drop` generated per type by a generic function. That is not a
@@ -419,45 +410,79 @@ and each rematch looks only at what is new — which makes a settled world free 
 re-query, and makes a query **built before the archetypes it matches** pick them
 up the moment they exist.
 
-Wildcards work in either half of a pair, so `(ChildOf, *)` and `(*, Station)` are
-ordinary terms. A wildcard term resolves to the *first* matching id in signature
-order, so an entity holding two pairs of one relation is visited once and
-`Iter.idAt` says which matched. flecs returns a table once per matching id
-instead; that is the place to change it if something needs it.
+There are no wildcards and nothing needs them. A relation is an ordinary id, so
+`has(childOf)` is "everything with a parent" — one table, and `it.column<u64>(n)`
+hands the body a contiguous run of parent handles.
 
-### Relationships, and why cleanup is mandatory
+"Everything parented to *this* ship" is deliberately **not** a query. It is
+`world.related(childOf, ship, out)`, an index lookup costing the number of parts.
+
+### Relationships
+
+**A relation is a component whose value is an entity handle.** That is the whole
+implementation: relating writes the target into a `u64` column on the holder, and
+a map from `(relation, target)` answers the other direction.
 
 ```ts
-world.add(child, pair(childOfId(), ship));
-world.set<Orbit>(moon, pair(orbits, earth), {au: 0.00257});
+const childOf = world.relation("ChildOf");
+world.setOnDelete(childOf, deleteId());
 
-world.destroy(ship);       // every child deleted with it
+world.relate(turret, childOf, ship);     // replaces any previous target
+world.relate(ship, insideSystem, sol);
+world.relate(ship, orbiting, luna);
+
+world.targetOf(turret, childOf)          // -> ship, a full handle
+world.related(childOf, ship, out)        // -> the 13 parts, one lookup
+
+const parts = world.view(childOf, ship); // cached, self-maintaining
+world.walk(parts, (part) => { … });
+
+world.destroy(ship);                     // parts deleted with it
 ```
 
-A relation is a tag used as the left half of a pair; nothing distinguishes it at
-registration. Two ids configure its behaviour, and both are ordinary ids on the
-relation entity:
+**One target per relation per entity.** Relating to a second replaces the first,
+because a column holds one value. A relation holding several at once is not here;
+the reserved flag bits exist to mark one later.
 
-* **`Exclusive`** — one target at a time. Adding `(ChildOf, b)` to something
-  holding `(ChildOf, a)` replaces it, in one archetype move rather than two.
-* **`(OnDelete, policy)`** — what happens to the relation's pairs when a *target*
-  dies. `Remove` strips the pair and leaves the holder alone, which is the
-  default; `Delete` deletes the holder too. `ChildOf` is configured with both
-  `Exclusive` and `Delete`.
+`setOnDelete` says what happens when a *target* dies: `Remove` — the default —
+clears the relation and leaves the holder alone, and `Delete` destroys the holder
+too. The cascade is **worklist-driven, not recursive**, so a hierarchy can be as
+deep as the content makes it and a cycle terminates on the liveness check.
 
-`OnDelete` is itself exclusive, so setting a policy replaces the previous one
-rather than leaving two and a coin toss over which is read.
+Two things fall out of the target being data:
 
-The cascade is **worklist-driven, not recursive**. A hierarchy is as deep as the
-content makes it, and a cycle in `ChildOf` — which nothing forbids — would be a
-recursion that never returns. Here it terminates on the liveness check, because
-the entity that closed the cycle is already dead when the walk comes back round.
+* it is a **full handle, generation included**, so a turret whose ship has died
+  reads as pointing at something dead all by itself. Cleanup is policy, not
+  correctness — a distinction the older design could not make, because a target
+  packed into an id had no room for a generation.
+* every entity with a parent shares **one table**, however many parents exist.
 
-Finding the pairs that name a dying entity is what `ecs/relation.ts` is: a map
-from target to the tables holding a pair to it, so a delete costs the size of the
-answer rather than the size of the world. There is deliberately no relation index
-and no exact-id index — query matching walks the table list incrementally and
-caches, which is cheaper for the access pattern queries actually have.
+#### Why the target is not in the signature
+
+It was, in the shape flecs uses: `(ChildOf, ship)` as a single id sitting in the
+archetype signature, so "children of ship #3" was a table lookup and those
+children sat contiguously. That is genuinely the fastest layout — when a parent
+has *hundreds* of children.
+
+A ship has five doors, three turrets, four screens and a chair. Splitting on the
+target then means one table per ship holding thirteen rows, and a query pays
+per-table setup for thirteen entities at a time. Measured, same 10,000 entities
+and same work, only the parent count changing:
+
+| parents × children | in the signature | in a column |
+|---|---|---|
+| 1 × 10,000 | 0.70 ns | 0.47 ns |
+| 100 × 100 | 2.19 ns | 0.47 ns |
+| 1,000 × 10 | 11.53 ns | 0.47 ns |
+| 2,000 × 5 | **15.33 ns** | **0.47 ns** |
+
+Twenty-two times slower at 2,000 parents, and 2,000 tables that are never
+reclaimed. `bun bench --filter fragmentation` is that measurement; it should stay
+flat, and a future change that reintroduces per-target tables will bend it again.
+
+What the signature layout bought — contiguous *data* for one parent's children —
+is a real thing to give up, and the way to get it back is a view: pay memory to
+cache the answer, which is what `world.view` is.
 
 ### What it costs
 
@@ -466,23 +491,22 @@ against another run of themselves and nothing else:
 
 | | |
 |---|---|
-| iterate 1M entities, two components | **1.8 ns** an entity |
-| iterate `(ChildOf, *)` over 50k in 100 tables | **0.6 ns** an entity |
-| create + destroy | 80 ns |
-| add + remove a tag (two archetype moves) | 165 ns |
-| `childrenOf` one parent of 500 | 1.75 µs |
+| iterate 1M entities, two components | **1.9 ns** an entity |
+| iterate everything with a parent, 50k over 4,000 parents | **0.47 ns** an entity |
+| the same, reading each parent out of the column | 1.2 ns an entity |
+| create + destroy | 71 ns |
+| add + remove a tag (two archetype moves) | 162 ns |
+| `related`, one parent of twelve | 86 ns |
+| walking a settled `view` of twelve | 39 ns |
 
 Those are the fastest batch of twenty, which is the statistic least polluted by
 whatever else the machine was doing — the mean on a busy machine is two to three
 times worse and says more about the scheduler than about this code.
 
-The first line is the whole point of the layout. The fourth is what it costs, and
-the reason a shape change is something to do at spawn rather than per frame.
-
-The relationship line is also where the design's real trade shows: `(ChildOf, *)`
-over a hundred parents matches **a hundred tables**, one per parent, because a
-pair is part of the signature. That is what flecs pays too, and it is why the
-per-entity number stays flat while the table count does not.
+The first line is the whole point of the layout. The fifth is what it costs, and
+the reason a shape change is something to do at spawn rather than per frame. The
+last two are the view earning its keep: about twice as fast as the lookup, for one
+`u64` per member.
 
 ### Not in it
 
@@ -500,13 +524,9 @@ the process. A seven-hour session at a million deaths a second retires 4.6 MB.
 *The table list.* **Rows are reused — entity churn costs nothing.** 200,000
 spawns through one archetype leave its column capacity where it started. But an
 archetype, once created, is never destroyed: six allocations and a few hundred
-bytes, kept empty forever. That is nothing when the count is the number of shapes
-a program has, and it wants watching when relationships are involved, because a
-pair is part of the signature and `(ChildOf, a)` is a different table from
-`(ChildOf, b)`. Recycled indices rebuild the same pair id and so reuse the same
-table, which bounds it at the high-water mark of *concurrent* targets rather than
-the total ever created — fifty ships alive at once is fifty tables, whether that
-is the same fifty all session or five thousand in turn.
+bytes, kept empty forever. The count is the number of distinct *shapes* a program
+has — a few dozen — and no longer grows with relationships now that the target is
+data. Two thousand ships is one table.
 
 Neither has an obvious fix, and for the same reason: an index *is* a handle, so
 moving a slot invalidates handles in data structures the ECS cannot see. The note
@@ -537,7 +557,7 @@ src/
     archetype.ts            a table, its signature and its graph edges
     world.ts                the front door
     query.ts                terms, matching, iteration
-    relation.ts             target to tables, for delete cleanup
+    relation.ts             the reverse index, and cached views
   harness/
     run.ts                  the --headless entry point
     suites.ts               the registry, which is the whole list

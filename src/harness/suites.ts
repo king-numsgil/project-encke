@@ -17,6 +17,7 @@ import { testEcsId } from "./suites/ecs_id_test.ts";
 import { testEcsQuery } from "./suites/ecs_query_test.ts";
 import { testEcsRelation } from "./suites/ecs_relation_test.ts";
 import { testEcsWorld } from "./suites/ecs_world_test.ts";
+import { benchFragmentation } from "./suites/frag_bench.ts";
 import { benchFrustum } from "./suites/frustum_bench.ts";
 import { testFrustum } from "./suites/frustum_test.ts";
 import { benchGeometry } from "./suites/geometry_bench.ts";
@@ -49,6 +50,7 @@ export function allSuites(): Suite[] {
 export function allBenchmarks(): Benchmark[] {
     const benchmarks: Benchmark[] = [];
     benchmarks.push({name: "ecs", run: benchEcs});
+    benchmarks.push({name: "fragmentation", run: benchFragmentation});
     benchmarks.push({name: "geometry", run: benchGeometry});
     benchmarks.push({name: "frustum", run: benchFrustum});
     return benchmarks;
