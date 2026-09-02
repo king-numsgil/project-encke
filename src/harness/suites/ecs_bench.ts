@@ -185,10 +185,61 @@ export function benchEcs(b: Reference<Bench>): void {
     });
 
     // One parent's children: a sparse lookup for the first, then a chain walk.
-    b.run("ecs/related, one parent of 12", 20, 2000, (count) => {
+    // Allocating a fresh array every call, which is the worst case and what a
+    // caller writes first.
+    b.run("ecs/related, one parent of 12, fresh array", 20, 2000, (count) => {
         for (let i: usize = 0; i < count; i++) {
             const children: u64[] = [];
             tree.related(childOf, parents[i % 4000], children);
+        }
+    });
+
+    // The same, into a buffer that is cleared and reused — what a system doing
+    // this every frame would actually write. The difference between these two is
+    // the allocator, not the store.
+    const reused: u64[] = [];
+    reused.reserve(64);
+    b.run("ecs/related, one parent of 12, reused array", 20, 2000, (count) => {
+        for (let i: usize = 0; i < count; i++) {
+            while (reused.length !== 0) {
+                reused.pop();
+            }
+            tree.related(childOf, parents[i % 4000], reused);
+        }
+    });
+
+    // A parent's children through a settled view, read by index rather than
+    // through a callback — the cheapest form of the same question.
+    const indexed = tree.view(childOf, parents[0]);
+    tree.sync(indexed);
+    b.run("ecs/view.at over 12", 20, 2000, (count) => {
+        let sum: u64 = 0;
+        for (let i: usize = 0; i < count; i++) {
+            tree.sync(indexed);
+            for (let c: usize = 0; c < indexed.length; c++) {
+                sum += indexed.at(c);
+            }
+        }
+        if (sum === 1) {
+            console.log("unreachable");
+        }
+    });
+
+    // And the operation transform propagation actually leans on: every child of
+    // a parent, and each one's parent read back.
+    b.run("ecs/targetOf per child of 12", 20, 2000, (count) => {
+        let sum: u64 = 0;
+        for (let i: usize = 0; i < count; i++) {
+            while (reused.length !== 0) {
+                reused.pop();
+            }
+            tree.related(childOf, parents[i % 4000], reused);
+            for (let c: usize = 0; c < reused.length; c++) {
+                sum += tree.targetOf(reused[c], childOf);
+            }
+        }
+        if (sum === 1) {
+            console.log("unreachable");
         }
     });
 
