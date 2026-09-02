@@ -131,6 +131,59 @@ export function testEcsEntities(t: Reference<Tester>): void {
     t.ok("so a handle from the very beginning reads as alive again", churn.isAlive(original));
     t.equalUsize("and the generation is back to zero", cast<usize>(generationOf(collision)), 0);
 
+    // -- a long-lived handle is never reissued -------------------------------------------
+    //
+    // The counterpart to the wrap above, and the more important half in practice:
+    // **the wrap can only reach an index that was destroyed**. An index arrives
+    // on the free list through `destroy` and through nothing else, and `destroy`
+    // refuses a handle that is not alive — so an entity held for the lifetime of
+    // the program has an index that is never in the list and can never be handed
+    // out again, however much churn goes past it.
+    //
+    // 200,000 recycles below, which wraps the recycled index's generation three
+    // times over. If the free list could ever contain a live index, this is where
+    // it would show.
+
+    const held = new Entities();
+    const player = held.create();
+    const camera = held.create();
+    const world = held.create();
+    held.destroy(camera);
+
+    let collisions: usize = 0;
+    let indexClashes: usize = 0;
+    let wrapped: usize = 0;
+
+    for (let i: usize = 0; i < 200000; i++) {
+        const transient = held.create();
+        if (transient === player || transient === world) {
+            collisions += 1;
+        }
+        if (indexOf(transient) === indexOf(player) || indexOf(transient) === indexOf(world)) {
+            indexClashes += 1;
+        }
+        if (generationOf(transient) === 0 && i > 0) {
+            wrapped += 1;
+        }
+        held.destroy(transient);
+    }
+
+    t.equalUsize("200,000 recycles never reissue a live handle", collisions, 0);
+    t.equalUsize("nor even a live index", indexClashes, 0);
+    t.ok("and the churned index did wrap, so this was a real test", wrapped >= 3);
+
+    t.ok("the long-lived entity is still alive", held.isAlive(player));
+    t.ok("and so is its neighbour", held.isAlive(world));
+    t.equalUsize("its generation never moved", cast<usize>(generationOf(player)), 0);
+    t.equalU64("and handleAt still resolves to it", held.handleAt(indexOf(player)), player);
+
+    // Only the one destroyed index took the churn, so the record array never grew.
+    t.equalUsize(
+        "and the churn allocated no new indices",
+        held.capacity,
+        cast<usize>(firstUserIndex()) + 3,
+    );
+
     // -- many entities --------------------------------------------------------------------
 
     const many = new Entities();
