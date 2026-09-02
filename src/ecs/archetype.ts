@@ -21,6 +21,41 @@
 //     the comparison is unsigned. So "does this table hold any relationship"
 //     is a look at one end of the array, and the pairs are one contiguous run
 //     that `relation.ts` can walk without touching the components.
+//
+// ## Rows are reused; tables are not
+//
+// A row is a slot in a dense array, and `removeRow` swap-removes it — so the
+// columns and the entity list keep their buffers and a create/destroy pair costs
+// nothing after the first one. Measured: 200,000 spawns through one archetype
+// leave its column capacity at eight, where it started. **Entity churn does not
+// grow storage.**
+//
+// **An archetype, once created, is never destroyed.** It stays in the world's
+// table list, empty, with its signature, its two edge maps and its columns —
+// about six allocations and a few hundred bytes. That is fine when the number of
+// distinct shapes is the number of distinct shapes a program has: a few dozen.
+//
+// It is worth more attention when relationships are involved, because **a pair
+// is part of the signature**, so `(ChildOf, a)` and `(ChildOf, b)` are different
+// archetypes. The bound is the number of distinct *target indices* ever used,
+// and two things keep that small in practice:
+//
+//   * a pair is built from an index, not a handle, so a **recycled** index maps
+//     back to the same pair id and the same table. A spawner parenting things to
+//     short-lived owners cycles through a handful of tables forever.
+//   * so the real bound is the **high-water mark of concurrent targets**, not the
+//     total ever created — fifty ships alive at once is fifty tables, whether
+//     that is the same fifty all session or five thousand in turn.
+//
+// The exception, and the reason this is written down: an index that
+// `entities.ts` **retires** never comes back, so `(ChildOf, retired)` is a table
+// that can never be reused either. Retirement is one index per 65,536 destroys,
+// so it is slow — but it converts entity-index growth into archetype growth at
+// one to one for anything used as a relationship target.
+//
+// Nothing reclaims an empty table. See the compaction note at the top of
+// `entities.ts`; it is the same problem from the other end, and the same answer
+// — a `World.reset()` at a level boundary — solves both.
 
 import { HashMap } from "std/collection";
 import { Column } from "./column.ts";

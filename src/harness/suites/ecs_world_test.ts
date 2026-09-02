@@ -352,6 +352,97 @@ export function testEcsWorld(t: Reference<Tester>): void {
         stillEarth !== null && stillEarth[0].dx === 384.4,
     );
 
+    // -- churn does not grow storage -------------------------------------------------------
+    //
+    // The other half of the recycling story. `entities.ts` makes an index cheap
+    // to reuse; this is whether the *row* is. A create/destroy pair pushes and
+    // pops one row, and `T[].pop` and `Column.swapRemove` both keep their
+    // buffers — so a spawner running for hours holds the high-water mark of
+    // whatever archetype it churns through, and not a byte more.
+
+    const spawnTable = world.tableIndexOf(many[0]);
+    const spawnColumn = world.tableAt(cast<usize>(spawnTable)).columns[0].capacity;
+    const spawnTables = world.tableCount;
+
+    for (let i: usize = 0; i < 20000; i++) {
+        const transient = world.create();
+        world.set<Health>(transient, health, {points: cast<i32>(i)});
+        world.destroy(transient);
+    }
+
+    t.equalUsize("twenty thousand spawns build no new tables", world.tableCount, spawnTables);
+    t.equalUsize(
+        "and no new column capacity",
+        world.tableAt(cast<usize>(spawnTable)).columns[0].capacity,
+        spawnColumn,
+    );
+
+    // -- an archetype is never destroyed, and a pair is part of the signature ----------------
+    //
+    // This is the cost side of relationships being ids, and it is worth pinning
+    // because it is the one place entity churn *can* grow memory.
+    //
+    // `(ChildOf, parent)` is built from the parent's **index**, so a recycled
+    // index maps back to the same id and therefore to the same table. A spawner
+    // that parents each thing to a short-lived owner reuses one archetype
+    // forever, which is the first check below. A world holding many parents
+    // alive at once needs one archetype each, which is the second — and those
+    // tables are **not** given back when the parents die, because nothing here
+    // destroys an archetype.
+
+    const recycled = new World();
+
+    // Warmed up first, because the count settles at *two* rather than one and
+    // the reason is worth knowing: the cascade frees the parent and then the
+    // child, and a stack hands them back in the opposite order — so the two
+    // indices swap roles every iteration and the loop alternates between
+    // `(ChildOf, a)` and `(ChildOf, b)`. Bounded, reused, and not one.
+    for (let i: usize = 0; i < 10; i++) {
+        const parent = recycled.create();
+        const kid = recycled.create();
+        recycled.add(kid, pair(childOfId(), parent));
+        recycled.destroy(parent);
+    }
+    const settled = recycled.tableCount;
+
+    for (let i: usize = 0; i < 1000; i++) {
+        const parent = recycled.create();
+        const kid = recycled.create();
+        recycled.add(kid, pair(childOfId(), parent));
+        // Cascades to the child, so both indices come back and the next
+        // iteration rebuilds a pair id that already has a table.
+        recycled.destroy(parent);
+    }
+    t.equalUsize("a thousand short-lived parents build no new archetypes", recycled.tableCount, settled);
+    t.ok("and the whole loop used only a handful of tables", settled <= 6);
+
+    const alive = new World();
+    const beforeParents = alive.tableCount;
+    const held: u64[] = [];
+    for (let i: usize = 0; i < 50; i++) {
+        const parent = alive.create();
+        held.push(parent);
+        const kid = alive.create();
+        alive.add(kid, pair(childOfId(), parent));
+    }
+    t.equalUsize(
+        "fifty live parents need fifty archetypes",
+        alive.tableCount,
+        beforeParents + 50,
+    );
+
+    for (let i: usize = 0; i < held.length; i++) {
+        alive.destroy(held[i]);
+    }
+    t.equalUsize(
+        "and killing them gives none of it back",
+        alive.tableCount,
+        beforeParents + 50,
+    );
+
+    recycled.release();
+    alive.release();
+
     // -- dead entities ----------------------------------------------------------------
 
     const doomed = world.create();

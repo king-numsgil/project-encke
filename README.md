@@ -490,14 +490,29 @@ No systems and no scheduler — that is the next thing and it wants queries to
 exist first. No serialisation, no reflection past size and alignment, no change
 hooks or observers, and no archetype ever being destroyed once created.
 
-**No compaction**, which is the one on this list with a number attached to it.
-The entity index never shrinks: retired slots accumulate at twelve bytes per
-65,536 entity lifetimes, and a high-water mark of concurrent entities is held for
-the life of the process. Neither is large — a seven-hour session at a million
-deaths a second retires 4.6 MB — but both grow in one direction only, and the
-reason there is no obvious fix is that an index *is* a handle. See the note at
-the top of `src/ecs/entities.ts` for the three shapes a fix could take and what
-each one would cost.
+**No compaction**, which is the one on this list with numbers attached to it.
+Nothing here shrinks, in two places:
+
+*The entity index.* Retired slots accumulate at twelve bytes per 65,536 entity
+lifetimes, and a high-water mark of concurrent entities is held for the life of
+the process. A seven-hour session at a million deaths a second retires 4.6 MB.
+
+*The table list.* **Rows are reused — entity churn costs nothing.** 200,000
+spawns through one archetype leave its column capacity where it started. But an
+archetype, once created, is never destroyed: six allocations and a few hundred
+bytes, kept empty forever. That is nothing when the count is the number of shapes
+a program has, and it wants watching when relationships are involved, because a
+pair is part of the signature and `(ChildOf, a)` is a different table from
+`(ChildOf, b)`. Recycled indices rebuild the same pair id and so reuse the same
+table, which bounds it at the high-water mark of *concurrent* targets rather than
+the total ever created — fifty ships alive at once is fifty tables, whether that
+is the same fifty all session or five thousand in turn.
+
+Neither has an obvious fix, and for the same reason: an index *is* a handle, so
+moving a slot invalidates handles in data structures the ECS cannot see. The note
+at the top of `src/ecs/entities.ts` lays out the three shapes a fix could take;
+`src/ecs/archetype.ts` covers the table side. The one a game actually wants is a
+`World.reset()` at a level boundary, which solves both at once.
 
 ## Layout
 
