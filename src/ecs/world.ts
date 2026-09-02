@@ -287,8 +287,37 @@ export class World {
      * `false` when the entity is dead or already had it — neither is an error,
      * and adding twice in particular is the ordinary shape of code that does not
      * want to check first.
+     *
+     * **Refuses a relation**, because a relation's target lives in two places —
+     * the holder's column and the target's list — and this can only write one of
+     * them. Adding one here would produce an entity that `hasRelation` says yes
+     * about, `targetOf` says nothing about, and no list names. {@link relate} is
+     * the operation that keeps the two ends together.
      */
     add(handle: u64, id: u64): boolean {
+        if (this.relations.has(id)) {
+            return false;
+        }
+        return this.attach(handle, id);
+    }
+
+    /**
+     * Take the id away. `false` when the entity is dead or did not have it.
+     *
+     * **Refuses a relation**, for the reason {@link add} gives: taking the column
+     * away here would leave the target's list naming a holder that no longer
+     * points at it, and `related` would hand that holder out.
+     * {@link unrelate} does both halves.
+     */
+    remove(handle: u64, id: u64): boolean {
+        if (this.relations.has(id)) {
+            return false;
+        }
+        return this.detach(handle, id);
+    }
+
+    /** {@link add} without the relation check. The only caller is {@link relate}. */
+    private attach(handle: u64, id: u64): boolean {
         if (!this.entities.isAlive(handle)) {
             return false;
         }
@@ -303,8 +332,8 @@ export class World {
         return true;
     }
 
-    /** Take the id away. `false` when the entity is dead or did not have it. */
-    remove(handle: u64, id: u64): boolean {
+    /** {@link remove} without the relation check. The only caller is {@link unrelate}. */
+    private detach(handle: u64, id: u64): boolean {
         if (!this.entities.isAlive(handle)) {
             return false;
         }
@@ -351,8 +380,18 @@ export class World {
      * Adding is the behaviour worth having: `set` is what a caller writes when
      * it wants the entity to end up with that value, and making it fail because
      * of a missing `add` would only ever be answered by writing the `add`.
+     *
+     * **Refuses a relation.** A relation's column holds a target, and writing one
+     * here would leave the old target's list still naming this holder and the new
+     * target's list not naming it at all — the index and the column disagreeing,
+     * silently, in both directions. {@link relate} is the way, and it is one call
+     * rather than two.
      */
     set<T>(handle: u64, id: u64, value: T): boolean {
+        if (this.relations.has(id)) {
+            return false;
+        }
+
         this.add(handle, id);
 
         const slot = this.get<T>(handle, id);
@@ -395,7 +434,9 @@ export class World {
             this.links.remove(relation, previous, holder);
         }
 
-        this.add(holder, relation);
+        // `attach`, not `add`: the public one refuses a relation precisely so
+        // that this is the only route by which a relation column can appear.
+        this.attach(holder, relation);
         const slot = this.get<u64>(holder, relation);
         if (slot === null) {
             return false;
@@ -420,7 +461,7 @@ export class World {
         }
 
         this.links.remove(relation, target, holder);
-        this.remove(holder, relation);
+        this.detach(holder, relation);
         return true;
     }
 

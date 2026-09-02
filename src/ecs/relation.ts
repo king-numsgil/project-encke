@@ -9,14 +9,19 @@
 // scan of every entity that has a parent, and that is what this file exists to
 // avoid: one map from `(relation, target)` to the entities pointing at it.
 //
-// ## The key is a packed pair, and it is only a key
+// ## The key is two whole handles, and it is only a key
 //
-// `(relation index, target index)` in one `u64`, which is exactly the shape an
-// id had when relationships lived in the archetype signature. The difference is
-// the whole point of the redesign: this number is a **hash key**, not an id. It
-// never enters a signature, never creates a table, and never reaches a query. A
-// world with 2,000 ships has 2,000 keys in one map and one table, where before
-// it had 2,000 tables.
+// `(relation, target)` as a struct of two `u64`s. It is a **hash key**, not an
+// id: it never enters a signature, never creates a table, and never reaches a
+// query. A world with 2,000 ships has 2,000 keys in one map and one table, where
+// putting the target in the signature gave it 2,000 tables.
+//
+// **Both halves carry their generation**, and that is not incidental. Packed
+// down to two indices the key fits in one `u64` and hashes marginally faster —
+// and a stale handle to a dead ship then collides with whatever entity took its
+// index over, so `related` would answer a question about the dead ship with the
+// live one's parts. That is precisely the staleness the column avoids by storing
+// a whole handle, walking straight back in through the map. Sixteen bytes.
 //
 // ## Versions, so a view can be free
 //
@@ -27,22 +32,27 @@
 // and the version is how it knows the answer went stale.
 
 import { HashMap } from "std/collection";
-import { indexOf } from "./id.ts";
 
 /**
- * `(relation, target)` in one `u64`, for the map below.
+ * What the map below is keyed by: two whole handles.
  *
- * Both halves are **indices**, without generations, which is all a lookup needs:
- * the entities are alive at the moment they are related, and the handles stored
- * in the list and in the column carry the generation that detects staleness.
+ * A struct rather than a packed `u64`, because both generations have to survive
+ * — see the note at the top of this file for what happens when they do not.
+ * `hashOf` answers for a struct of integers by hashing it field by field, so
+ * nothing has to be declared on this to make it a key.
  */
-export function relationKey(relation: u64, target: u64): u64 {
-    return (cast<u64>(indexOf(relation)) << 32) | cast<u64>(indexOf(target));
+interface LinkKey {
+    relation: u64;
+    target: u64;
+}
+
+function linkKey(relation: u64, target: u64): LinkKey {
+    return {relation: relation, target: target};
 }
 
 export class RelationIndex {
     /** `(relation, target)` to its slot in {@link lists}. */
-    private slotOf: HashMap<u64, u32>;
+    private slotOf: HashMap<LinkKey, u32>;
 
     /**
      * The entities pointing at each target, as full handles.
@@ -58,7 +68,7 @@ export class RelationIndex {
     private versions: u32[];
 
     constructor() {
-        this.slotOf = new HashMap<u64, u32>();
+        this.slotOf = new HashMap<LinkKey, u32>();
         this.lists = [];
         this.versions = [];
     }
@@ -70,7 +80,7 @@ export class RelationIndex {
 
     /** Note that `holder` points at `target` through `relation`. */
     add(relation: u64, target: u64, holder: u64): void {
-        const slot = this.slotFor(relationKey(relation, target));
+        const slot = this.slotFor(linkKey(relation, target));
         this.lists[slot].push(holder);
         this.versions[slot] += 1;
     }
@@ -84,7 +94,7 @@ export class RelationIndex {
      * particular order sorts them or stores an index alongside.
      */
     remove(relation: u64, target: u64, holder: u64): boolean {
-        const at = this.slotOf.indexOf(relationKey(relation, target));
+        const at = this.slotOf.indexOf(linkKey(relation, target));
         if (at < 0) {
             return false;
         }
@@ -106,7 +116,7 @@ export class RelationIndex {
 
     /** How many entities point at `target` through `relation`. */
     countFor(relation: u64, target: u64): usize {
-        const at = this.slotOf.indexOf(relationKey(relation, target));
+        const at = this.slotOf.indexOf(linkKey(relation, target));
         if (at < 0) {
             return 0;
         }
@@ -124,7 +134,7 @@ export class RelationIndex {
      * site.
      */
     collect(relation: u64, target: u64, out: Reference<u64[]>): void {
-        const at = this.slotOf.indexOf(relationKey(relation, target));
+        const at = this.slotOf.indexOf(linkKey(relation, target));
         if (at < 0) {
             return;
         }
@@ -138,7 +148,7 @@ export class RelationIndex {
 
     /** What {@link View} compares against. Zero for a key nothing has touched. */
     versionOf(relation: u64, target: u64): u32 {
-        const at = this.slotOf.indexOf(relationKey(relation, target));
+        const at = this.slotOf.indexOf(linkKey(relation, target));
         if (at < 0) {
             return 0;
         }
@@ -146,7 +156,7 @@ export class RelationIndex {
     }
 
     /** The slot for `key`, creating an empty list if there is none. */
-    private slotFor(key: u64): usize {
+    private slotFor(key: LinkKey): usize {
         const at = this.slotOf.indexOf(key);
         if (at >= 0) {
             return cast<usize>(this.slotOf.valueAt(cast<usize>(at)));

@@ -16,7 +16,7 @@
 //     link has to update it, including the ones nobody thinks about: an entity
 //     being destroyed has to stop being listed among its ship's parts.
 
-import { deleteId, noneId, removeId } from "../../ecs/id.ts";
+import { deleteId, indexOf, noneId, removeId } from "../../ecs/id.ts";
 import { has, Query } from "../../ecs/query.ts";
 import { World } from "../../ecs/world.ts";
 import type { Tester } from "../testing.ts";
@@ -371,6 +371,107 @@ export function testEcsRelation(t: Reference<Tester>): void {
         }
     }
     t.equalUsize("every member reads back through the column", byIndex, 4);
+
+    // -- the column and the index must never disagree ---------------------------------------------------
+    //
+    // The target lives in two places: a column on the holder, and a list on the
+    // target. `relate` and `unrelate` write both. Everything else that could
+    // write one of them without the other is a way to desync the two, and the
+    // generic component API is exactly such a way — a relation *is* a component,
+    // so `add`, `remove` and `set` will happily reach it.
+
+    const strict = new World();
+    const attached = strict.relation("Attached");
+    const anchorA = strict.create();
+    const anchorB = strict.create();
+    const thing = strict.create();
+
+    strict.relate(thing, attached, anchorA);
+    t.equalUsize("related, and the index knows", strict.relatedCount(attached, anchorA), 1);
+
+    // `remove` would take the column away and leave the list naming an entity
+    // that no longer points at anything.
+    t.ok("remove refuses a relation", !strict.remove(thing, attached));
+    t.ok("so the relation is still there", strict.hasRelation(thing, attached));
+    t.equalUsize("and the index still agrees", strict.relatedCount(attached, anchorA), 1);
+
+    // `set` would rewrite the column and leave both lists wrong: the old target
+    // still naming the holder, the new one not naming it at all.
+    t.ok("set refuses a relation", !strict.set<u64>(thing, attached, anchorB));
+    t.equalU64("so the target is unchanged", strict.targetOf(thing, attached), anchorA);
+    t.equalUsize("the old target still has it", strict.relatedCount(attached, anchorA), 1);
+    t.equalUsize("and the new one does not", strict.relatedCount(attached, anchorB), 0);
+
+    // `add` would give an entity the relation with nothing behind it — present
+    // according to `hasRelation`, absent according to `targetOf`, and in no list.
+    const bare = strict.create();
+    t.ok("add refuses a relation", !strict.add(bare, attached));
+    t.ok("so it holds nothing", !strict.hasRelation(bare, attached));
+
+    // The supported way round does all of it.
+    t.ok("relate moves it", strict.relate(thing, attached, anchorB));
+    t.equalUsize("the old target loses it", strict.relatedCount(attached, anchorA), 0);
+    t.equalUsize("and the new one gains it", strict.relatedCount(attached, anchorB), 1);
+    t.ok("unrelate clears it", strict.unrelate(thing, attached));
+    t.equalUsize("everywhere", strict.relatedCount(attached, anchorB), 0);
+    t.ok("and the column with it", !strict.hasRelation(thing, attached));
+
+    // A component is untouched by any of this — the refusal is for relations
+    // only, not a general restriction on the generic API.
+    const plain = strict.component<Position>("Position");
+    t.ok("a component still adds", strict.add(thing, plain));
+    t.ok("still sets", strict.set<Position>(thing, plain, {x: 1.0, y: 2.0, z: 3.0}));
+    t.ok("and still removes", strict.remove(thing, plain));
+
+    strict.release();
+
+    // -- a recycled target index must not inherit the old one's members ----------------------------------
+    //
+    // The index is keyed by the target. If that key were the target's *index*
+    // rather than its whole handle, a stale handle to a dead ship would collide
+    // with whatever entity took the slot over — and `related` would answer a
+    // question about the dead ship with the live one's parts. That is exactly the
+    // staleness the column avoids by storing a full handle, and it would have
+    // come straight back in through the map.
+
+    const recycle = new World();
+    const heldBy = recycle.relation("HeldBy");
+
+    const firstShip = recycle.create();
+    const firstPart = recycle.create();
+    recycle.relate(firstPart, heldBy, firstShip);
+
+    const staleView = recycle.view(heldBy, firstShip);
+    recycle.sync(staleView);
+    t.equalUsize("the view sees the first ship's part", staleView.length, 1);
+
+    // `HeldBy` is Remove-policy, so the part survives with its relation cleared
+    // and the ship's index goes back on the free list.
+    recycle.destroy(firstShip);
+    t.ok("the part survives", recycle.isAlive(firstPart));
+
+    const replacement = recycle.create();
+    t.equalUsize(
+        "the new ship reuses the index",
+        cast<usize>(indexOf(replacement)),
+        cast<usize>(indexOf(firstShip)),
+    );
+    t.ok("but is a different entity", replacement !== firstShip);
+
+    const secondPart = recycle.create();
+    recycle.relate(secondPart, heldBy, replacement);
+    t.equalUsize("the new ship has its own part", recycle.relatedCount(heldBy, replacement), 1);
+
+    // The two checks this block exists for.
+    const stale: u64[] = [];
+    recycle.related(heldBy, firstShip, stale);
+    t.equalUsize("a stale target handle finds nothing", stale.length, 0);
+    t.equalUsize("and counts nothing", recycle.relatedCount(heldBy, firstShip), 0);
+
+    recycle.sync(staleView);
+    t.equalUsize("a view of a dead target stays empty", staleView.length, 0);
+
+    recycle.release();
 
     // -- relating things that are not there ------------------------------------------------------------
 

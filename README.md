@@ -444,6 +444,20 @@ world.destroy(ship);                     // parts deleted with it
 because a column holds one value. A relation holding several at once is not here;
 the reserved flag bits exist to mark one later.
 
+**`add`, `remove` and `set` refuse a relation id.** A relation's target lives in
+two places — the holder's column and the target's list — and those three write
+only one of them. `set` in particular would leave the old target still naming the
+holder and the new one not naming it at all, silently, in both directions.
+`relate` and `unrelate` are the only routes that touch both ends, so they are the
+only routes that exist.
+
+The index is keyed by **two whole handles**, generations included. Keyed by
+indices it would fit in a `u64` and hash marginally faster — and a stale handle
+to a dead ship would then collide with whatever entity took its index over, so
+`related` would answer a question about the dead ship with the live one's parts.
+That is the exact staleness the column avoids by storing a whole handle, walking
+back in through the map. It costs about 18 ns a lookup and it is not optional.
+
 `setOnDelete` says what happens when a *target* dies: `Remove` — the default —
 clears the relation and leaves the holder alone, and `Delete` destroys the holder
 too. The cascade is **worklist-driven, not recursive**, so a hierarchy can be as
@@ -496,8 +510,8 @@ against another run of themselves and nothing else:
 | the same, reading each parent out of the column | 1.2 ns an entity |
 | create + destroy | 71 ns |
 | add + remove a tag (two archetype moves) | 162 ns |
-| `related`, one parent of twelve | 86 ns |
-| walking a settled `view` of twelve | 39 ns |
+| `related`, one parent of twelve | 104 ns |
+| walking a settled `view` of twelve | 49 ns |
 
 Those are the fastest batch of twenty, which is the statistic least polluted by
 whatever else the machine was doing — the mean on a busy machine is two to three
