@@ -9,8 +9,11 @@
 // thing, so `--filter geometry` and `--filter ecs/` both do the obvious thing.
 
 import type { Benchmark } from "./bench.ts";
-import { benchFrustum } from "./suites/frustum_bench.ts";
 import { testCascades } from "./suites/cascades_test.ts";
+import { testEcsColumn } from "./suites/ecs_column_test.ts";
+import { testEcsEntities } from "./suites/ecs_entities_test.ts";
+import { testEcsId } from "./suites/ecs_id_test.ts";
+import { benchFrustum } from "./suites/frustum_bench.ts";
 import { testFrustum } from "./suites/frustum_test.ts";
 import { benchGeometry } from "./suites/geometry_bench.ts";
 import { testGeometry } from "./suites/geometry_test.ts";
@@ -29,6 +32,9 @@ export function allSuites(): Suite[] {
     suites.push({name: "geometry/meshes", run: testGeometry});
     suites.push({name: "scene/frustum", run: testFrustum});
     suites.push({name: "scene/cascades", run: testCascades});
+    suites.push({name: "ecs/id", run: testEcsId});
+    suites.push({name: "ecs/entities", run: testEcsEntities});
+    suites.push({name: "ecs/columns", run: testEcsColumn});
     return suites;
 }
 

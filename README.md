@@ -261,11 +261,17 @@ and no driver — `SDL_GetPerformanceCounter`, which is all the benchmarks want
 from SDL, needs no subsystem at all.
 
 ```bash
-./bin/encke --headless               # every suite; exit status is the result
+bun test                             # every suite; exit status is the result
+bun bench                            # the CPU benchmarks
 ./bin/encke --run list               # what is registered
 ./bin/encke --filter scene/          # one area
-./bin/encke --run benches            # the CPU benchmarks
 ```
+
+Both scripts run under `GOBLIN_LEAK_CHECK=1`, so **the trailing
+`##goblin-live-allocations:` line is part of the result** and has to read zero.
+It is not a formality: there are no destructors in this language, so anything
+holding an allocation — a `Column`, a `File` — is released by a call somebody
+wrote or by nothing at all, and that counter is the only thing that notices.
 
 Suites are named `area/what` and `--filter` is a substring over the whole name.
 A filter that matches nothing **fails** rather than passing vacuously, because a

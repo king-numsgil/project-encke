@@ -6,7 +6,9 @@
     "scripts": {
         "compile": "bun build.ts",
         "execute": "MIMALLOC_VERBOSE=0 GOBLIN_LEAK_CHECK=1 ./bin/encke",
-        "start": "bun compile && bun execute"
+        "start": "bun compile && bun execute",
+        "test": "MIMALLOC_VERBOSE=0 GOBLIN_LEAK_CHECK=1 ./bin/encke --headless",
+        "bench": "MIMALLOC_VERBOSE=0 GOBLIN_LEAK_CHECK=1 ./bin/encke --run benches"
     },
     "devDependencies": {
         "@types/bun": "latest"
