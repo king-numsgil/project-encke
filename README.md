@@ -332,9 +332,26 @@ pair id
 4,294,967,295 entities, and **65,536 recycles of one index before a stale handle
 comes back valid**. That is the cost of the split and it is worth stating: a slot
 recycled 65,536 times is addressed by a handle that used to name something else,
-and nothing can tell the difference. Churning ten thousand entities a second
-through one index reaches it in about seven seconds; recycling a handful a frame
-never will.
+and nothing can tell the difference.
+
+The free list is a **queue, not a stack**, precisely because of that number. A
+stack hands back the index that was just freed, which spends one index's entire
+generation range as fast as it is possible to spend it — a spawner alternating
+create and destroy burns through it and never touches another index. A queue
+spends the budget evenly: with `F` indices in flight, wrapping any one of them
+takes 65,536 full *laps*. It is still eager — one entity in flight is a one-entry
+queue, which is exactly a stack — so the budget scales with how much churn the
+program actually has, and no further. `ecs/entities.ts` says so at the top.
+
+**An entity held for the lifetime of the program is never at risk.** An index
+reaches the free list only through `destroy`, which refuses a handle that is not
+alive, so a live index is never in the list and `create` can never hand it out.
+The wrap is a hazard for handles you kept to things you already killed.
+
+One entity costs **12 bytes** of index — `archetype: u32, row: u32,
+generation: u16, flags: u16`, with no padding — plus whatever its components
+weigh. That array is sized by the high-water mark of concurrent entities and
+never shrinks.
 
 **A pair spends the flag and generation space on its relation**, because two full
 entity references do not fit in 64 bits with room left over. So a pair records
@@ -441,10 +458,15 @@ against another run of themselves and nothing else:
 
 | | |
 |---|---|
-| iterate 1M entities, two components | **1.5 ns** an entity |
+| iterate 1M entities, two components | **1.8 ns** an entity |
 | iterate `(ChildOf, *)` over 50k in 100 tables | **0.6 ns** an entity |
-| create + destroy | 83 ns |
-| add + remove a tag (two archetype moves) | 179 ns |
+| create + destroy | 80 ns |
+| add + remove a tag (two archetype moves) | 165 ns |
+| `childrenOf` one parent of 500 | 1.75 µs |
+
+Those are the fastest batch of twenty, which is the statistic least polluted by
+whatever else the machine was doing — the mean on a busy machine is two to three
+times worse and says more about the scheduler than about this code.
 
 The first line is the whole point of the layout. The fourth is what it costs, and
 the reason a shape change is something to do at spawn rather than per frame.

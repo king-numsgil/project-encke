@@ -96,20 +96,71 @@ export function testEcsEntities(t: Reference<Tester>): void {
         cast<usize>(noArchetype()),
     );
 
-    // -- the free list is LIFO --------------------------------------------------------
+    // -- the free list is FIFO ----------------------------------------------------------
     //
-    // Last freed, first reused. Not an arbitrary choice: it keeps a churning
-    // workload on one index rather than sweeping across the whole array, which
-    // is better for the cache and is what makes the generation wrap below
-    // something that can actually happen.
+    // First freed, first reused, which is the decision `entities.ts` explains at
+    // length. A stack would be one field cheaper and warmer in cache; a queue
+    // spends the 16-bit generation budget evenly across every index in flight
+    // instead of burning one index's entire range before touching another.
 
     const d = entities.create();
     const e = entities.create();
     entities.destroy(d);
     entities.destroy(e);
 
-    t.equalUsize("the last freed comes back first", cast<usize>(indexOf(entities.create())), cast<usize>(indexOf(e)));
-    t.equalUsize("then the one before it", cast<usize>(indexOf(entities.create())), cast<usize>(indexOf(d)));
+    t.equalUsize("the first freed comes back first", cast<usize>(indexOf(entities.create())), cast<usize>(indexOf(d)));
+    t.equalUsize("then the next", cast<usize>(indexOf(entities.create())), cast<usize>(indexOf(e)));
+
+    // The property that is actually being bought: with eight indices in flight,
+    // eight recycles advance eight generations by one each — where a stack would
+    // have advanced one of them by eight and left the other seven untouched.
+    // That is the whole difference between wrapping in 65,536 recycles and
+    // wrapping in 65,536 laps.
+    const spread = new Entities();
+    const pool: u64[] = [];
+    for (let i: usize = 0; i < 8; i++) {
+        pool.push(spread.create());
+    }
+    t.equalUsize("eight in flight", spread.freeCount, 0);
+
+    for (let i: usize = 0; i < 8; i++) {
+        spread.destroy(pool[i]);
+    }
+    t.equalUsize("eight on the queue", spread.freeCount, 8);
+
+    let inOrder: usize = 0;
+    let advancedOnce: usize = 0;
+    for (let i: usize = 0; i < 8; i++) {
+        const fresh = spread.create();
+        if (indexOf(fresh) === indexOf(pool[i])) {
+            inOrder += 1;
+        }
+        if (generationOf(fresh) === 1) {
+            advancedOnce += 1;
+        }
+    }
+    t.equalUsize("one lap returns every index in the order it was freed", inOrder, 8);
+    t.equalUsize("and advances every generation by exactly one", advancedOnce, 8);
+    t.equalUsize("the queue is empty again", spread.freeCount, 0);
+
+    // Emptying the queue completely and refilling it has to work, which is the
+    // case a tail pointer gets wrong: forget to clear it when the last index is
+    // handed out and the next destroy appends onto a slot that is now live,
+    // losing the whole list.
+    const drained = new Entities();
+    const only = drained.create();
+    drained.destroy(only);
+    t.equalUsize("one on the queue", drained.freeCount, 1);
+    const back = drained.create();
+    t.equalUsize("and the queue is empty", drained.freeCount, 0);
+    drained.destroy(back);
+    t.equalUsize("refilling a drained queue works", drained.freeCount, 1);
+    t.equalUsize(
+        "and hands the index back",
+        cast<usize>(indexOf(drained.create())),
+        cast<usize>(indexOf(only)),
+    );
+    t.equalUsize("without allocating a new index", drained.capacity, cast<usize>(firstUserIndex()) + 1);
 
     // -- the generation wrap -----------------------------------------------------------
     //
@@ -117,6 +168,12 @@ export function testEcsEntities(t: Reference<Tester>): void {
     // started with. This is the documented cost of packing a pair's two ends
     // into one 64-bit id, and it is asserted rather than warned about — a test
     // that pins the hazard is a test that notices if the layout ever changes.
+    //
+    // **A queue does not save this case**, and the world below is written to
+    // show why: with exactly one entity in flight the free list is one entry
+    // long, so first-out and last-out are the same index and the churn lands
+    // where a stack would have put it. FIFO widens the budget by however many
+    // indices are actually in flight, which for one is one.
 
     const churn = new Entities();
     const original = churn.create();
