@@ -196,17 +196,23 @@ export function testEcsQuery(t: Reference<Tester>): void {
     t.ok("a query with no terms matches everything alive", everything.count(world) >= 12);
     t.equalUsize("and every table", everything.tableCount, world.tableCount);
 
-    // -- relationships are ordinary terms ----------------------------------------------------------
+    // -- relationships are invisible to queries ------------------------------------------------------
     //
-    // A relation is a component whose value is an entity handle, so `has(childOf)`
-    // is "everything with a parent" and the parents come back as a **column** —
-    // one contiguous run of handles, however many distinct parents there are.
-    // That is the whole reason the target lives in a column instead of in the
-    // table's identity.
+    // Deliberately. A relation lives in its own store outside the archetypes, so
+    // a query cannot filter on one and relating an entity does not change what
+    // any query matches. That is the trade: no table per target, no fragmentation
+    // of anybody's iteration, and "everything with a parent" is not a question a
+    // query can answer.
+    //
+    // The question a caller actually asks — "what are *this* ship's parts" — is
+    // `world.related`, which is a sparse lookup and a chain walk.
 
     const childOf = world.relation("ChildOf");
     const ship = world.create();
     const station = world.create();
+
+    const before = world.tableCount;
+    const matchedBefore = withHealth.count(world);
 
     const crew: u64[] = [];
     for (let i: usize = 0; i < 5; i++) {
@@ -215,72 +221,50 @@ export function testEcsQuery(t: Reference<Tester>): void {
         crew.push(member);
     }
 
-    const parented = new Query([has(childOf)]);
-    t.equalUsize("five have a parent", parented.count(world), 5);
-    t.equalUsize("across a single table", parented.tableCount, 1);
+    t.equalUsize("relating built no tables", world.tableCount, before);
+    t.equalUsize("and changed no query", withHealth.count(world), matchedBefore);
 
-    // Which parent, read straight out of the column. Two thousand ships would
-    // still be one table and one loop.
-    let toShip: usize = 0;
-    let toStation: usize = 0;
-    parented.each(world, (it) => {
-        const parents = it.column<u64>(0);
-        if (parents === null) {
-            t.fail("relation column", "returned null");
-            return;
-        }
-        for (let i: usize = 0; i < it.count; i++) {
-            if (parents[i] === ship) {
-                toShip += 1;
-            } else if (parents[i] === station) {
-                toStation += 1;
-            }
-        }
-    });
-    t.equalUsize("three point at the ship", toShip, 3);
-    t.equalUsize("and two at the station", toStation, 2);
-
-    // A second relation is a second column, and an entity can hold both at once
-    // because they are different ids — one target *each*, not one in total.
+    // An entity holds several relations at once, and none of them is an id on it.
     const orbits = world.relation("Orbits");
     world.relate(ship, orbits, station);
     world.relate(ship, childOf, station);
-    t.ok("an entity can hold two different relations at once", world.hasRelation(ship, orbits));
+    t.ok("an entity can hold two different relations", world.hasRelation(ship, orbits));
     t.ok("both of them", world.hasRelation(ship, childOf));
-    t.equalU64("and each reads back its own target", world.targetOf(ship, orbits), station);
-    t.equalU64("independently", world.targetOf(ship, childOf), station);
+    t.equalU64("each with its own target", world.targetOf(ship, orbits), station);
+    t.equalU64("read independently", world.targetOf(ship, childOf), station);
+    t.equalUsize("and still no new tables", world.tableCount, before);
 
-    const orbiting = new Query([has(orbits)]);
-    t.equalUsize("one thing orbits anything", orbiting.count(world), 1);
-
-    // Exclusion works on a relation exactly as on a component.
-    const orphans = new Query([has(position), not(childOf)]);
-    t.equalUsize("the nine with Position have no parent", orphans.count(world), 9);
-
-    const parentedWithPosition = new Query([has(position), has(childOf)]);
-    t.equalUsize("and none of the five has Position", parentedWithPosition.count(world), 0);
+    // A relation id used as a query term matches nothing, because nothing holds
+    // it as an id. Worth pinning so the failure is a documented zero rather than
+    // a mystery.
+    const asATerm = new Query([has(childOf)]);
+    t.equalUsize("a relation as a query term matches nothing", asATerm.count(world), 0);
 
     // -- incremental rematching ---------------------------------------------------------------------
     //
     // A query that has already run must pick up a table created afterwards. The
     // cursor makes that cheap; getting it wrong makes it never happen.
 
-    const before = parentedWithPosition.tableCount;
+    const shapes = new Query([has(position), has(frozen)]);
+    const seenTables = shapes.tableCount;
+
     const late = world.create();
-    world.relate(late, childOf, ship);
     world.set<Position>(late, position, {x: 99.0, y: 0.0, z: 0.0});
+    world.add(late, frozen);
+    world.relate(late, childOf, ship);
 
-    t.equalUsize("a new shape is matched on the next look", parentedWithPosition.count(world), 1);
-    t.ok("through a table the query had not seen", parentedWithPosition.tableCount > before);
+    t.equalUsize("a new shape is matched on the next look", shapes.count(world), 4);
+    t.ok("through a table the query had not seen", shapes.tableCount >= seenTables);
 
-    // And the count follows entities leaving as well as arriving.
-    world.unrelate(late, childOf);
-    t.equalUsize("it drops when the relation is cleared", parentedWithPosition.count(world), 0);
-    // Five crew, plus the ship itself, which was given a parent above.
-    t.equalUsize("and the plain parent query drops too", parented.count(world), 6);
+    // The count follows components leaving, and is untouched by the relation.
+    world.remove(late, frozen);
+    t.equalUsize("and drops when the id is removed", shapes.count(world), 3);
+    t.ok("while the relation is unaffected", world.hasRelation(late, childOf));
 
+    // Three of the five crew plus `late`, so four, and three after one dies.
+    t.equalUsize("the ship has four parts", world.relatedCount(childOf, ship), 4);
     world.destroy(crew[0]);
-    t.equalUsize("and when an entity is destroyed", parented.count(world), 5);
+    t.equalUsize("and loses one when it is destroyed", world.relatedCount(childOf, ship), 3);
 
     world.release();
 }

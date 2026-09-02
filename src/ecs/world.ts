@@ -41,7 +41,8 @@ import {
     relationId,
     removeId,
 } from "./id.ts";
-import { RelationIndex, View } from "./relation.ts";
+import { RelationStore, View } from "./relation.ts";
+import { noSlot, SparseIndex } from "./sparse.ts";
 
 /** The archetype with an empty signature, where every entity starts. */
 function rootTable(): u32 {
@@ -61,14 +62,35 @@ export class World {
     /** Component and relation names, for diagnostics only. Nothing branches on one. */
     private names: HashMap<u64, string>;
 
-    /** Who points at whom, from the target's end. See `relation.ts`. */
-    private links: RelationIndex;
+    /**
+     * One store per registered relation, held by pointer.
+     *
+     * Nothing about a relation touches an archetype, which is the point: a
+     * relation id is not a component id, so there is nothing for `add`, `remove`
+     * or `set` to reach and no guard against them needed.
+     *
+     * By pointer rather than by value so a store's address survives this array
+     * growing — a store holds several arrays and copying one to grow the outer
+     * array would deep-copy every link in it.
+     */
+    private stores: Pointer<RelationStore>[];
 
-    /** Registered relations, and what each does when a target is destroyed. */
-    private relations: HashMap<u64, u64>;
+    /**
+     * Relation entity index to its slot in {@link stores}.
+     *
+     * A sparse index rather than a `HashMap<u64, u32>`, and the difference is
+     * measurable: every `targetOf`, `related` and `walk` goes through here first,
+     * so a hash probe on the way in put 15 ns in front of a 3 ns lookup and made
+     * the whole exercise pointless. A relation's index is small and there are a
+     * handful of them, so this is one page.
+     */
+    private storeOf: SparseIndex;
 
-    /** The registered relations in order, for the destroy path to walk. */
+    /** The registered relation ids, parallel to {@link stores}. */
     private relationList: u64[];
+
+    /** What each relation does when one of its targets is destroyed. */
+    private policies: HashMap<u64, u64>;
 
     constructor() {
         this.entities = new Entities();
@@ -76,9 +98,10 @@ export class World {
         this.byHash = new HashMap<u64, u32>();
         this.infos = new HashMap<u64, ComponentInfo>();
         this.names = new HashMap<u64, string>();
-        this.links = new RelationIndex();
-        this.relations = new HashMap<u64, u64>();
+        this.stores = [];
+        this.storeOf = new SparseIndex();
         this.relationList = [];
+        this.policies = new HashMap<u64, u64>();
 
         // Table 0, empty, before anything can want one.
         const empty: u64[] = [];
@@ -115,6 +138,13 @@ export class World {
             this.tables[i].free();
         }
         this.tables = [];
+
+        // A store owns only arrays, which its destructor releases — but the
+        // store itself was `alloc`ed and nothing else will give that back.
+        for (let i: usize = 0; i < this.stores.length; i++) {
+            this.stores[i].free();
+        }
+        this.stores = [];
     }
 
     // -- entities -----------------------------------------------------------
@@ -216,36 +246,34 @@ export class World {
      *
      *     world.relate(turret, childOf, ship);
      *
-     * A relation **is a component whose value is an entity handle**. That is the
-     * whole implementation: relating writes the target into a `u64` column on
-     * the holder, so every entity with a parent shares one table however many
-     * parents exist, and the targets are readable as a contiguous column by an
-     * ordinary query.
+     * A relation is **not a component**. It gets a store of its own outside the
+     * archetypes — see `relation.ts` — so its id never enters a signature, never
+     * creates a table, and cannot be reached by `add`, `remove` or `set`. There
+     * is nothing to guard against, which is the whole reason it is built this
+     * way: while the target lived in a column it was a component, and everything
+     * that could touch a component could corrupt it.
      *
-     * The reverse direction — "what points at this ship" — is the index in
-     * `relation.ts`, which relating and unrelating keep up to date.
-     *
-     * **One target at a time.** Relating to a second replaces the first, because
-     * a column holds one value. A relation that should hold several at once is
-     * not here; the id layout keeps flag bits reserved for marking one.
+     * **One target at a time.** Relating to a second replaces the first. The
+     * generalisation is one more chain in the store, and the id layout keeps
+     * flag bits reserved for marking a relation that wants it.
      */
     relation(name: string): u64 {
         const id = this.create();
-        // The value is an entity handle, so the column is `u64` wide and its
-        // rows are copied and dropped like any other plain data.
-        this.infos.set(id, infoOf<u64>());
         this.names.set(id, name);
-        this.add(id, componentId());
-        this.add(id, relationId());
+        // On the relation's own entity, which is metadata about the relation
+        // rather than anything a holder carries. Nothing reads it but a debugger.
+        this.attach(id, relationId());
 
-        this.relations.set(id, removeId());
+        this.storeOf.set(indexOf(id), cast<u32>(this.stores.length));
+        this.stores.push(alloc(RelationStore));
         this.relationList.push(id);
+        this.policies.set(id, removeId());
         return id;
     }
 
     /** Whether `id` was registered with {@link relation}. */
     isRelation(id: u64): boolean {
-        return this.relations.has(id);
+        return this.slotOfRelation(id) !== noSlot();
     }
 
     /**
@@ -257,14 +285,42 @@ export class World {
      * anything parented to those.
      */
     setOnDelete(relation: u64, policy: u64): void {
-        if (this.relations.has(relation)) {
-            this.relations.set(relation, policy);
+        if (this.isRelation(relation)) {
+            this.policies.set(relation, policy);
         }
     }
 
     /** What `relation` does when a target dies. {@link removeId} by default. */
     onDeleteOf(relation: u64): u64 {
-        return this.relations.getOr(relation, removeId());
+        return this.policies.getOr(relation, removeId());
+    }
+
+    /**
+     * Which store `relation` owns, or {@link noSlot}.
+     *
+     * Two array reads and a handle comparison. The comparison is what refuses a
+     * *stale* relation handle: the sparse index is keyed by entity index, so
+     * without it a destroyed relation whose index was recycled would hand back
+     * somebody else's store.
+     */
+    private slotOfRelation(relation: u64): u32 {
+        const slot = this.storeOf.get(indexOf(relation));
+        if (slot === noSlot()) {
+            return noSlot();
+        }
+        if (this.relationList[cast<usize>(slot)] !== relation) {
+            return noSlot();
+        }
+        return slot;
+    }
+
+    /** The store behind `relation`, or null when it is not one. */
+    private storeFor(relation: u64): Pointer<RelationStore> | null {
+        const slot = this.slotOfRelation(relation);
+        if (slot === noSlot()) {
+            return null;
+        }
+        return this.stores[cast<usize>(slot)];
     }
 
     /** What something was registered as. Empty for anything unnamed. */
@@ -288,35 +344,23 @@ export class World {
      * and adding twice in particular is the ordinary shape of code that does not
      * want to check first.
      *
-     * **Refuses a relation**, because a relation's target lives in two places —
-     * the holder's column and the target's list — and this can only write one of
-     * them. Adding one here would produce an entity that `hasRelation` says yes
-     * about, `targetOf` says nothing about, and no list names. {@link relate} is
-     * the operation that keeps the two ends together.
+     * A relation id passed here is an ordinary tag and has **nothing to do with
+     * the relation** — relations live outside the archetypes entirely, so there
+     * is no state for this to corrupt and no check standing in the way. An
+     * earlier design put a relation's target in a column, which made it a
+     * component, which made this function a hazard that had to be guarded with a
+     * hash probe on every call.
      */
     add(handle: u64, id: u64): boolean {
-        if (this.relations.has(id)) {
-            return false;
-        }
         return this.attach(handle, id);
     }
 
-    /**
-     * Take the id away. `false` when the entity is dead or did not have it.
-     *
-     * **Refuses a relation**, for the reason {@link add} gives: taking the column
-     * away here would leave the target's list naming a holder that no longer
-     * points at it, and `related` would hand that holder out.
-     * {@link unrelate} does both halves.
-     */
+    /** Take the id away. `false` when the entity is dead or did not have it. */
     remove(handle: u64, id: u64): boolean {
-        if (this.relations.has(id)) {
-            return false;
-        }
         return this.detach(handle, id);
     }
 
-    /** {@link add} without the relation check. The only caller is {@link relate}. */
+    /** The body of {@link add}, so registration can use it before `add` exists. */
     private attach(handle: u64, id: u64): boolean {
         if (!this.entities.isAlive(handle)) {
             return false;
@@ -380,18 +424,8 @@ export class World {
      * Adding is the behaviour worth having: `set` is what a caller writes when
      * it wants the entity to end up with that value, and making it fail because
      * of a missing `add` would only ever be answered by writing the `add`.
-     *
-     * **Refuses a relation.** A relation's column holds a target, and writing one
-     * here would leave the old target's list still naming this holder and the new
-     * target's list not naming it at all — the index and the column disagreeing,
-     * silently, in both directions. {@link relate} is the way, and it is one call
-     * rather than two.
      */
     set<T>(handle: u64, id: u64, value: T): boolean {
-        if (this.relations.has(id)) {
-            return false;
-        }
-
         this.add(handle, id);
 
         const slot = this.get<T>(handle, id);
@@ -412,78 +446,57 @@ export class World {
      *
      * `false` when either entity is dead or `relation` was never registered.
      *
-     * The whole operation is a column write plus two index updates. **It does not
-     * move the entity between tables** unless this is the first time it has held
-     * this relation at all — which is why two thousand ships cost one table
-     * rather than two thousand.
+     * **Nothing about the archetypes moves.** The link is a row in the relation's
+     * own store, so a ship gaining a thirteenth part does not change any table,
+     * and two thousand ships are two thousand rows rather than two thousand
+     * tables.
      */
     relate(holder: u64, relation: u64, target: u64): boolean {
         if (!this.entities.isAlive(holder) || !this.entities.isAlive(target)) {
             return false;
         }
-        if (!this.relations.has(relation)) {
+
+        const store = this.storeFor(relation);
+        if (store === null) {
             return false;
         }
 
-        // One target at a time: whatever was there stops being pointed at.
-        const previous = this.targetOf(holder, relation);
-        if (previous === target) {
-            return true;
-        }
-        if (previous !== noneId()) {
-            this.links.remove(relation, previous, holder);
-        }
-
-        // `attach`, not `add`: the public one refuses a relation precisely so
-        // that this is the only route by which a relation column can appear.
-        this.attach(holder, relation);
-        const slot = this.get<u64>(holder, relation);
-        if (slot === null) {
-            return false;
-        }
-        slot[0] = target;
-
-        this.links.add(relation, target, holder);
+        store.relate(holder, target);
         return true;
     }
 
-    /**
-     * Stop `holder` pointing at anything through `relation`. `false` if it was
-     * not.
-     *
-     * The entity leaves the relation's table, because it no longer has the id at
-     * all — a relation with no target is not a relation held with a null in it.
-     */
+    /** Stop `holder` pointing at anything through `relation`. `false` if it was not. */
     unrelate(holder: u64, relation: u64): boolean {
-        const target = this.targetOf(holder, relation);
-        if (target === noneId()) {
+        const store = this.storeFor(relation);
+        if (store === null) {
             return false;
         }
-
-        this.links.remove(relation, target, holder);
-        this.detach(holder, relation);
-        return true;
+        return store.unrelate(holder);
     }
 
     /**
      * What `holder` points at through `relation`, or {@link noneId}.
      *
-     * One load out of a column. The value is a **full handle**, so a target that
-     * has since been destroyed comes back as a handle that fails `isAlive` — the
-     * staleness is detectable without anything having had to clean up first,
-     * which is the property a target packed into an id could not have.
+     * A sparse lookup and an array read — no hashing — measured at about 9 ns.
+     * The value is a **full handle**, so a target that has since been destroyed
+     * comes back as a handle that fails `isAlive`, and the store's own read
+     * refuses a stale *holder* for the same reason.
      */
     targetOf(holder: u64, relation: u64): u64 {
-        const slot = this.get<u64>(holder, relation);
-        if (slot === null) {
+        const store = this.storeFor(relation);
+        if (store === null) {
             return noneId();
         }
-        return slot[0];
+        return store.targetOf(holder);
     }
 
     /** Whether `holder` points at anything through `relation`. */
     hasRelation(holder: u64, relation: u64): boolean {
-        return this.has(holder, relation);
+        const store = this.storeFor(relation);
+        if (store === null) {
+            return false;
+        }
+        return store.holds(holder);
     }
 
     /**
@@ -492,22 +505,28 @@ export class World {
      *     const parts: u64[] = [];
      *     world.related(childOf, ship, parts);
      *
-     * One hash lookup and a copy of that target's list, so it costs the number of
-     * parts rather than the size of the world.
+     * A sparse lookup for the first, then a walk down the sibling chain, so it
+     * costs the number of parts and nothing per target is allocated to hold them.
      *
-     * A copy into the caller's array rather than a borrow, because what a caller
-     * does with a ship's parts is usually to destroy or re-relate them, and doing
-     * that while walking the index would move entries under the cursor.
-     * {@link view} is the version that keeps the copy and only re-takes it when
-     * something has changed.
+     * A copy into the caller's array rather than a walk the caller drives,
+     * because what a caller does with a ship's parts is usually to destroy or
+     * re-relate them, and that would unlink the row the walk is standing on.
+     * {@link view} keeps the copy and re-takes it only when something changed.
      */
     related(relation: u64, target: u64, out: Reference<u64[]>): void {
-        this.links.collect(relation, target, out);
+        const store = this.storeFor(relation);
+        if (store !== null) {
+            store.collect(target, out);
+        }
     }
 
-    /** How many entities point at `target` through `relation`. */
+    /** How many entities point at `target`. Costs the answer; the chain has no count. */
     relatedCount(relation: u64, target: u64): usize {
-        return this.links.countFor(relation, target);
+        const store = this.storeFor(relation);
+        if (store === null) {
+            return 0;
+        }
+        return store.countNaming(target);
     }
 
     /**
@@ -516,9 +535,9 @@ export class World {
      *     const parts = world.view(childOf, ship);
      *     world.walk(parts, (part) => { … });
      *
-     * Spends one `u64` per member to make repeated walks a contiguous array with
-     * no lookup: while nothing is relating or unrelating, a walk costs one
-     * integer comparison; when something changes, the next walk re-copies once.
+     * Spends one `u64` per member to make repeated walks a contiguous array: while
+     * nothing is relating or unrelating, a walk costs one integer comparison, and
+     * when something changes the next walk re-copies once.
      *
      * Hold it for as long as it is useful. It is an ordinary value with no
      * registration behind it, so dropping one costs nothing and nothing has to be
@@ -528,14 +547,29 @@ export class World {
         return new View(relation, target);
     }
 
+    /** How much the relation's sparse pages occupy. A gauge; see `sparse.ts`. */
+    relationBytes(relation: u64): usize {
+        const store = this.storeFor(relation);
+        if (store === null) {
+            return 0;
+        }
+        return store.sparseBytes + store.count * 24;
+    }
+
     /** Sync `view` against the world and call `body` with every member. */
     walk(view: Reference<View>, body: LocalFn<(member: u64) => void>): void {
-        view.walk(this.links, body);
+        const store = this.storeFor(view.through);
+        if (store !== null) {
+            view.walk(store.deref(), body);
+        }
     }
 
     /** Sync `view` without walking it, so {@link View.at} can be used directly. */
     sync(view: Reference<View>): void {
-        view.sync(this.links);
+        const store = this.storeFor(view.through);
+        if (store !== null) {
+            view.sync(store.deref());
+        }
     }
 
     // -- what the tests and the query layer look at ------------------------------
@@ -580,55 +614,50 @@ export class World {
     /**
      * Act on everything pointing at `handle`, before it stops existing.
      *
-     * One index lookup per registered relation — a handful — rather than a scan
+     * One sparse lookup per registered relation — a handful — rather than a scan
      * of anything. `Delete`-policy holders go onto `doomed` for the caller's
      * worklist; `Remove`-policy holders are unrelated here and now.
      *
-     * **The lists are copied before anything is changed.** Unrelating moves an
-     * entity out of the relation's table and removes it from the very list being
-     * walked, so acting inside the walk would step over entries. `related` takes
-     * a snapshot for exactly this reason.
+     * **The chain is copied before anything is changed.** Unrelating unlinks the
+     * very row a walk would be standing on, so the scan collects and the loop
+     * after it acts — the same discipline `Query.each` asks of its body.
      */
     private settleHolders(handle: u64, doomed: Reference<u64[]>): void {
         for (let i: usize = 0; i < this.relationList.length; i++) {
             const relation = this.relationList[i];
-            if (this.links.countFor(relation, handle) === 0) {
+            const store = this.stores[i];
+            if (store.firstNaming(handle) === noSlot()) {
                 continue;
             }
 
             const holders: u64[] = [];
-            this.links.collect(relation, handle, holders);
+            store.collect(handle, holders);
 
             const cascades = this.onDeleteOf(relation) === deleteId();
             for (let h: usize = 0; h < holders.length; h++) {
                 if (cascades) {
                     doomed.push(holders[h]);
                 } else {
-                    this.unrelate(holders[h], relation);
+                    store.unrelate(holders[h]);
                 }
             }
         }
     }
 
     /**
-     * Take `handle` out of the index for everything **it** points at.
+     * Take `handle` out of every store it is a **holder** in.
      *
      * The other direction from {@link settleHolders}, and easy to forget: a
      * turret that dies has to stop being listed among its ship's parts, or the
-     * ship keeps handing out a handle to something that no longer exists. Cheap,
-     * because the targets are in the entity's own columns.
+     * ship keeps handing out a handle to something that no longer exists.
+     *
+     * A store per registered relation, each one a sparse lookup that answers no
+     * almost every time — which is why the relation list wants to stay short even
+     * though nothing else here cares how long it is.
      */
     private forgetLinks(handle: u64): void {
-        const table = this.tableOf(handle);
-        for (let i: usize = 0; i < table.signature.length; i++) {
-            const id = table.signature[i];
-            if (!this.relations.has(id)) {
-                continue;
-            }
-            const target = this.targetOf(handle, id);
-            if (target !== noneId()) {
-                this.links.remove(id, target, handle);
-            }
+        for (let i: usize = 0; i < this.stores.length; i++) {
+            this.stores[i].unrelate(handle);
         }
     }
 

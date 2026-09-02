@@ -372,13 +372,17 @@ export function testEcsRelation(t: Reference<Tester>): void {
     }
     t.equalUsize("every member reads back through the column", byIndex, 4);
 
-    // -- the column and the index must never disagree ---------------------------------------------------
+    // -- the component API cannot reach a relation --------------------------------------------------------
     //
-    // The target lives in two places: a column on the holder, and a list on the
-    // target. `relate` and `unrelate` write both. Everything else that could
-    // write one of them without the other is a way to desync the two, and the
-    // generic component API is exactly such a way — a relation *is* a component,
-    // so `add`, `remove` and `set` will happily reach it.
+    // The reason the store lives outside the archetypes. While a relation's
+    // target sat in a column, a relation *was* a component, and `add`, `remove`
+    // and `set` would each happily write one half of it — leaving the target's
+    // list naming a holder that no longer pointed at it, or the holder pointing
+    // at something no list named. That needed a guard on all three, which meant a
+    // hash probe on every component operation in the world.
+    //
+    // Now there is nothing to guard. A relation id passed to the component API is
+    // an ordinary tag with nothing behind it: meaningless, and harmless.
 
     const strict = new World();
     const attached = strict.relation("Attached");
@@ -387,26 +391,31 @@ export function testEcsRelation(t: Reference<Tester>): void {
     const thing = strict.create();
 
     strict.relate(thing, attached, anchorA);
-    t.equalUsize("related, and the index knows", strict.relatedCount(attached, anchorA), 1);
+    t.equalUsize("related, and the store knows", strict.relatedCount(attached, anchorA), 1);
 
-    // `remove` would take the column away and leave the list naming an entity
-    // that no longer points at anything.
-    t.ok("remove refuses a relation", !strict.remove(thing, attached));
-    t.ok("so the relation is still there", strict.hasRelation(thing, attached));
-    t.equalUsize("and the index still agrees", strict.relatedCount(attached, anchorA), 1);
+    t.ok("add takes a relation id as a tag", strict.add(thing, attached));
+    t.ok("which the archetype reports", strict.has(thing, attached));
+    t.ok("but the relation is untouched", strict.hasRelation(thing, attached));
+    t.equalU64("with its target intact", strict.targetOf(thing, attached), anchorA);
+    t.equalUsize("and the store unchanged", strict.relatedCount(attached, anchorA), 1);
 
-    // `set` would rewrite the column and leave both lists wrong: the old target
-    // still naming the holder, the new one not naming it at all.
-    t.ok("set refuses a relation", !strict.set<u64>(thing, attached, anchorB));
-    t.equalU64("so the target is unchanged", strict.targetOf(thing, attached), anchorA);
-    t.equalUsize("the old target still has it", strict.relatedCount(attached, anchorA), 1);
-    t.equalUsize("and the new one does not", strict.relatedCount(attached, anchorB), 0);
+    t.ok("remove takes it away again", strict.remove(thing, attached));
+    t.ok("and the relation is still there", strict.hasRelation(thing, attached));
+    t.equalUsize("still one holder", strict.relatedCount(attached, anchorA), 1);
 
-    // `add` would give an entity the relation with nothing behind it — present
-    // according to `hasRelation`, absent according to `targetOf`, and in no list.
+    // `set` writes a tag's column, which a relation id does not have, so it
+    // reaches nothing either.
+    strict.set<u64>(thing, attached, anchorB);
+    t.equalU64("set does not touch the target", strict.targetOf(thing, attached), anchorA);
+    t.equalUsize("nor the old target's chain", strict.relatedCount(attached, anchorA), 1);
+    t.equalUsize("nor the other one's", strict.relatedCount(attached, anchorB), 0);
+
+    // An entity that never related holds nothing, whatever the archetype says.
     const bare = strict.create();
-    t.ok("add refuses a relation", !strict.add(bare, attached));
-    t.ok("so it holds nothing", !strict.hasRelation(bare, attached));
+    strict.add(bare, attached);
+    t.ok("a tag alone is not a relation", !strict.hasRelation(bare, attached));
+    t.equalU64("and points at nothing", strict.targetOf(bare, attached), noneId());
+    strict.remove(bare, attached);
 
     // The supported way round does all of it.
     t.ok("relate moves it", strict.relate(thing, attached, anchorB));

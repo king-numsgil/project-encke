@@ -139,14 +139,15 @@ export function benchEcs(b: Reference<Bench>): void {
         tree.relate(child, childOf, parents[i % 4000]);
     }
 
-    // Four thousand parents, twelve or thirteen children each — the shape a ship
-    // full of doors and turrets actually has, and the shape the old design was
-    // worst at.
-    const anyParent = new Query([has(treePosition), has(childOf)]);
-    anyParent.refresh(tree);
+    // Four thousand parents, twelve or thirteen children each — a ship full of
+    // doors and turrets. The relation is invisible here: this is an ordinary
+    // component query over entities that happen to be parented, and the number
+    // should be the same as if none of them were.
+    const walkAll = new Query([has(treePosition)]);
+    walkAll.refresh(tree);
 
-    b.run("ecs/iterate everything with a parent, 50k", 20, 50000, (count) => {
-        anyParent.each(tree, (it) => {
+    b.run("ecs/iterate 50k parented entities", 20, 50000, (count) => {
+        walkAll.each(tree, (it) => {
             const p = it.column<Position>(0);
             if (p === null) {
                 return;
@@ -158,30 +159,32 @@ export function benchEcs(b: Reference<Bench>): void {
     });
 
     console.log(
-        `    over ${anyParent.count(tree)} entities in ${anyParent.tableCount} table(s), ` +
-        `across ${parents.length} parents`,
+        `    over ${walkAll.count(tree)} entities in ${walkAll.tableCount} table(s), ` +
+        `across ${parents.length} parents — the relation costs the query nothing`,
     );
+    console.log(`    the relation itself: ${tree.relationBytes(childOf)} bytes for 50000 links`);
 
-    // Reading the parent out while iterating, which is what the column buys and
-    // the old design could not do at all.
-    b.run("ecs/iterate and read each parent, 50k", 20, 50000, (count) => {
+    // Asking each entity for its parent, which is the sparse lookup rather than
+    // a column read now. This is the price of relations leaving the archetypes.
+    const sample: u64[] = [];
+    sample.reserve(50000);
+    walkAll.each(tree, (it) => {
+        for (let i: usize = 0; i < it.count; i++) {
+            sample.push(it.entity(i));
+        }
+    });
+
+    b.run("ecs/targetOf, 50k lookups", 20, sample.length, (count) => {
         let sum: u64 = 0;
-        anyParent.each(tree, (it) => {
-            const targets = it.column<u64>(1);
-            if (targets === null) {
-                return;
-            }
-            for (let i: usize = 0; i < it.count; i++) {
-                sum += targets[i];
-            }
-        });
+        for (let i: usize = 0; i < count; i++) {
+            sum += tree.targetOf(sample[i], childOf);
+        }
         if (sum === 1) {
             console.log("unreachable");
         }
     });
 
-    // The index lookup: one parent's children, which is the operation a view
-    // caches and the one that costs the number of parts rather than the world.
+    // One parent's children: a sparse lookup for the first, then a chain walk.
     b.run("ecs/related, one parent of 12", 20, 2000, (count) => {
         for (let i: usize = 0; i < count; i++) {
             const children: u64[] = [];

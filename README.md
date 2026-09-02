@@ -419,9 +419,11 @@ hands the body a contiguous run of parent handles.
 
 ### Relationships
 
-**A relation is a component whose value is an entity handle.** That is the whole
-implementation: relating writes the target into a `u64` column on the holder, and
-a map from `(relation, target)` answers the other direction.
+**A relation is not a component.** It owns a store outside the archetypes, so its
+id never enters a signature, never creates a table, never reaches a query, and
+cannot be touched by `add`, `remove` or `set`. There is nothing to guard against,
+which is the point — while the target lived in a column a relation *was* a
+component, and everything that could touch a component could corrupt it.
 
 ```ts
 const childOf = world.relation("ChildOf");
@@ -440,41 +442,80 @@ world.walk(parts, (part) => { … });
 world.destroy(ship);                     // parts deleted with it
 ```
 
-**One target per relation per entity.** Relating to a second replaces the first,
-because a column holds one value. A relation holding several at once is not here;
-the reserved flag bits exist to mark one later.
+#### A link is a row, threaded into a chain
 
-**`add`, `remove` and `set` refuse a relation id.** A relation's target lives in
-two places — the holder's column and the target's list — and those three write
-only one of them. `set` in particular would leave the old target still naming the
-holder and the new one not naming it at all, silently, in both directions.
-`relate` and `unrelate` are the only routes that touch both ends, so they are the
-only routes that exist.
+Every link is one row across four dense arrays, and two **paged sparse indices**
+reach it. Neither hashes anything.
 
-The index is keyed by **two whole handles**, generations included. Keyed by
-indices it would fit in a `u64` and hash marginally faster — and a stale handle
-to a dead ship would then collide with whatever entity took its index over, so
-`related` would answer a question about the dead ship with the live one's parts.
-That is the exact staleness the column avoids by storing a whole handle, walking
-back in through the map. It costs about 18 ns a lookup and it is not optional.
+```
+holder │ turret#4  door#9   turret#7  chair#2      slotOf:  holder index → row
+target │ ship#1     ship#1   ship#3    ship#1      firstOf: target index → first row
+next   │ 1          3        NONE      NONE
+prev   │ NONE       0        NONE      1
+```
+
+`slotOf` answers "what is this turret attached to" in two array reads.
+`firstOf` names the first row for a ship and `next` chains the rest, so
+"what are this ship's parts" is a walk with **no per-target allocation at all** —
+a page is allocated per 4096-index span that holds anything, and nothing else is.
+
+Attaching pushes onto the front of the target's chain and detaching unlinks, so
+both are O(1). About 29 bytes a link, measured: 1.46 MB for 50,000.
+
+That structure was chosen by measurement, not taste. Against the obvious
+alternative of a hash map per direction, over 100,000 links in random order:
+
+| child → parent | | parent → children (10 each) | |
+|---|---|---|---|
+| `HashMap<u64,u64>` | 40 ns | map to a per-parent list | 46 ns |
+| **paged sparse set** | **9 ns** | **intrusive chain** | **20 ns** |
+| direct array read | 2 ns | | |
+
+`bun bench --filter relstore` is that measurement. EnTT pages its sparse arrays
+the same way, at the same 4096.
+
+**The failure mode is scatter.** A page costs 16 KB and covers 4096 entity
+indices, so a relation held by one entity per span pays 16 KB a link. Entity
+indices are handed out sequentially and recycled, so the members of a hierarchy
+land together and this is pathological rather than likely — but it is the one
+input that turns the cheapest structure into the most expensive.
+
+**Handles are stored whole, and every read compares them.** A sparse index is
+keyed by an entity *index*, so without that comparison a stale handle to a dead
+ship would find whatever entity took its index over. The comparison makes that
+impossible rather than something to remember, which matters because this exact
+bug has been in this file twice already in earlier shapes.
+
+**One target per relation per entity.** Relating to a second replaces the first.
+The generalisation is deliberately small: give the holder its own chain — eight
+more bytes a link — and the same structure is a full many-to-many graph with O(1)
+attach and detach. The reserved flag bits exist to mark a relation that wants it.
 
 `setOnDelete` says what happens when a *target* dies: `Remove` — the default —
 clears the relation and leaves the holder alone, and `Delete` destroys the holder
 too. The cascade is **worklist-driven, not recursive**, so a hierarchy can be as
 deep as the content makes it and a cycle terminates on the liveness check.
 
-Two things fall out of the target being data:
+Cleanup is **policy, not correctness**: because the store keeps whole handles, a
+turret whose ship has died already reads as pointing at something dead. The pass
+decides what to do about it, not whether the data is trustworthy.
 
-* it is a **full handle, generation included**, so a turret whose ship has died
-  reads as pointing at something dead all by itself. Cleanup is policy, not
-  correctness — a distinction the older design could not make, because a target
-  packed into an id had no room for a generation.
-* every entity with a parent shares **one table**, however many parents exist.
+#### What relations cost, and what they no longer cost
+
+They are invisible to queries. `has(childOf)` matches nothing, relating an entity
+changes no query's answer, and a world of two thousand parented ships iterates
+exactly as fast as one with none. That is the whole trade: no table per target,
+no fragmentation of anyone else's loop, and "everything with a parent" is not a
+question a query can answer. "What are *this* ship's parts" is `world.related`.
+
+`targetOf` is about 15 ns — two sparse lookups, one to find the store and one to
+find the row. A system walking many entities could hoist the first, and there is
+no API for that yet; `world.view` is the answer for a hot inner loop.
 
 #### Why the target is not in the signature
 
-It was, in the shape flecs uses: `(ChildOf, ship)` as a single id sitting in the
-archetype signature, so "children of ship #3" was a table lookup and those
+It was once, in the shape flecs uses: `(ChildOf, ship)` as a single id sitting in
+the archetype signature, so "children of ship #3" was a table lookup and those
 children sat contiguously. That is genuinely the fastest layout — when a parent
 has *hundreds* of children.
 
@@ -483,7 +524,7 @@ target then means one table per ship holding thirteen rows, and a query pays
 per-table setup for thirteen entities at a time. Measured, same 10,000 entities
 and same work, only the parent count changing:
 
-| parents × children | in the signature | in a column |
+| parents × children | in the signature | out of it |
 |---|---|---|
 | 1 × 10,000 | 0.70 ns | 0.47 ns |
 | 100 × 100 | 2.19 ns | 0.47 ns |
@@ -505,13 +546,13 @@ against another run of themselves and nothing else:
 
 | | |
 |---|---|
-| iterate 1M entities, two components | **1.9 ns** an entity |
-| iterate everything with a parent, 50k over 4,000 parents | **0.47 ns** an entity |
-| the same, reading each parent out of the column | 1.2 ns an entity |
+| iterate 1M entities, two components | **1.8 ns** an entity |
+| iterate 50k parented entities, 4,000 parents | **0.43 ns** an entity |
 | create + destroy | 71 ns |
-| add + remove a tag (two archetype moves) | 162 ns |
-| `related`, one parent of twelve | 104 ns |
-| walking a settled `view` of twelve | 49 ns |
+| add + remove a tag (two archetype moves) | 161 ns |
+| `targetOf` | 15 ns |
+| `related`, one parent of twelve | 126 ns |
+| walking a settled `view` of twelve | 41 ns |
 
 Those are the fastest batch of twenty, which is the statistic least polluted by
 whatever else the machine was doing — the mean on a busy machine is two to three
@@ -571,7 +612,8 @@ src/
     archetype.ts            a table, its signature and its graph edges
     world.ts                the front door
     query.ts                terms, matching, iteration
-    relation.ts             the reverse index, and cached views
+    sparse.ts               paged entity-index-to-slot lookup
+    relation.ts             one store per relation, and cached views
   harness/
     run.ts                  the --headless entry point
     suites.ts               the registry, which is the whole list

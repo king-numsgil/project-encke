@@ -303,37 +303,50 @@ export function testEcsWorld(t: Reference<Tester>): void {
     }
     t.equalUsize("removing it from all of them leaves none", remaining, 0);
 
-    // -- a relation is a component whose value is a handle -----------------------------
+    // -- a relation touches no archetype at all --------------------------------------
     //
-    // Nothing in `world.ts` gives a relation a path of its own: `relate` is an
-    // `add` plus a column write, so everything checked above about moving between
-    // tables applies to it unchanged. That is the point of storing the target as
-    // data — there is one storage mechanism, not two.
+    // This is what "relations are not components" buys, stated as the thing the
+    // storage layer can check: relating an entity does not move it, does not give
+    // it an id, and does not build a table.
 
     const childOf = world.relation("ChildOf");
     const ship = world.create();
     const child = world.create();
+    world.set<Position>(child, position, {x: 1.0, y: 2.0, z: 3.0});
 
-    t.equalUsize("a relation's column is one handle wide", world.infoFor(childOf).size, 8);
-    t.ok("relating works", world.relate(child, childOf, ship));
-    t.ok("and shows up as an ordinary id", world.has(child, childOf));
-
-    // The target is readable through `get` like any other component, because
-    // that is exactly what it is.
-    const stored = world.get<u64>(child, childOf);
-    t.ok("and the target is readable as data", stored !== null && stored[0] === ship);
-
-    // Which means the entity moved tables exactly once, on the first relate, and
-    // relating to a different ship afterwards moves it nowhere at all.
     const settledTable = world.tableIndexOf(child);
-    const secondShip = world.create();
-    world.relate(child, childOf, secondShip);
+    const settledTables = world.tableCount;
+
+    t.ok("relating works", world.relate(child, childOf, ship));
     t.equalUsize(
-        "changing target moves the entity nowhere",
+        "and moves the entity nowhere",
         cast<usize>(world.tableIndexOf(child)),
         cast<usize>(settledTable),
     );
-    t.equalU64("but the value changed", world.targetOf(child, childOf), secondShip);
+    t.equalUsize("and builds no table", world.tableCount, settledTables);
+    t.ok("the relation id is not on the entity", !world.has(child, childOf));
+    t.ok("and has no column", world.get<u64>(child, childOf) === null);
+    t.ok("but the relation is there", world.hasRelation(child, childOf));
+    t.equalU64("and reads back", world.targetOf(child, childOf), ship);
+
+    // Changing target is a row rewrite in the store and nothing else.
+    const secondShip = world.create();
+    world.relate(child, childOf, secondShip);
+    t.equalUsize(
+        "changing target moves nothing either",
+        cast<usize>(world.tableIndexOf(child)),
+        cast<usize>(settledTable),
+    );
+    t.equalU64("but the target changed", world.targetOf(child, childOf), secondShip);
+
+    // A relation id passed to the component API is an ordinary tag with nothing
+    // behind it. Meaningless, but not corrupting — which is the whole reason the
+    // guard that used to sit on `add` could be deleted.
+    t.ok("a relation id can be added as a plain tag", world.add(child, childOf));
+    t.ok("which the archetype now says yes to", world.has(child, childOf));
+    t.equalU64("without disturbing the relation at all", world.targetOf(child, childOf), secondShip);
+    world.remove(child, childOf);
+    t.ok("and removing it leaves the relation alone", world.hasRelation(child, childOf));
 
     // -- churn does not grow storage -------------------------------------------------------
     //

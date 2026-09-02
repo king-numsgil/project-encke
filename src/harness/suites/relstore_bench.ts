@@ -15,76 +15,8 @@
 //   5. An intrusive sibling chain threaded through the dense arrays.
 
 import { HashMap } from "std/collection";
+import { noSlot, SparseIndex } from "../../ecs/sparse.ts";
 import type { Bench } from "../bench.ts";
-
-/** No slot. Not a valid index; the store never holds this many links. */
-function none(): u32 {
-    return 0xffffffff;
-}
-
-/** 4096 entries a page, the size EnTT settled on. A page is 16 KB of `u32`. */
-function pageShift(): usize {
-    return 12;
-}
-
-function pageMask(): usize {
-    return 4095;
-}
-
-function pageEntries(): usize {
-    return 4096;
-}
-
-/**
- * Entity index to slot, in pages allocated only where something lives.
- *
- * The whole point against a hash map: a lookup is a shift, a bounds check and
- * two array reads, with no hash to compute and no key to compare.
- */
-class SparseIndex {
-    /** Page to its 4096 entries. An empty array means the page is not there. */
-    private pages: u32[][];
-
-    /** How many pages hold anything, for the memory number. */
-    live: usize;
-
-    constructor() {
-        this.pages = [];
-        this.live = 0;
-    }
-
-    get(index: u32): u32 {
-        const page = cast<usize>(index) >> pageShift();
-        if (page >= this.pages.length || this.pages[page].length === 0) {
-            return none();
-        }
-        return this.pages[page][cast<usize>(index) & pageMask()];
-    }
-
-    set(index: u32, slot: u32): void {
-        const page = cast<usize>(index) >> pageShift();
-
-        while (this.pages.length <= page) {
-            const absent: u32[] = [];
-            this.pages.push(absent);
-        }
-
-        if (this.pages[page].length === 0) {
-            this.pages[page].reserve(pageEntries());
-            for (let i: usize = 0; i < pageEntries(); i++) {
-                this.pages[page].push(none());
-            }
-            this.live += 1;
-        }
-
-        this.pages[page][cast<usize>(index) & pageMask()] = slot;
-    }
-
-    /** Bytes the pages occupy. */
-    bytes(): usize {
-        return this.live * pageEntries() * 4;
-    }
-}
 
 /** An entity handle from an index, generation 3, so the numbers are not all zero. */
 function handleOf(index: u32): u64 {
@@ -142,7 +74,7 @@ export function benchRelationStore(b: Reference<Bench>): void {
     b.run("relstore/paged sparse set lookup", 20, links, (count) => {
         for (let i: usize = 0; i < count; i++) {
             const slot = sparse.get(order[i]);
-            if (slot !== none()) {
+            if (slot !== noSlot()) {
                 sink += targets[cast<usize>(slot)];
             }
         }
@@ -160,7 +92,7 @@ export function benchRelationStore(b: Reference<Bench>): void {
         console.log("unreachable");
     }
 
-    console.log(`    sparse pages: ${sparse.live}, ${sparse.bytes()} bytes for ${links} links`);
+    console.log(`    sparse pages: ${sparse.pageCount}, ${sparse.bytes} bytes for ${links} links`);
     console.log(`    dense + targets: ${links * 16} bytes`);
 
     // -- 4 and 5. the reverse direction -------------------------------------------
@@ -217,7 +149,7 @@ export function benchRelationStore(b: Reference<Bench>): void {
     b.run("relstore/intrusive chain, one parent of 10", 20, 20000, (count) => {
         for (let i: usize = 0; i < count; i++) {
             let slot = firstChild.get(cast<u32>(i % parents));
-            while (slot !== none()) {
+            while (slot !== noSlot()) {
                 seen += cast<usize>(indexOfHandle(childHandle[cast<usize>(slot)]));
                 slot = nextSibling[cast<usize>(slot)];
             }
@@ -229,7 +161,7 @@ export function benchRelationStore(b: Reference<Bench>): void {
     }
 
     console.log(
-        `    reverse: chain costs ${firstChild.bytes()} bytes of pages + ` +
+        `    reverse: chain costs ${firstChild.bytes} bytes of pages + ` +
         `${parents * perParent * 4} bytes of links, no per-parent allocation`,
     );
 }

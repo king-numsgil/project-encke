@@ -48,7 +48,7 @@ function measure(b: Reference<Bench>, parents: usize): void {
         }
     }
 
-    const query = new Query([has(position), has(childOf)]);
+    const query = new Query([has(position)]);
     query.refresh(world);
 
     b.run(`fragmentation/${parents} parents x ${perParent} children`, 20, total, (count) => {
