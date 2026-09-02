@@ -18,6 +18,7 @@ import {
 } from "./bindings/SDL3";
 import { IMG_Version } from "./bindings/SDL3_image";
 import { TTF_Init, TTF_Quit, TTF_Version } from "./bindings/SDL3_ttf";
+import { runHeadless } from "./harness/run.ts";
 
 export function main(args: string[]): i32 {
     // Before SDL_Init, so that nothing has been taken from SDL's own allocator
@@ -44,9 +45,22 @@ export function main(args: string[]): i32 {
     console.log(`SDL_image ${IMG_Version()}`);
     console.log(`SDL_ttf ${TTF_Version()}`);
 
-    if (!SDL_Init(SDL_InitFlags.VIDEO)) {
+    // EVENTS rather than VIDEO for a headless run, and the difference is the
+    // whole point of the mode: the harness has to come up on a machine with no
+    // display and no GPU driver. `SDL_GetPerformanceCounter`, which is all the
+    // benchmarks want from SDL, needs no subsystem at all.
+    if (!SDL_Init(options.headless ? SDL_InitFlags.EVENTS : SDL_InitFlags.VIDEO)) {
         console.log(`main: SDL_Init failed : ${stringFromCString(SDL_GetError())}`);
         return -1;
+    }
+
+    // The branch, and it is here rather than inside `run` so that everything
+    // below it — the window, the device, the glyph atlas — is unreachable from
+    // the harness by construction rather than by discipline.
+    if (options.headless) {
+        const headlessStatus = runHeadless(options);
+        SDL_Quit();
+        return headlessStatus;
     }
 
     // SDL_ttf, unlike SDL3_image, has to be brought up before anything in it

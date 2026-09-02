@@ -74,6 +74,28 @@ export class Options {
      */
     overlay: boolean;
 
+    /**
+     * Run the console harness instead of opening a window.
+     *
+     * The branch is taken in `main.ts` immediately after SDL is up and before
+     * anything asks for a GPU device, so a headless run needs no display, no
+     * driver and no `SDL_ttf` — which is what makes it the mode a test suite and
+     * a CPU benchmark can live in.
+     */
+    headless: boolean;
+
+    /**
+     * What the harness does: 0 tests, 1 benches, 2 list. See {@link runModeTests}.
+     *
+     * A `u32` with named accessors rather than an enum, mirroring {@link debug},
+     * because the same shape is already how a mode reaches the rest of the
+     * program from here.
+     */
+    harness: u32;
+
+    /** Only run harness cases whose name contains this. Empty runs all of them. */
+    filter: string;
+
     /** `--help` was passed; the caller should print usage and stop. */
     help: boolean;
 
@@ -105,6 +127,9 @@ export class Options {
         this.debug = 0;
         this.bench = false;
         this.overlay = true;
+        this.headless = false;
+        this.harness = runModeTests();
+        this.filter = "";
         this.help = false;
         this.invalid = false;
     }
@@ -189,6 +214,57 @@ function debugViewFrom(text: string): u32 {
         return 3;
     }
     return 0;
+}
+
+// ---------------------------------------------------------------------------
+// What the console harness runs.
+//
+// Functions rather than an enum or a top-level constant, because the language
+// has no top-level `const` to bind one to and an enum here would be a second
+// spelling of the same three numbers that `Options.harness` already carries as
+// a `u32`. They are cheap calls and they are the only place the numbers appear.
+// ---------------------------------------------------------------------------
+
+/** Run every registered test suite. The default. */
+export function runModeTests(): u32 {
+    return 0;
+}
+
+/** Run every registered CPU benchmark. */
+export function runModeBenches(): u32 {
+    return 1;
+}
+
+/** Print what is registered and exit, without running any of it. */
+export function runModeList(): u32 {
+    return 2;
+}
+
+/** Whether `text` names a run mode. Asked before {@link runModeFrom}. */
+function isRunMode(text: string): boolean {
+    return text === "tests" || text === "benches" || text === "list";
+}
+
+/** The named mode. Tests for anything unrecognised, so this is never called blind. */
+function runModeFrom(text: string): u32 {
+    if (text === "benches") {
+        return runModeBenches();
+    }
+    if (text === "list") {
+        return runModeList();
+    }
+    return runModeTests();
+}
+
+/** The mode's name, for the harness header. The inverse of {@link runModeFrom}. */
+export function runModeName(mode: u32): string {
+    if (mode === runModeBenches()) {
+        return "benches";
+    }
+    if (mode === runModeList()) {
+        return "list";
+    }
+    return "tests";
 }
 
 /** Whether `text` names a present mode at all. Asked before {@link presentModeFrom}. */
@@ -302,6 +378,26 @@ export function parseOptions(args: string[]): Options {
                 options.overlay = false;
             }
             i += 2;
+        } else if (flag === "--headless") {
+            options.headless = true;
+            i += 1;
+        } else if (flag === "--run" && hasValue) {
+            if (!isRunMode(args[i + 1])) {
+                console.log(`options: --run wants tests, benches or list, got '${args[i + 1]}'`);
+                options.invalid = true;
+            } else {
+                // Implied rather than required, the same way `--bench` implies
+                // an overlay setting: asking for a run mode is asking for the
+                // harness, and making somebody write both is a flag that exists
+                // only to be forgotten.
+                options.headless = true;
+                options.harness = runModeFrom(args[i + 1]);
+            }
+            i += 2;
+        } else if (flag === "--filter" && hasValue) {
+            options.headless = true;
+            options.filter = args[i + 1];
+            i += 2;
         } else if (flag === "--overlay" && hasValue) {
             if (args[i + 1] !== "on" && args[i + 1] !== "off") {
                 console.log(`options: --overlay wants on or off, got '${args[i + 1]}'`);
@@ -334,6 +430,9 @@ export function printUsage(): void {
     console.log("  --bench N            run N frames and report frame timing");
     console.log("  --debug VIEW         off (default), clusters, ao, cascades");
     console.log("  --overlay on|off     debug HUD, on by default and off under --bench (F1 toggles)");
+    console.log("  --headless           run the console harness instead of opening a window");
+    console.log("  --run WHAT           tests (default), benches, list — implies --headless");
+    console.log("  --filter TEXT        only harness cases whose name contains TEXT");
     console.log("  --help               this");
     console.log("");
     console.log("  Benchmarks must use the present mode the build ships in — present()");

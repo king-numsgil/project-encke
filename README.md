@@ -28,6 +28,9 @@ bun run execute      # bin/encke
 --bench N            run N frames and report frame timing
 --debug VIEW         off (default), clusters, ao, cascades
 --overlay on|off     debug HUD, on by default and off under --bench
+--headless           run the console harness instead of opening a window
+--run WHAT           tests (default), benches, list — implies --headless
+--filter TEXT        only harness cases whose name contains TEXT
 ```
 
 WASD to fly, right mouse to look, shift to hurry, space and control for height.
@@ -249,6 +252,47 @@ so: it is the wall clock between two `Clock.tick` calls — the interval the win
 is actually being repainted at — which costs nothing to collect and is the number
 a HUD should show.
 
+### Headless
+
+`--headless` branches immediately after `SDL_Init` into an ordinary console
+program: no window, no GPU device, no `SDL_ttf`. SDL comes up with `EVENTS`
+rather than `VIDEO` there, so a headless run works on a machine with no display
+and no driver — `SDL_GetPerformanceCounter`, which is all the benchmarks want
+from SDL, needs no subsystem at all.
+
+```bash
+./bin/encke --headless               # every suite; exit status is the result
+./bin/encke --run list               # what is registered
+./bin/encke --filter scene/          # one area
+./bin/encke --run benches            # the CPU benchmarks
+```
+
+Suites are named `area/what` and `--filter` is a substring over the whole name.
+A filter that matches nothing **fails** rather than passing vacuously, because a
+filter that matches nothing is nearly always a typo and a green run is the worst
+possible answer to one.
+
+Registration is explicit, in `src/harness/suites.ts`. It has to be: there is no
+top-level code in this language and no static initialiser, so nothing can add
+itself by existing.
+
+What is covered is the pure-CPU half — the command line, the mesh generators,
+frustum extraction, and the cascade fit. That last one is the reason the harness
+exists at all. Two properties this README claims about shadows — that the cascade
+extent is a **bounding sphere** and so survives a camera rotation, and that the
+projection origin is **snapped to whole texels** and so survives a translation —
+are both invisible when they break. The shadows still render; they just boil, and
+it gets blamed on the bias. `scene/cascades` asserts both as arithmetic: the same
+texel-per-world extent after a 120-degree turn, and the world origin landing
+within a fiftieth of a texel of a whole one in every cascade.
+
+The benchmarks report nanoseconds per operation over batches, with the first
+batch discarded — a cold path faults its pages in and makes mimalloc claim the
+arenas every later batch reuses, and including that would put first-touch cost in
+the minimum. They carry the CPU version of the caution `--bench` carries: a
+number is comparable against another run of the same benchmark on the same
+machine, and against nothing else.
+
 ## Layout
 
 ```
@@ -263,7 +307,13 @@ shaders/
 src/
   main.ts                   entry point, nothing else
   app/                      options, display, frame loop, test scene
-  core/                     clock, input
+  core/                     clock, input, sample statistics
+  harness/
+    run.ts                  the --headless entry point
+    suites.ts               the registry, which is the whole list
+    testing.ts              assertions and their tally
+    bench.ts                batched CPU timing
+    suites/                 one file per area, `*_test.ts` and `*_bench.ts`
   bindings/SDL3/            SDL3 bindings
   bindings/SDL3_image/      SDL3_image bindings
   bindings/SDL3_ttf/        SDL3_ttf bindings

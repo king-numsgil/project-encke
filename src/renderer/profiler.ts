@@ -20,6 +20,8 @@
 // itself flattened, which is fine for comparing two builds of this renderer
 // against each other and is not a frame rate.
 
+import { format, percentile, sortAscending } from "../core/stats.ts";
+
 /**
  * Frame times, in milliseconds.
  *
@@ -89,49 +91,3 @@ export class Profiler {
     }
 }
 
-/**
- * Insertion sort, ascending, **in place**.
- *
- * `Reference<f32[]>` and not `f32[]`, and that is not a micro-optimisation: an
- * array is a value here, so a by-value parameter is a copy and sorting it leaves
- * the caller's array exactly as it was. The symptom is a report whose median
- * exceeds its maximum.
- *
- * Quadratic, and the right choice anyway: a benchmark run is a few hundred
- * samples, this runs once at exit, and the alternative is a quicksort nobody
- * will ever read as carefully as they should.
- */
-function sortAscending(values: Reference<f32[]>): void {
-    for (let i: usize = 1; i < values.length; i++) {
-        const key = values[i];
-        let j = i;
-        while (j > 0 && values[j - 1] > key) {
-            values[j] = values[j - 1];
-            j -= 1;
-        }
-        values[j] = key;
-    }
-}
-
-/** The value at a fraction through a sorted array. Nearest rank, not interpolated. */
-function percentile(sorted: Reference<f32[]>, fraction: f32): f32 {
-    const total = sorted.length;
-    let index = cast<usize>(cast<f32>(total) * fraction);
-    if (index >= total) {
-        index = total - 1;
-    }
-    return sorted[index];
-}
-
-/** Three decimal places, without a formatting library. */
-function format(value: f32): string {
-    const scaled = cast<i64>(value * 1000.0 + 0.5);
-    const whole = scaled / 1000;
-    const fraction = scaled % 1000;
-
-    let text = `${fraction}`;
-    while (text.length < 3) {
-        text = `0${text}`;
-    }
-    return `${whole}.${text}`;
-}
