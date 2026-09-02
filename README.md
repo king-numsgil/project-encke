@@ -299,6 +299,167 @@ the minimum. They carry the CPU version of the caution `--bench` carries: a
 number is comparable against another run of the same benchmark on the same
 machine, and against nothing else.
 
+## The ECS
+
+`src/ecs/` is an archetype ECS with entity relationships. It imports nothing from
+`app/`, `renderer/` or `bindings/` — only `std/` — and **nothing in the renderer
+uses it yet**. It is developed entirely against the headless harness, and
+replacing `renderer/scene/scene.ts` with it is a later change with its own risk;
+doing both at once would make a renderer regression and an ECS bug look identical.
+
+### Everything is one u64
+
+An entity is an id, a component type is an id, a relationship kind is an id, and
+so is a **pair** like `(ChildOf, Ship)`. That last one is the decision the design
+turns on: a pair being an ordinary id is what lets it sit in an archetype's
+signature beside the plain components, be matched by a query with the same code,
+and be looked up in the same index. The alternative is a relationship table off
+to one side that every other mechanism has to learn about separately.
+
+```
+plain id
+  [63]      PAIR, clear
+  [62..48]  15 flag bits, spare
+  [47..32]  generation, 16 bits
+  [31..0]   index, 32 bits
+
+pair id
+  [63]      PAIR, set
+  [62..32]  relation index, 31 bits
+  [31..0]   target index, 32 bits
+```
+
+4,294,967,295 entities, and **65,536 recycles of one index before a stale handle
+comes back valid**. That is the cost of the split and it is worth stating: a slot
+recycled 65,536 times is addressed by a handle that used to name something else,
+and nothing can tell the difference. Churning ten thousand entities a second
+through one index reaches it in about seven seconds; recycling a handful a frame
+never will.
+
+**A pair spends the flag and generation space on its relation**, because two full
+entity references do not fit in 64 bits with room left over. So a pair records
+both ends *by index*, with no generation, and a dead target cannot be detected by
+looking at the pair. It has to be found — which is what the cleanup below is.
+
+### Storage
+
+An archetype is every entity holding exactly the same set of ids, one column per
+id that carries data. An entity's components sit at the same row across those
+columns, so a query walks contiguous arrays with no per-entity lookup and no
+branch. The price is paid when an entity's *shape* changes: adding a component
+moves its whole row to a different table. That trade is the right way round for a
+simulation, where shape changes are rare and iteration happens every frame.
+
+Signatures sort ascending, which makes membership a binary search and — because a
+pair sets bit 63 and the comparison is unsigned — puts every relationship in one
+contiguous run at the end.
+
+Columns are **type-erased bytes with a hand-rolled vtable**: a size, an alignment,
+and `init`/`copy`/`drop` generated per type by a generic function. That is not a
+preference. A generic class cannot be heap-allocated in this language, and an
+archetype needs columns of different types side by side, so the type has to
+travel as function pointers rather than as a parameter.
+
+**Components are plain data** — scalars, enums, `fvec3`, fixed arrays, and structs
+of those. No `string`, no `T[]`, no classes. The hooks are written so an owning
+component would be correct, but nothing tests that and column growth relocates
+rows bitwise. A component that wants a name holds an interned handle.
+
+Adding or removing an id follows a cached graph edge between tables, and both
+directions are written when either is built, so an entity that is tagged and
+untagged every frame hashes no signatures at all.
+
+### Queries
+
+```ts
+const walk = new Query([has(position), has(velocity), not(frozen)]);
+
+walk.each(world, (it) => {
+    const p = it.column<Position>(0);
+    const v = it.column<Velocity>(1);
+    if (p === null || v === null) { return; }
+    for (let i: usize = 0; i < it.count; i++) {
+        p[i].x += v[i].dx * dt;
+    }
+});
+```
+
+The body is called once per **table**, not once per entity, so its inner loop is a
+straight typed walk. That loop is the entire reason for the archetype layout, and
+an API handing out one entity at a time would have thrown it away at the last
+step.
+
+Matching is incremental. Tables are only ever appended, so a query keeps a cursor
+and each rematch looks only at what is new — which makes a settled world free to
+re-query, and makes a query **built before the archetypes it matches** pick them
+up the moment they exist.
+
+Wildcards work in either half of a pair, so `(ChildOf, *)` and `(*, Station)` are
+ordinary terms. A wildcard term resolves to the *first* matching id in signature
+order, so an entity holding two pairs of one relation is visited once and
+`Iter.idAt` says which matched. flecs returns a table once per matching id
+instead; that is the place to change it if something needs it.
+
+### Relationships, and why cleanup is mandatory
+
+```ts
+world.add(child, pair(childOfId(), ship));
+world.set<Orbit>(moon, pair(orbits, earth), {au: 0.00257});
+
+world.destroy(ship);       // every child deleted with it
+```
+
+A relation is a tag used as the left half of a pair; nothing distinguishes it at
+registration. Two ids configure its behaviour, and both are ordinary ids on the
+relation entity:
+
+* **`Exclusive`** — one target at a time. Adding `(ChildOf, b)` to something
+  holding `(ChildOf, a)` replaces it, in one archetype move rather than two.
+* **`(OnDelete, policy)`** — what happens to the relation's pairs when a *target*
+  dies. `Remove` strips the pair and leaves the holder alone, which is the
+  default; `Delete` deletes the holder too. `ChildOf` is configured with both
+  `Exclusive` and `Delete`.
+
+`OnDelete` is itself exclusive, so setting a policy replaces the previous one
+rather than leaving two and a coin toss over which is read.
+
+The cascade is **worklist-driven, not recursive**. A hierarchy is as deep as the
+content makes it, and a cycle in `ChildOf` — which nothing forbids — would be a
+recursion that never returns. Here it terminates on the liveness check, because
+the entity that closed the cycle is already dead when the walk comes back round.
+
+Finding the pairs that name a dying entity is what `ecs/relation.ts` is: a map
+from target to the tables holding a pair to it, so a delete costs the size of the
+answer rather than the size of the world. There is deliberately no relation index
+and no exact-id index — query matching walks the table list incrementally and
+caches, which is cheaper for the access pattern queries actually have.
+
+### What it costs
+
+From `bun bench`, on one machine, with the usual caveat that these compare
+against another run of themselves and nothing else:
+
+| | |
+|---|---|
+| iterate 1M entities, two components | **1.5 ns** an entity |
+| iterate `(ChildOf, *)` over 50k in 100 tables | **0.6 ns** an entity |
+| create + destroy | 83 ns |
+| add + remove a tag (two archetype moves) | 179 ns |
+
+The first line is the whole point of the layout. The fourth is what it costs, and
+the reason a shape change is something to do at spawn rather than per frame.
+
+The relationship line is also where the design's real trade shows: `(ChildOf, *)`
+over a hundred parents matches **a hundred tables**, one per parent, because a
+pair is part of the signature. That is what flecs pays too, and it is why the
+per-entity number stays flat while the table count does not.
+
+### Not in it
+
+No systems and no scheduler — that is the next thing and it wants queries to
+exist first. No serialisation, no reflection past size and alignment, no change
+hooks or observers, and no archetype ever being destroyed once created.
+
 ## Layout
 
 ```
@@ -314,6 +475,15 @@ src/
   main.ts                   entry point, nothing else
   app/                      options, display, frame loop, test scene
   core/                     clock, input, sample statistics
+  ecs/
+    id.ts                   the u64 bit layout, pairs, wildcards
+    entities.ts             liveness, generations, the free list
+    component.ts            size, alignment, and the per-type hooks
+    column.ts               one component's rows, type-erased
+    archetype.ts            a table, its signature and its graph edges
+    world.ts                the front door
+    query.ts                terms, matching, iteration
+    relation.ts             target to tables, for delete cleanup
   harness/
     run.ts                  the --headless entry point
     suites.ts               the registry, which is the whole list

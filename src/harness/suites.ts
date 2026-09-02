@@ -10,10 +10,12 @@
 
 import type { Benchmark } from "./bench.ts";
 import { testCascades } from "./suites/cascades_test.ts";
+import { benchEcs } from "./suites/ecs_bench.ts";
 import { testEcsColumn } from "./suites/ecs_column_test.ts";
 import { testEcsEntities } from "./suites/ecs_entities_test.ts";
 import { testEcsId } from "./suites/ecs_id_test.ts";
 import { testEcsQuery } from "./suites/ecs_query_test.ts";
+import { testEcsRelation } from "./suites/ecs_relation_test.ts";
 import { testEcsWorld } from "./suites/ecs_world_test.ts";
 import { benchFrustum } from "./suites/frustum_bench.ts";
 import { testFrustum } from "./suites/frustum_test.ts";
@@ -39,12 +41,14 @@ export function allSuites(): Suite[] {
     suites.push({name: "ecs/columns", run: testEcsColumn});
     suites.push({name: "ecs/world", run: testEcsWorld});
     suites.push({name: "ecs/query", run: testEcsQuery});
+    suites.push({name: "ecs/relation", run: testEcsRelation});
     return suites;
 }
 
 /** Every CPU benchmark. */
 export function allBenchmarks(): Benchmark[] {
     const benchmarks: Benchmark[] = [];
+    benchmarks.push({name: "ecs", run: benchEcs});
     benchmarks.push({name: "geometry", run: benchGeometry});
     benchmarks.push({name: "frustum", run: benchFrustum});
     return benchmarks;
