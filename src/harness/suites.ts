@@ -13,6 +13,7 @@ import { testCascades } from "./suites/cascades_test.ts";
 import { testEcsColumn } from "./suites/ecs_column_test.ts";
 import { testEcsEntities } from "./suites/ecs_entities_test.ts";
 import { testEcsId } from "./suites/ecs_id_test.ts";
+import { testEcsQuery } from "./suites/ecs_query_test.ts";
 import { testEcsWorld } from "./suites/ecs_world_test.ts";
 import { benchFrustum } from "./suites/frustum_bench.ts";
 import { testFrustum } from "./suites/frustum_test.ts";
@@ -37,6 +38,7 @@ export function allSuites(): Suite[] {
     suites.push({name: "ecs/entities", run: testEcsEntities});
     suites.push({name: "ecs/columns", run: testEcsColumn});
     suites.push({name: "ecs/world", run: testEcsWorld});
+    suites.push({name: "ecs/query", run: testEcsQuery});
     return suites;
 }
 
