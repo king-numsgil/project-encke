@@ -10,32 +10,71 @@
 // field is the index of the next free one, which costs nothing — the field is
 // meaningless while the slot is dead — and means recycling allocates nothing.
 //
-// ## The free list is FIFO, and that is a decision
+// ## A spent index is retired, not recycled
 //
-// A stack is the obvious structure here and is what most of this family of
-// container does: push the dying index, pop the newest. It is one field instead
-// of two, and the record you just wrote is still in L1 when the next `create`
-// reads it.
+// An id carries 16 bits of generation — see the layout note in `id.ts` — so an
+// index can be handed out 65,536 times and no more. The obvious thing to do at
+// 65,536 is wrap and carry on, and it is what an earlier version of this file
+// did: the generation returned to zero and a handle from the very beginning read
+// as alive again, naming an entity that had nothing to do with it.
 //
-// It is not what this does, and the reason is the generation. An id carries 16
-// bits of it — see the layout note in `id.ts` — so an index is safe for 65,536
-// recycles and no more, after which a handle that named a dead entity names a
-// live one again with nothing to tell them apart. A stack spends that budget as
-// fast as it is physically possible to spend it: the slot that was just freed is
-// the next one out, so a spawner alternating create and destroy burns one index's
-// entire generation range and never touches another.
+// **So the slot is retired instead.** The destroy that would wrap it takes the
+// index off the free list permanently, and `create` allocates a fresh one. The
+// consequence is worth stating plainly, because it is the property everything
+// above this layer gets to rely on:
 //
-// A queue spends it evenly instead. With `F` indices on the list, wrapping any
-// one of them takes 65,536 **full laps** rather than 65,536 recycles, so the
-// budget scales with how much churn the program actually has in flight. The cost
-// is one cold record touched per create and one extra field here, which is the
-// right trade when the alternative is measured in correctness.
+//     No handle is ever reissued. A handle names one entity for the life of the
+//     process, and once that entity is destroyed the handle is dead forever.
 //
-// **It is still eager**, and that is worth being honest about: an index is
-// eligible again the moment it reaches the head, so a program with one entity in
-// flight has a one-entry queue and gets exactly the stack's behaviour. Making it
-// genuinely lazy means either a floor on the queue's length or retiring an index
-// when its generation is spent; neither is here yet.
+// That turns the generation from a probabilistic defence into a guarantee, and
+// it is what makes it safe to keep an entity handle in a save file, a UI widget,
+// a script, or an undo stack.
+//
+// ## The free list is a stack
+//
+// Push the dying index, pop the newest. One field, and the record just written
+// is still in L1 when the next `create` reads it — which is most of why a
+// create/destroy pair benches around 80 ns.
+//
+// A queue was tried, and the reason for it was to spread generation churn across
+// every index in flight so that no single one burned through its 65,536 quickly.
+// Retirement removes that reason entirely: the total number of retirements is
+// `destroys / 65,536` whichever end of the list you take from, so the order buys
+// nothing and the stack is warmer. It is the right structure *because* of the
+// paragraph above, not in spite of it.
+//
+// ## What retirement costs, and the compaction that is not here
+//
+// **The record array never shrinks.** Two things grow it and neither gives
+// anything back:
+//
+//   * the **high-water mark** of concurrent entities — peak at two million once
+//     and the 24 MB is held for the life of the process, even at five thousand
+//     live afterwards. This is much the larger of the two.
+//   * **retirement**, at one slot per 65,536 destroys of that slot. Twelve bytes
+//     per 65,536 entity lifetimes is about 0.0002 bytes a lifetime: a session
+//     killing a million entities a second for seven hours retires 385,000 slots
+//     and spends 4.6 MB on them. Real, and far below the high-water mark.
+//
+// A compaction pass would have to deal with both, and the hard part is not
+// finding the dead slots — it is that **an index is the handle**. Moving a live
+// entity's slot invalidates every handle anyone is holding, and those live in
+// user data structures this file cannot see. Three shapes it could take:
+//
+//   * **Trim the tail.** Give back trailing slots that are free or retired. Safe,
+//     needs no fixup, and reclaims nothing when a live entity sits at the end —
+//     which after a high-water peak is exactly where one will be.
+//   * **Remap with a fixup pass.** Compact properly and rewrite every stored
+//     handle. Only possible if every holder is reachable, which is a promise the
+//     ECS cannot make on its own.
+//   * **Reset at a boundary.** At a level load or a world reset, everything is
+//     destroyed anyway, so the whole index can go back to zero. This is the one
+//     a game actually wants, and it is a `World.reset()` rather than a
+//     compactor.
+//
+// None of them is written. The counters are: {@link Entities.retiredCount} and
+// {@link Entities.freeCount} are what a running program watches to find out
+// whether any of this matters to it yet.
 
 import { firstUserIndex, generationOf, indexOf, makeEntity, noneId } from "./id.ts";
 
@@ -53,11 +92,33 @@ export function noArchetype(): u32 {
  * Bit 0 of {@link Record.flags}: this slot holds a live entity.
  *
  * A bit rather than a `boolean` field, because the boolean was a byte that cost
- * four with the padding — and because there are fifteen more of them free here
+ * four with the padding — and because there are fourteen more of them free here
  * for the things a record will eventually want to say about itself.
  */
 function aliveFlag(): u16 {
     return 1;
+}
+
+/**
+ * Bit 1: this slot's generations are spent and it will never be handed out again.
+ *
+ * Dead and not on the free list, which is all the machinery needs — the flag is
+ * for the counter and for anyone reading a record in a debugger and wondering
+ * why an index went quiet.
+ */
+function retiredFlag(): u16 {
+    return 2;
+}
+
+/**
+ * The last generation an index can serve.
+ *
+ * Not "the generation at which it wraps": the slot is used *at* this value and
+ * retired by the destroy that follows, so an index serves 65,536 entities over
+ * its life — generations 0 through 65,535.
+ */
+function lastGeneration(): u16 {
+    return 0xffff;
 }
 
 /**
@@ -95,13 +156,13 @@ interface Record {
 export class Entities {
     private records: Record[];
 
-    /** The next index to hand out. {@link noFreeSlot} when the queue is empty. */
+    /** The top of the free stack. {@link noFreeSlot} when it is empty. */
     private freeHead: u32;
 
-    /** Where a newly dead index is appended. {@link noFreeSlot} when empty. */
-    private freeTail: u32;
-
     private living: u32;
+
+    /** How many indices have been retired. See the note at the top of this file. */
+    private spent: u32;
 
     /**
      * Reserves the low indices for the builtins in `id.ts`.
@@ -117,8 +178,8 @@ export class Entities {
     constructor() {
         this.records = [];
         this.freeHead = noFreeSlot();
-        this.freeTail = noFreeSlot();
         this.living = 0;
+        this.spent = 0;
 
         const reserved = firstUserIndex();
         this.records.reserve(cast<usize>(reserved));
@@ -145,7 +206,7 @@ export class Entities {
         return this.living;
     }
 
-    /** How many indices are waiting to be reused. */
+    /** How many indices are waiting to be reused. A walk, so not for a hot path. */
     get freeCount(): usize {
         let total: usize = 0;
         let at = this.freeHead;
@@ -157,12 +218,24 @@ export class Entities {
     }
 
     /**
+     * How many indices have been retired with their generations spent.
+     *
+     * The gauge for the growth the file header describes. A program that watches
+     * one number to decide whether any of this matters to it watches this one;
+     * it climbs by one per 65,536 destroys of a single index, and each step costs
+     * twelve bytes that are never given back.
+     */
+    get retiredCount(): u32 {
+        return this.spent;
+    }
+
+    /**
      * A fresh handle.
      *
-     * From the **front** of the free queue when there is one, so indices stay
-     * dense and the record array stays a subscript rather than a map. The
-     * generation is whatever the slot already carried — it was bumped when the
-     * slot died, and bumping it again here would waste half the range.
+     * Off the top of the free stack when there is one, so indices stay dense and
+     * the record array stays a subscript rather than a map. The generation is
+     * whatever the slot already carried — it was bumped when the slot died, and
+     * bumping it again here would waste half the range.
      */
     create(): u64 {
         this.living += 1;
@@ -170,14 +243,7 @@ export class Entities {
         const reused = this.freeHead;
         if (reused !== noFreeSlot()) {
             const at = cast<usize>(reused);
-
             this.freeHead = this.records[at].row;
-            if (this.freeHead === noFreeSlot()) {
-                // The queue is now empty, so the tail has to forget its index
-                // too — otherwise the next destroy would append onto a slot that
-                // has since been handed out and lose the whole list.
-                this.freeTail = noFreeSlot();
-            }
 
             this.records[at].flags = aliveFlag();
             this.records[at].archetype = noArchetype();
@@ -199,9 +265,9 @@ export class Entities {
      * Retire a handle. `false` if it was not alive, which is not an error —
      * destroying something twice is the ordinary shape of cleanup code.
      *
-     * The index goes on the **back** of the queue, so every other free index is
-     * handed out before it comes round again. See the note at the top of this
-     * file for why that is worth an extra field.
+     * The index goes back on the free stack **unless its generations are spent**,
+     * in which case it is retired and never handed out again. That is the whole
+     * of the guarantee described at the top of this file, and it is four lines.
      *
      * This does **not** touch the entity's components or the pairs that name it.
      * Storage is the world's business and relationship cleanup is
@@ -215,28 +281,25 @@ export class Entities {
         const index = indexOf(handle);
         const at = cast<usize>(index);
 
-        // Wrapped rather than checked, because there is no useful thing to do
-        // about the wrap: 16 bits is what an id carries and refusing to recycle
-        // the slot would be worse than reusing it. Widened first, so the addition
-        // does not depend on how `u16` overflow behaves.
-        const next = cast<u32>(this.records[at].generation) + 1;
-        this.records[at].generation = cast<u16>(next & 0xffff);
-
-        this.records[at].flags = 0;
         this.records[at].archetype = noArchetype();
-        // The new tail, so it terminates the list rather than pointing at
-        // whatever the head used to be — the one difference from a stack that is
-        // easy to leave out, and it makes the queue a cycle if you do.
-        this.records[at].row = noFreeSlot();
-
-        if (this.freeTail === noFreeSlot()) {
-            this.freeHead = index;
-        } else {
-            this.records[cast<usize>(this.freeTail)].row = index;
-        }
-        this.freeTail = index;
-
         this.living -= 1;
+
+        if (this.records[at].generation === lastGeneration()) {
+            // Spent. The generation is left where it is rather than wrapped, so
+            // a record read in a debugger says which generation it died on, and
+            // so that nothing can mistake this slot for a fresh one.
+            this.records[at].flags = retiredFlag();
+            this.records[at].row = 0;
+            this.spent += 1;
+            return true;
+        }
+
+        // Widened first, so the addition does not depend on how `u16` overflow
+        // behaves — though the branch above means it can never reach one.
+        this.records[at].generation = cast<u16>(cast<u32>(this.records[at].generation) + 1);
+        this.records[at].flags = 0;
+        this.records[at].row = this.freeHead;
+        this.freeHead = index;
         return true;
     }
 

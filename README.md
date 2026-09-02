@@ -329,29 +329,37 @@ pair id
   [31..0]   target index, 32 bits
 ```
 
-4,294,967,295 entities, and **65,536 recycles of one index before a stale handle
-comes back valid**. That is the cost of the split and it is worth stating: a slot
-recycled 65,536 times is addressed by a handle that used to name something else,
-and nothing can tell the difference.
+4,294,967,295 entities, and 65,536 of them per index — because that is all the
+generation field holds.
 
-The free list is a **queue, not a stack**, precisely because of that number. A
-stack hands back the index that was just freed, which spends one index's entire
-generation range as fast as it is possible to spend it — a spawner alternating
-create and destroy burns through it and never touches another index. A queue
-spends the budget evenly: with `F` indices in flight, wrapping any one of them
-takes 65,536 full *laps*. It is still eager — one entity in flight is a one-entry
-queue, which is exactly a stack — so the budget scales with how much churn the
-program actually has, and no further. `ecs/entities.ts` says so at the top.
+**No handle is ever reissued.** An index whose generations are spent is *retired*
+rather than wrapped: the destroy that would have taken it back to zero takes it
+out of circulation instead, and `create` allocates a fresh one. So a handle names
+one entity for the life of the process, and once that entity is destroyed the
+handle is dead forever — which is what makes it safe to keep one in a save file,
+a UI widget, a script, or an undo stack.
 
-**An entity held for the lifetime of the program is never at risk.** An index
-reaches the free list only through `destroy`, which refuses a handle that is not
-alive, so a live index is never in the list and `create` can never hand it out.
-The wrap is a hazard for handles you kept to things you already killed.
+That guarantee is four lines in `destroy`, and it is worth what it costs. The
+free list can then be an ordinary stack, taken from the warm end, because the
+number of retirements is `destroys / 65,536` whichever end you take from.
+
+The cost is that **the record array never shrinks**, and two things grow it:
+
+* the **high-water mark** of concurrent entities — peak at two million once and
+  the 24 MB is held for the life of the process. Much the larger of the two.
+* **retirement**, at twelve bytes per 65,536 entity lifetimes. A session killing
+  a million entities a second for seven hours spends 4.6 MB on it.
+
+Compaction for either is **not written**, and the hard part is not finding the
+dead slots — it is that an index *is* the handle, so moving a live entity's slot
+invalidates every handle anyone is holding, and those live in data structures the
+ECS cannot see. `ecs/entities.ts` lays out the three shapes a fix could take; the
+one a game actually wants is a `World.reset()` at a level boundary, where
+everything is destroyed anyway and the whole index can go back to zero.
 
 One entity costs **12 bytes** of index — `archetype: u32, row: u32,
 generation: u16, flags: u16`, with no padding — plus whatever its components
-weigh. That array is sized by the high-water mark of concurrent entities and
-never shrinks.
+weigh. `Entities.retiredCount` and `.freeCount` are the gauges.
 
 **A pair spends the flag and generation space on its relation**, because two full
 entity references do not fit in 64 bits with room left over. So a pair records
@@ -481,6 +489,15 @@ per-entity number stays flat while the table count does not.
 No systems and no scheduler — that is the next thing and it wants queries to
 exist first. No serialisation, no reflection past size and alignment, no change
 hooks or observers, and no archetype ever being destroyed once created.
+
+**No compaction**, which is the one on this list with a number attached to it.
+The entity index never shrinks: retired slots accumulate at twelve bytes per
+65,536 entity lifetimes, and a high-water mark of concurrent entities is held for
+the life of the process. Neither is large — a seven-hour session at a million
+deaths a second retires 4.6 MB — but both grow in one direction only, and the
+reason there is no obvious fix is that an index *is* a handle. See the note at
+the top of `src/ecs/entities.ts` for the three shapes a fix could take and what
+each one would cost.
 
 ## Layout
 

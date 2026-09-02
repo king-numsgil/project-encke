@@ -96,97 +96,88 @@ export function testEcsEntities(t: Reference<Tester>): void {
         cast<usize>(noArchetype()),
     );
 
-    // -- the free list is FIFO ----------------------------------------------------------
+    // -- the free list is a stack ---------------------------------------------------------
     //
-    // First freed, first reused, which is the decision `entities.ts` explains at
-    // length. A stack would be one field cheaper and warmer in cache; a queue
-    // spends the 16-bit generation budget evenly across every index in flight
-    // instead of burning one index's entire range before touching another.
+    // Last freed, first reused. A queue was tried, to spread generation churn
+    // across every index in flight rather than burning one index's whole range;
+    // retirement below removes the reason for it, because the total number of
+    // retirements is the same whichever end you take from. So the stack, which
+    // is one field and warmer in cache.
 
     const d = entities.create();
     const e = entities.create();
     entities.destroy(d);
     entities.destroy(e);
 
-    t.equalUsize("the first freed comes back first", cast<usize>(indexOf(entities.create())), cast<usize>(indexOf(d)));
-    t.equalUsize("then the next", cast<usize>(indexOf(entities.create())), cast<usize>(indexOf(e)));
+    t.equalUsize("the last freed comes back first", cast<usize>(indexOf(entities.create())), cast<usize>(indexOf(e)));
+    t.equalUsize("then the one before it", cast<usize>(indexOf(entities.create())), cast<usize>(indexOf(d)));
 
-    // The property that is actually being bought: with eight indices in flight,
-    // eight recycles advance eight generations by one each — where a stack would
-    // have advanced one of them by eight and left the other seven untouched.
-    // That is the whole difference between wrapping in 65,536 recycles and
-    // wrapping in 65,536 laps.
-    const spread = new Entities();
-    const pool: u64[] = [];
-    for (let i: usize = 0; i < 8; i++) {
-        pool.push(spread.create());
-    }
-    t.equalUsize("eight in flight", spread.freeCount, 0);
-
-    for (let i: usize = 0; i < 8; i++) {
-        spread.destroy(pool[i]);
-    }
-    t.equalUsize("eight on the queue", spread.freeCount, 8);
-
-    let inOrder: usize = 0;
-    let advancedOnce: usize = 0;
-    for (let i: usize = 0; i < 8; i++) {
-        const fresh = spread.create();
-        if (indexOf(fresh) === indexOf(pool[i])) {
-            inOrder += 1;
-        }
-        if (generationOf(fresh) === 1) {
-            advancedOnce += 1;
-        }
-    }
-    t.equalUsize("one lap returns every index in the order it was freed", inOrder, 8);
-    t.equalUsize("and advances every generation by exactly one", advancedOnce, 8);
-    t.equalUsize("the queue is empty again", spread.freeCount, 0);
-
-    // Emptying the queue completely and refilling it has to work, which is the
-    // case a tail pointer gets wrong: forget to clear it when the last index is
-    // handed out and the next destroy appends onto a slot that is now live,
-    // losing the whole list.
+    // Emptying the stack and refilling it, which is where a mishandled head
+    // pointer shows up.
     const drained = new Entities();
     const only = drained.create();
     drained.destroy(only);
-    t.equalUsize("one on the queue", drained.freeCount, 1);
-    const back = drained.create();
-    t.equalUsize("and the queue is empty", drained.freeCount, 0);
-    drained.destroy(back);
-    t.equalUsize("refilling a drained queue works", drained.freeCount, 1);
+    t.equalUsize("one on the stack", drained.freeCount, 1);
+    drained.destroy(drained.create());
+    t.equalUsize("drained and refilled", drained.freeCount, 1);
     t.equalUsize(
-        "and hands the index back",
+        "and it is still the same index",
         cast<usize>(indexOf(drained.create())),
         cast<usize>(indexOf(only)),
     );
-    t.equalUsize("without allocating a new index", drained.capacity, cast<usize>(firstUserIndex()) + 1);
+    t.equalUsize("with no new index allocated", drained.capacity, cast<usize>(firstUserIndex()) + 1);
 
-    // -- the generation wrap -----------------------------------------------------------
+    // -- retirement -----------------------------------------------------------------------
     //
-    // 16 bits, so an index recycled 65,536 times hands back the handle it
-    // started with. This is the documented cost of packing a pair's two ends
-    // into one 64-bit id, and it is asserted rather than warned about — a test
-    // that pins the hazard is a test that notices if the layout ever changes.
+    // The generation is 16 bits, so an index can serve 65,536 entities and no
+    // more. Rather than wrapping — which would hand back a handle from the very
+    // beginning, naming an entity that had nothing to do with it — the slot is
+    // taken out of circulation and a fresh index is allocated in its place.
     //
-    // **A queue does not save this case**, and the world below is written to
-    // show why: with exactly one entity in flight the free list is one entry
-    // long, so first-out and last-out are the same index and the churn lands
-    // where a stack would have put it. FIFO widens the budget by however many
-    // indices are actually in flight, which for one is one.
+    // The guarantee that buys: **no handle is ever reissued**. That is what makes
+    // it safe to keep one in a save file, a script, or an undo stack, and it is
+    // the property this block exists to pin.
 
     const churn = new Entities();
     const original = churn.create();
+    const spentIndex = indexOf(original);
     churn.destroy(original);
 
-    for (let i: usize = 0; i < 65535; i++) {
+    // Generations 1 through 65,534, on the same index every time.
+    for (let i: usize = 0; i < 65534; i++) {
         churn.destroy(churn.create());
     }
 
-    const collision = churn.create();
-    t.equalU64("after 65,536 recycles the handle repeats exactly", collision, original);
-    t.ok("so a handle from the very beginning reads as alive again", churn.isAlive(original));
-    t.equalUsize("and the generation is back to zero", cast<usize>(generationOf(collision)), 0);
+    const last = churn.create();
+    t.equalUsize("the same index all the way", cast<usize>(indexOf(last)), cast<usize>(spentIndex));
+    t.equalUsize("serving its last generation", cast<usize>(generationOf(last)), 65535);
+    t.equalUsize("and nothing retired yet", cast<usize>(churn.retiredCount), 0);
+    t.equalUsize("no extra index allocated on the way", churn.capacity, cast<usize>(firstUserIndex()) + 1);
+
+    churn.destroy(last);
+    t.equalUsize("the destroy that would wrap retires instead", cast<usize>(churn.retiredCount), 1);
+    t.equalUsize("and the index is off the free list", churn.freeCount, 0);
+
+    const afterwards = churn.create();
+    t.ok("so the next create allocates a new index", indexOf(afterwards) !== spentIndex);
+    t.equalUsize("costing exactly one slot", churn.capacity, cast<usize>(firstUserIndex()) + 2);
+    t.equalUsize("which starts at generation zero", cast<usize>(generationOf(afterwards)), 0);
+
+    // The whole point: neither the first handle nor the last one ever comes back.
+    t.ok("the first handle stays dead", !churn.isAlive(original));
+    t.ok("and so does the last", !churn.isAlive(last));
+    t.ok("and the new one is not either of them", afterwards !== original && afterwards !== last);
+
+    // A retired index is never handed out again however hard it is asked for.
+    let reissued: usize = 0;
+    for (let i: usize = 0; i < 1000; i++) {
+        const transient = churn.create();
+        if (indexOf(transient) === spentIndex) {
+            reissued += 1;
+        }
+        churn.destroy(transient);
+    }
+    t.equalUsize("a retired index never comes back", reissued, 0);
 
     // -- a long-lived handle is never reissued -------------------------------------------
     //
@@ -197,9 +188,10 @@ export function testEcsEntities(t: Reference<Tester>): void {
     // the program has an index that is never in the list and can never be handed
     // out again, however much churn goes past it.
     //
-    // 200,000 recycles below, which wraps the recycled index's generation three
-    // times over. If the free list could ever contain a live index, this is where
-    // it would show.
+    // 200,000 recycles below, which is more than three whole generation ranges —
+    // so the churned index is retired three times over and the record array
+    // grows. If a live index could ever reach the free list, this is where it
+    // would show.
 
     const held = new Entities();
     const player = held.create();
@@ -209,7 +201,6 @@ export function testEcsEntities(t: Reference<Tester>): void {
 
     let collisions: usize = 0;
     let indexClashes: usize = 0;
-    let wrapped: usize = 0;
 
     for (let i: usize = 0; i < 200000; i++) {
         const transient = held.create();
@@ -219,26 +210,28 @@ export function testEcsEntities(t: Reference<Tester>): void {
         if (indexOf(transient) === indexOf(player) || indexOf(transient) === indexOf(world)) {
             indexClashes += 1;
         }
-        if (generationOf(transient) === 0 && i > 0) {
-            wrapped += 1;
-        }
         held.destroy(transient);
     }
 
     t.equalUsize("200,000 recycles never reissue a live handle", collisions, 0);
     t.equalUsize("nor even a live index", indexClashes, 0);
-    t.ok("and the churned index did wrap, so this was a real test", wrapped >= 3);
 
     t.ok("the long-lived entity is still alive", held.isAlive(player));
     t.ok("and so is its neighbour", held.isAlive(world));
     t.equalUsize("its generation never moved", cast<usize>(generationOf(player)), 0);
     t.equalU64("and handleAt still resolves to it", held.handleAt(indexOf(player)), player);
 
-    // Only the one destroyed index took the churn, so the record array never grew.
+    // 200,000 destroys of one index at a time is three full ranges and a little
+    // over, so three slots are spent.
+    t.equalUsize("three indices were retired", cast<usize>(held.retiredCount), 3);
+
+    // And the array grew by exactly one per retirement, which is the arithmetic
+    // in the file header — twelve bytes per 65,536 entity lifetimes — stated as
+    // a relationship rather than a magic number.
     t.equalUsize(
-        "and the churn allocated no new indices",
+        "the array grew by exactly one slot per retirement",
         held.capacity,
-        cast<usize>(firstUserIndex()) + 3,
+        cast<usize>(firstUserIndex()) + 3 + cast<usize>(held.retiredCount),
     );
 
     // -- many entities --------------------------------------------------------------------
