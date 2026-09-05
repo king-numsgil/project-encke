@@ -247,6 +247,65 @@ interface Array<T> {
 }
 
 /**
+ * `readonly T[]` — an array whose mutating half is not there.
+ *
+ *     function total(xs: readonly i32[]): i32 { … }
+ *
+ * `readonly T[]` and `ReadonlyArray<T>` are one type, as `T[]` and `Array<T>`
+ * are one. It is the **same value** as an {@link Array}: one machine word, the
+ * same header, the same buffer, the same `sizeOf`. Nothing about the
+ * representation changes, so nothing in the backend knows this type exists.
+ *
+ * What it removes is {@link Array.push}, {@link Array.pop},
+ * {@link Array.reserve} and the writable index signature. An `i32[]` is
+ * assignable to a `readonly i32[]` and not the other way round — structurally,
+ * rather than by a rule: the reverse fails because the mutators are not there
+ * to satisfy, which is how TypeScript's own `ReadonlyArray` does it.
+ *
+ * **`readonly` is a check at the write, not a property of the value.** It stops
+ * `xs.push(v)` and `xs[0] = v` where they are written; it does not stop the
+ * same buffer being mutated through another name that still has the mutators.
+ * That is TypeScript's `readonly` everywhere, and it is `const T&` in C++ — a
+ * statement of intent the compiler holds you to, not a guarantee about memory.
+ *
+ * Two further things it deliberately is not:
+ *
+ *   * **Not `const` propagated into the elements.** `readonly Body[]` refuses
+ *     `xs[0] = b` and says nothing at all about `xs[0].mass = 1`. Shallow, as
+ *     C++'s `const` is shallow through a pointer member.
+ *   * **Not a borrow.** A `readonly i32[]` parameter is taken *by value* and
+ *     still costs the copy — the whole content of by-value versus by-reference
+ *     is `Reference<T>` and nothing else (DECISIONS §24). `Reference<readonly
+ *     i32[]>` is how to say borrowed *and* read-only, and is the signature a
+ *     loop over somebody else's array wants.
+ *
+ * Declaring this is what makes the annotation mean anything. Under `noLib`
+ * there is no `ReadonlyArray` for the checker to find, and its fallback for a
+ * missing one is `Array` itself — so `readonly i32[]` *was* `i32[]` spelled
+ * differently, and `xs[0] = 99` through one compiled clean.
+ */
+interface ReadonlyArray<T> {
+    /** Element count. A load from the header, not a scan. */
+    readonly length: usize;
+
+    /**
+     * Elements the buffer has room for. See {@link Array.capacity}, whose
+     * `reserve` is the only reason to ask — this type cannot reserve, so this
+     * is here to be reported rather than to be acted on.
+     */
+    readonly capacity: usize;
+
+    /**
+     * Reading only. `xs[0] = v` through this type is a `TS2542`, which is the
+     * whole point of the type.
+     */
+    readonly [index: number]: T;
+
+    /** Each element in order, by value. See {@link Array.forEach}. */
+    forEach(f: LocalFn<(value: T) => void>): void;
+}
+
+/**
  * The `string` primitive: NUL-terminated UTF-8, one machine word wide.
  *
  * `length` is a byte count, not a character count, and it is O(1) — the length
@@ -597,6 +656,141 @@ type GfPrimitive = number | string | boolean;
  * arise here, because there is no conditional left to distribute.
  */
 type Reference<T> = T & ReferenceCore<T>;
+
+/**
+ * `T` with every property read-only — a **view of a value**, never a different
+ * value.
+ *
+ * TypeScript's own `Readonly<T>`, which lives in `lib.es5.d.ts` and therefore
+ * does not exist here until this file says so. It erases to exactly what `T`
+ * erases to: the same layout, the same size, the same class with the same
+ * vtable, so nothing in the backend knows it was written.
+ *
+ * **`Reference<Readonly<T>>` is what it is for.** By value it is close to
+ * pointless — a by-value parameter is a copy, and refusing to write your own
+ * copy protects nobody. Borrowed, it is the read-only borrow this language
+ * otherwise has no spelling for:
+ *
+ *     function centre(b: Reference<Readonly<Body>>): dvec3 { return b.position; }
+ *
+ * That signature says borrowed *and* read-only, which is `const Body &`, and
+ * `b.position = v` inside it is a `TS2540`.
+ *
+ * Three things it does not do, each for its own reason:
+ *
+ *   * **It does not stop a method.** `b.spin()` is fine, because TypeScript has
+ *     no way to say that a method does not mutate its receiver — there is no
+ *     `int get() const` to write. A method declares `this: Reference<T>` or is
+ *     silent, and that is where a mutating method would be refused.
+ *   * **It is shallow.** `Readonly<Ship>` refuses `s.crew = xs` and says
+ *     nothing about `s.crew.push(x)`: the field's binding is read-only, its
+ *     type is not. C++'s `const` behaves the same way through a pointer member.
+ *   * **It drops `private` members**, because `keyof T` does not include them.
+ *     Two classes told apart *only* by a private brand are therefore the same
+ *     type under it — `Readonly<aligned_dvec3>` satisfies a
+ *     `Readonly<dvec3>` — so this is not the type to reach for where that
+ *     distinction is what matters.
+ *
+ * `Readonly<T[]>` and `Readonly<string>` need no thought — tsc resolves the
+ * first to `readonly T[]` and the second straight back to `string`, because a
+ * homomorphic mapped type over an array or a primitive is not a mapped type in
+ * the result.
+ *
+ * **Do not write `Readonly<i32>`.** It is not the identity, tempting as that
+ * would be: an `i32` is `number` intersected with a brand, so tsc builds an
+ * object type from it with no properties to speak of — one that accepts an
+ * `i32` and is not assignable back to one. A type you can take and cannot use.
+ * There is nothing in a scalar to make read-only.
+ */
+type Readonly<T> = { readonly [K in keyof T]: T[K] };
+
+declare const ConstBrand: unique symbol;
+
+interface ConstReferenceCore<T> {
+    /**
+     * **`unknown`, where {@link ReferenceCore} carries `T`** — and that is the
+     * whole of the one-way door.
+     *
+     * A key both types declare is checked covariantly, so `T` satisfies
+     * `unknown` and `unknown` does not satisfy `T`: a `Reference<T>` converts
+     * to a `ConstReference<T>` and never back. Both are optional, so a plain
+     * value satisfies either and `f(p)` still needs nothing written at the
+     * call site — which is the property a *required* brand would destroy, for
+     * the reason {@link LocalFnCore} gives about its own.
+     *
+     * It also means a `ConstReference<T>` **is** a reference to everything that
+     * reads the brand, which is what keeps the erasure, the ABI and every
+     * borrow rule identical to `Reference<T>`'s. The two differ in what may be
+     * written, and in nothing else.
+     */
+    readonly [ReferenceBrand]?: unknown;
+
+    /**
+     * The referent, **unmapped**, and it is doing two jobs.
+     *
+     * The erasure reads the referent out of a brand's type, and this type's
+     * `ReferenceBrand` says `unknown` — so without this there would be nothing
+     * to point at.
+     *
+     * And it restores what `Readonly<T>` throws away. `keyof` drops `private`
+     * members, so two classes told apart only by a private brand are the same
+     * type under `Readonly<>` — `Readonly<aligned_dvec3>` satisfies a
+     * `Readonly<dvec3>`. Comparing *this* key compares `aligned_dvec3` against
+     * `dvec3`, which are nominal, and the distinction is back.
+     */
+    readonly [ConstBrand]?: T;
+}
+
+/**
+ * A **read-only borrow** — C++'s `const T &`, and the only spelling for it.
+ *
+ *     function centre(b: ConstReference<Body>): dvec3 { return b.position; }
+ *
+ * An address, exactly as {@link Reference} is: one machine word, the same ABI,
+ * the same erasure, and nothing in the backend knows which one was written. A
+ * value converts to one implicitly and so does a `Reference<T>`; what does not
+ * happen is the reverse.
+ *
+ * Three things it refuses that a `Reference<T>` allows, and the third is the
+ * reason this type exists rather than `Reference<Readonly<T>>`:
+ *
+ *   * **A field write.** `b.position = v` is `TS2540`, from the
+ *     {@link Readonly} half.
+ *   * **Laundering.** Passing one where a `Reference<T>` is wanted is
+ *     `TS2345`. Without the door above, that conversion is allowed for every
+ *     class that happens not to declare a `private` member — so const-ness
+ *     would hold or not hold depending on a detail of an unrelated
+ *     declaration.
+ *   * **A mutating method.** `b.spin()` is `TS2684`, provided `spin` says what
+ *     it needs:
+ *
+ * ```ts
+ * class Body {
+ *     spin(this: Reference<Body>): void { … }        // mutates
+ *     mass(this: ConstReference<Body>): f64 { … }    // does not
+ * }
+ * ```
+ *
+ * That is C++'s `const` member function with the polarity inverted: a method
+ * is mutable unless it says otherwise, because TypeScript has no `int get()
+ * const` and something had to be the default. A method that says nothing is
+ * callable on a `Reference<T>` and not on one of these.
+ *
+ * **Accessors work, and need nothing written.** `Readonly<T>` turns an accessor
+ * pair into a read-only *property*, so reading `c.doubled` through one is fine
+ * — including an overridden getter, which still dispatches — and `c.value = 9`
+ * is `TS2540`. That is the whole of what an accessor should do here.
+ *
+ * The one thing that cannot be said is that a **getter** leaves its receiver
+ * alone: a getter has no parameter list for a `this` to go in, so
+ * `get x(this: ConstReference<C>)` is `TS2784`. A getter that writes is
+ * therefore callable through a read-only borrow. It is a getter lying about
+ * being a read, and C++ has the same hole through `mutable`.
+ *
+ * Shallow, like every `const` here: `c.parts.push(x)` is not this type's
+ * business, and `readonly T[]` is how a borrowed array says the same thing.
+ */
+type ConstReference<T> = Readonly<T> & ConstReferenceCore<T>;
 
 // ---------------------------------------------------------------------------
 // Closures. DECISIONS §18: three function types, all written down.
