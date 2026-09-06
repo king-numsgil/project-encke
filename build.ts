@@ -376,7 +376,7 @@ interface NativeDependency {
 }
 
 const DEPENDENCIES: readonly NativeDependency[] = [
-    { repo: "SDL", name: "SDL3", version: "3.4.14", pkgConfig: "sdl3" },
+    { repo: "SDL", name: "SDL3", version: "3.4.16", pkgConfig: "sdl3" },
     { repo: "SDL_image", name: "SDL3_image", version: "3.4.4", pkgConfig: "sdl3-image" },
     { repo: "SDL_ttf", name: "SDL3_ttf", version: "3.2.2", pkgConfig: "sdl3-ttf" },
 ];
