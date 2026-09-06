@@ -169578,8 +169578,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-android-arm64");
         const bindingPackageVersion = require2("@goblin-forge/backend-android-arm64/package.json").version;
-        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169594,8 +169594,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-android-arm-eabi");
         const bindingPackageVersion = require2("@goblin-forge/backend-android-arm-eabi/package.json").version;
-        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169615,8 +169615,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-win32-x64-gnu");
           const bindingPackageVersion = require2("@goblin-forge/backend-win32-x64-gnu/package.json").version;
-          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169631,8 +169631,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-win32-x64-msvc");
           const bindingPackageVersion = require2("@goblin-forge/backend-win32-x64-msvc/package.json").version;
-          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169648,8 +169648,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-win32-ia32-msvc");
         const bindingPackageVersion = require2("@goblin-forge/backend-win32-ia32-msvc/package.json").version;
-        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169664,8 +169664,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-win32-arm64-msvc");
         const bindingPackageVersion = require2("@goblin-forge/backend-win32-arm64-msvc/package.json").version;
-        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169683,8 +169683,8 @@ function requireNative() {
     try {
       const binding = require2("@goblin-forge/backend-darwin-universal");
       const bindingPackageVersion = require2("@goblin-forge/backend-darwin-universal/package.json").version;
-      if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-        throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+      if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+        throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
       }
       return binding;
     } catch (e) {
@@ -169699,8 +169699,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-darwin-x64");
         const bindingPackageVersion = require2("@goblin-forge/backend-darwin-x64/package.json").version;
-        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169715,8 +169715,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-darwin-arm64");
         const bindingPackageVersion = require2("@goblin-forge/backend-darwin-arm64/package.json").version;
-        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169735,8 +169735,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-freebsd-x64");
         const bindingPackageVersion = require2("@goblin-forge/backend-freebsd-x64/package.json").version;
-        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169751,8 +169751,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-freebsd-arm64");
         const bindingPackageVersion = require2("@goblin-forge/backend-freebsd-arm64/package.json").version;
-        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169772,8 +169772,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-x64-musl");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-x64-musl/package.json").version;
-          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169788,8 +169788,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-x64-gnu");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-x64-gnu/package.json").version;
-          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169806,8 +169806,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-arm64-musl");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-arm64-musl/package.json").version;
-          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169822,8 +169822,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-arm64-gnu");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-arm64-gnu/package.json").version;
-          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169840,8 +169840,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-arm-musleabihf");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-arm-musleabihf/package.json").version;
-          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169856,8 +169856,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-arm-gnueabihf");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-arm-gnueabihf/package.json").version;
-          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169874,8 +169874,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-loong64-musl");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-loong64-musl/package.json").version;
-          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169890,8 +169890,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-loong64-gnu");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-loong64-gnu/package.json").version;
-          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169908,8 +169908,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-riscv64-musl");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-riscv64-musl/package.json").version;
-          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169924,8 +169924,8 @@ function requireNative() {
         try {
           const binding = require2("@goblin-forge/backend-linux-riscv64-gnu");
           const bindingPackageVersion = require2("@goblin-forge/backend-linux-riscv64-gnu/package.json").version;
-          if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-            throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
           return binding;
         } catch (e) {
@@ -169941,8 +169941,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-linux-ppc64-gnu");
         const bindingPackageVersion = require2("@goblin-forge/backend-linux-ppc64-gnu/package.json").version;
-        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169957,8 +169957,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-linux-s390x-gnu");
         const bindingPackageVersion = require2("@goblin-forge/backend-linux-s390x-gnu/package.json").version;
-        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169977,8 +169977,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-openharmony-arm64");
         const bindingPackageVersion = require2("@goblin-forge/backend-openharmony-arm64/package.json").version;
-        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -169993,8 +169993,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-openharmony-x64");
         const bindingPackageVersion = require2("@goblin-forge/backend-openharmony-x64/package.json").version;
-        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -170009,8 +170009,8 @@ function requireNative() {
       try {
         const binding = require2("@goblin-forge/backend-openharmony-arm");
         const bindingPackageVersion = require2("@goblin-forge/backend-openharmony-arm/package.json").version;
-        if (bindingPackageVersion !== "0.2.1" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
-          throw new Error(`Native binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+        if (bindingPackageVersion !== "0.4.0" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+          throw new Error(`Native binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
         }
         return binding;
       } catch (e) {
@@ -170117,8 +170117,8 @@ if (!nativeBinding || forceWasi) {
       if (!candidateFailed) {
         if (process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
           const bindingPackageVersion = require2("@goblin-forge/backend-wasm32-wasi/package.json").version;
-          if (bindingPackageVersion !== "0.2.1") {
-            throw new Error(`WASI binding package version mismatch, expected 0.2.1 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
+          if (bindingPackageVersion !== "0.4.0") {
+            throw new Error(`WASI binding package version mismatch, expected 0.4.0 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`);
           }
         }
         wasiBinding = require2("@goblin-forge/backend-wasm32-wasi");
@@ -170154,8 +170154,8 @@ if (!nativeBinding) {
 var { Backend, locateLinker, outputExtension, outputPrefix, schemaFingerprint } = nativeBinding;
 
 // ../backend/js/mir.generated.ts
-var SCHEMA_FINGERPRINT = 0xfb0eb16471f939bbn;
-var SCHEMA_FINGERPRINT_HEX = "fb0eb16471f939bb";
+var SCHEMA_FINGERPRINT = 0xfc7f5aca0b997d3en;
+var SCHEMA_FINGERPRINT_HEX = "fc7f5aca0b997d3e";
 var UTF8 = new TextEncoder;
 
 class Writer {
@@ -170251,9 +170251,11 @@ var ClassId = (raw) => raw;
 var InterfaceId = (raw) => raw;
 var FileId = (raw) => raw;
 var FuncId = (raw) => raw;
+var ExternId = (raw) => raw;
+var GlobalId = (raw) => raw;
+var ExternGlobalId = (raw) => raw;
 var LocalId = (raw) => raw;
 var FieldId = (raw) => raw;
-var ExternId = (raw) => raw;
 var BlockId = (raw) => raw;
 function writeSymId(w, v) {
   w.varint(v);
@@ -170496,17 +170498,134 @@ var LinkageIndex = {
 function writeLinkage(w, v) {
   w.varint(LinkageIndex[v]);
 }
+function writeExternId(w, v) {
+  w.varint(v);
+}
+function writeFuncRef(w, v) {
+  switch (v.kind) {
+    case "Local": {
+      w.varint(0);
+      writeFuncId(w, v.value);
+      break;
+    }
+    case "Extern": {
+      w.varint(1);
+      writeExternId(w, v.value);
+      break;
+    }
+  }
+}
+function writeGlobalId(w, v) {
+  w.varint(v);
+}
+function writeExternGlobalId(w, v) {
+  w.varint(v);
+}
+function writeGlobalRef(w, v) {
+  switch (v.kind) {
+    case "Local": {
+      w.varint(0);
+      writeGlobalId(w, v.value);
+      break;
+    }
+    case "Extern": {
+      w.varint(1);
+      writeExternGlobalId(w, v.value);
+      break;
+    }
+  }
+}
+function writeConst(w, v) {
+  switch (v.kind) {
+    case "Unit": {
+      w.varint(0);
+      break;
+    }
+    case "Bool": {
+      w.varint(1);
+      w.bool(v.value);
+      writeTyId(w, v.ty);
+      break;
+    }
+    case "Int": {
+      w.varint(2);
+      w.varintBig(v.bits);
+      writeTyId(w, v.ty);
+      break;
+    }
+    case "Float": {
+      w.varint(3);
+      w.varintBig(v.bits);
+      writeTyId(w, v.ty);
+      break;
+    }
+    case "Null": {
+      w.varint(4);
+      writeTyId(w, v.value);
+      break;
+    }
+    case "Str": {
+      w.varint(5);
+      writeSymId(w, v.text);
+      writeTyId(w, v.ty);
+      break;
+    }
+    case "Func": {
+      w.varint(6);
+      writeFuncRef(w, v.func);
+      writeTyId(w, v.ty);
+      break;
+    }
+    case "Global": {
+      w.varint(7);
+      writeGlobalRef(w, v.global);
+      writeTyId(w, v.ty);
+      break;
+    }
+  }
+}
+function writeGlobalInit(w, v) {
+  switch (v.kind) {
+    case "Zero": {
+      w.varint(0);
+      break;
+    }
+    case "Scalar": {
+      w.varint(1);
+      writeConst(w, v.value);
+      break;
+    }
+    case "SizeOf": {
+      w.varint(2);
+      writeTyId(w, v.value);
+      break;
+    }
+    case "AlignOf": {
+      w.varint(3);
+      writeTyId(w, v.value);
+      break;
+    }
+    case "Array": {
+      w.varint(4);
+      w.varintBig(v.value);
+      break;
+    }
+  }
+}
 function writeGlobal(w, v) {
   writeSymId(w, v.name);
   writeTyId(w, v.ty);
   writeLinkage(w, v.linkage);
   w.bool(v.mutable);
-  if (v.init === null) {
-    w.u8(0);
-  } else {
-    w.u8(1);
-    w.bytes(v.init);
+  w.varint(v.init.length);
+  for (const item of v.init) {
+    writeGlobalInit(w, item);
   }
+  writeSpan(w, v.span);
+}
+function writeExternGlobal(w, v) {
+  writeSymId(w, v.name);
+  writeTyId(w, v.ty);
   writeSpan(w, v.span);
 }
 var StorageClassIndex = {
@@ -170570,66 +170689,6 @@ function writePlace(w, v) {
   w.varint(v.projection.length);
   for (const item of v.projection) {
     writeProjection(w, item);
-  }
-}
-function writeExternId(w, v) {
-  w.varint(v);
-}
-function writeFuncRef(w, v) {
-  switch (v.kind) {
-    case "Local": {
-      w.varint(0);
-      writeFuncId(w, v.value);
-      break;
-    }
-    case "Extern": {
-      w.varint(1);
-      writeExternId(w, v.value);
-      break;
-    }
-  }
-}
-function writeConst(w, v) {
-  switch (v.kind) {
-    case "Unit": {
-      w.varint(0);
-      break;
-    }
-    case "Bool": {
-      w.varint(1);
-      w.bool(v.value);
-      writeTyId(w, v.ty);
-      break;
-    }
-    case "Int": {
-      w.varint(2);
-      w.varintBig(v.bits);
-      writeTyId(w, v.ty);
-      break;
-    }
-    case "Float": {
-      w.varint(3);
-      w.varintBig(v.bits);
-      writeTyId(w, v.ty);
-      break;
-    }
-    case "Null": {
-      w.varint(4);
-      writeTyId(w, v.value);
-      break;
-    }
-    case "Str": {
-      w.varint(5);
-      writeSymId(w, v.text);
-      writeTyId(w, v.ty);
-      break;
-    }
-    case "Func": {
-      w.varint(6);
-      writeFuncRef(w, v.func);
-      writeTyId(w, v.ty);
-      break;
-    }
   }
 }
 function writeOperand(w, v) {
@@ -171120,6 +171179,10 @@ function writeModule(w, v) {
   for (const item of v.globals) {
     writeGlobal(w, item);
   }
+  w.varint(v.externGlobals.length);
+  for (const item of v.externGlobals) {
+    writeExternGlobal(w, item);
+  }
   w.varint(v.funcs.length);
   for (const item of v.funcs) {
     writeFunction(w, item);
@@ -171178,6 +171241,7 @@ class ModuleBuilder {
   #sigIndex = new Map;
   #externs = [];
   #globals = [];
+  #externGlobals = [];
   #funcs = [];
   constructor(name) {
     this.name = this.sym(name);
@@ -171353,14 +171417,25 @@ class ModuleBuilder {
     return id;
   }
   global(options) {
+    const id = GlobalId(this.#globals.length);
     this.#globals.push({
       name: this.sym(options.name),
       ty: options.ty,
       linkage: options.linkage ?? "Internal",
       mutable: options.mutable ?? false,
-      init: options.init ?? null,
+      init: [...options.init ?? []],
       span: options.span ?? SYNTHETIC
     });
+    return id;
+  }
+  externGlobal(options) {
+    const id = ExternGlobalId(this.#externGlobals.length);
+    this.#externGlobals.push({
+      name: this.sym(options.name),
+      ty: options.ty,
+      span: options.span ?? SYNTHETIC
+    });
+    return id;
   }
   declareFunction(options) {
     const id = FuncId(this.#funcs.length);
@@ -171400,6 +171475,7 @@ class ModuleBuilder {
       sigs: this.#sigs,
       externs: this.#externs,
       globals: this.#globals,
+      externGlobals: this.#externGlobals,
       funcs: this.#funcs
     };
   }
@@ -171516,6 +171592,17 @@ function printModule(module, options = {}) {
     out.push(`extern fn ${sym(module, extern.name)}: ${signature(module, extern.sig)}  // ext${index}`);
   }
   if (module.externs.length > 0) {
+    out.push("");
+  }
+  for (const [index, extern] of module.externGlobals.entries()) {
+    out.push(`extern const ${sym(module, extern.name)}: ${ty(module, extern.ty)}  // eg${index}`);
+  }
+  for (const [index, global2] of module.globals.entries()) {
+    const keyword = global2.mutable ? "static" : "const";
+    const leaves = global2.init.map((leaf) => globalInit(module, leaf)).join(", ");
+    out.push(`${keyword} ${sym(module, global2.name)}: ${ty(module, global2.ty)} = ` + `[${leaves}]  // g${index}`);
+  }
+  if (module.externGlobals.length > 0 || module.globals.length > 0) {
     out.push("");
   }
   for (const func of module.funcs) {
@@ -171719,6 +171806,22 @@ function constant(module, value) {
       return JSON.stringify(sym(module, value.text));
     case "Func":
       return value.func.kind === "Local" ? sym(module, module.funcs[value.func.value]?.name ?? 0) : sym(module, module.externs[value.func.value]?.name ?? 0);
+    case "Global":
+      return value.global.kind === "Local" ? `&${sym(module, module.globals[value.global.value]?.name ?? 0)}` : `&${sym(module, module.externGlobals[value.global.value]?.name ?? 0)}`;
+  }
+}
+function globalInit(module, leaf) {
+  switch (leaf.kind) {
+    case "Zero":
+      return "zero";
+    case "Scalar":
+      return constant(module, leaf.value);
+    case "SizeOf":
+      return `sizeOf(${ty(module, leaf.value)})`;
+    case "AlignOf":
+      return `alignOf(${ty(module, leaf.value)})`;
+    case "Array":
+      return `array(${leaf.value})`;
   }
 }
 function signed(module, bits, tyId) {
@@ -171925,6 +172028,24 @@ var CODES = {
 ` + "They are looked for before the type-check rather than when they are " + "first run, because the alternative is a full compile followed by a " + "failure from inside the backend — which reads as a broken compiler " + "rather than a missing package, and arrives after the wait instead of " + `instead of it.
 
 ` + "`GOBLIN_CLANG`, `CC` and `AR` name a specific tool where a machine has " + "several or keeps them somewhere unusual. Under MSVC the linker is not " + "a `PATH` question at all — `link.exe` and `lib.exe` are found by " + "probing the registry, which is why a Developer Command Prompt is not " + "needed — so the backend is asked instead, with the same lookup the " + "link step itself performs."
+  },
+  GF0007: {
+    title: "a module-level constant's value is not known at compile time",
+    explanation: "A `const` at module scope is one symbol in the object file, and its bytes " + "are decided while the program is compiled. There is no code that runs " + "before `main` for an initialiser to be worked out in — this language has " + "no static constructors, deliberately, because their order across modules " + `is the class of bug they are famous for.
+
+` + "So the value has to fold: a literal, an enum member, arithmetic over " + "those, `sizeOf<T>()` or `alignOf<T>()`, or another module-level constant " + "of the same module. A call does not fold, and neither does anything that " + `reads memory.
+
+` + "`sizeOf<T>()` is resolved by the backend rather than by the frontend, " + "which has no layout — so it is a value this compiler does not hold, and " + "`sizeOf<T>() * 2` is refused for that reason rather than because " + "multiplication is hard. An imported constant is refused for the same " + "shape of reason: what this module has is a symbol the linker resolves, " + `and folding needs the number.
+
+` + "A constant that reads another one is a *compile-time* dependency and " + "nothing survives to run time, so the order they are written in does not " + "matter. A cycle among them has no value to fold to, which is `GF0008`."
+  },
+  GF0008: {
+    title: "this cannot be a module-level constant",
+    explanation: "Either the type cannot be one, or the constant is defined in terms of " + `itself.
+
+` + "A module-level constant's value is bytes decided at compile time and " + "released by nobody, so the type has to be one that *is* its bytes: a " + "scalar, a `boolean`, an enum, a pointer, a function pointer, a struct of " + "those, or a `FixedArray` of those. A `string` and a `T[]` own a heap " + "buffer, and owning means a scope has to release it — which needs code to " + "run, and nothing runs before `main`. That is a gap rather than a " + "permanent rule: both are laid out statically by the runtime already, so " + `this code goes away when they land rather than being relaxed.
+
+` + "A cycle — `const A = B; const B = A` — is the other half. Written order " + "never matters between constants, so this is not an ordering complaint: " + "there is no value for either of them to have."
   },
   GF0160: {
     title: "implicit narrowing",
@@ -174642,7 +174763,7 @@ function identifier(name) {
 }
 
 // src/lower/module.ts
-var import_typescript14 = __toESM(require_typescript(), 1);
+var import_typescript15 = __toESM(require_typescript(), 1);
 
 // src/classes.ts
 var import_typescript5 = __toESM(require_typescript(), 1);
@@ -174706,6 +174827,11 @@ function collectClasses(program, checker, report) {
   };
   for (const [name, node] of declarations) {
     if (node.typeParameters !== undefined && node.typeParameters.length > 0) {
+      for (const member of node.members) {
+        if (import_typescript5.default.isPropertyDeclaration(member) && isStatic(member) && member.name !== undefined && import_typescript5.default.isIdentifier(member.name)) {
+          report.unsupported(member, `\`static ${member.name.text}\` on the generic class \`${name}\``);
+        }
+      }
       generics.set(name, node);
       continue;
     }
@@ -174745,6 +174871,7 @@ function buildClass(node, name, bindings, analyse, checker, report) {
     return;
   }
   const fields = base ? [...base.fields] : [];
+  const staticFields = new Map(base?.staticFields);
   const ownFieldsAt = fields.length;
   for (const member of node.members) {
     if (import_typescript5.default.isConstructorDeclaration(member)) {
@@ -174785,8 +174912,25 @@ function buildClass(node, name, bindings, analyse, checker, report) {
       return;
     }
     if (isStatic(member)) {
-      report.unsupported(member, "a static field");
-      return;
+      if (node.typeParameters && node.typeParameters.length > 0) {
+        continue;
+      }
+      const staticType = report.erase(member, checker.getTypeAtLocation(member));
+      if (staticType === undefined) {
+        return;
+      }
+      if (member.initializer === undefined) {
+        report.refuse(member, `\`${name}.${member.name.text}\` has no value. A static field is one ` + "symbol in the object file and its bytes are decided at compile time, " + "so there is no later point at which one could be assigned.");
+        return;
+      }
+      staticFields.set(member.name.text, {
+        name: member.name.text,
+        type: staticType,
+        declaration: member,
+        owner: name,
+        isReadonly: import_typescript5.default.getModifiers(member)?.some((modifier) => modifier.kind === import_typescript5.default.SyntaxKind.ReadonlyKeyword) ?? false
+      });
+      continue;
     }
     const type = report.erase(member, checker.getTypeAtLocation(member));
     if (type === undefined) {
@@ -174964,6 +175108,7 @@ function buildClass(node, name, bindings, analyse, checker, report) {
     getters,
     setters,
     statics,
+    staticFields,
     staticGetters,
     staticSetters,
     parameterProperties,
@@ -175040,6 +175185,8 @@ var NATIVE_CAST = "cast";
 var MOVE = "move";
 var TAKE = "take";
 var FIXED_ARRAY = "fixedArray";
+var FIXED_ARRAY_OF = "fixedArrayOf";
+var TO_ARRAY = "toArray";
 var TRY_CAST = "tryCast";
 var CSTRING = "cstring";
 var CSTRING_FREE = "cstringFree";
@@ -175347,9 +175494,20 @@ function nullAdvice(type) {
 function isStaticMember(member) {
   return import_typescript7.default.canHaveModifiers(member) && (import_typescript7.default.getModifiers(member)?.some((m) => m.kind === import_typescript7.default.SyntaxKind.StaticKeyword) ?? false);
 }
+var KIND_NAMES = (() => {
+  const names = new Map;
+  for (const [name, kind] of Object.entries(import_typescript7.default.SyntaxKind)) {
+    if (typeof kind !== "number" || /^(?:First|Last)/.test(name) || names.has(kind)) {
+      continue;
+    }
+    names.set(kind, name);
+  }
+  return names;
+})();
 function describe(node) {
-  const name = import_typescript7.default.SyntaxKind[node.kind];
-  return `a ${name.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase()}`;
+  const name = KIND_NAMES.get(node.kind) ?? "unknown";
+  const words = name.replace(/([a-z])([A-Z])/g, "$1 $2").toLowerCase();
+  return `${/^[aeiou]/.test(words) ? "an" : "a"} ${words}`;
 }
 function fractionalLiteralIn(expression) {
   if (import_typescript7.default.isNumericLiteral(expression)) {
@@ -175531,17 +175689,517 @@ class Scopes {
   }
 }
 
+// src/lower/fold.ts
+var import_typescript9 = __toESM(require_typescript(), 1);
+
+class ConstantFolder {
+  #context;
+  #fieldsOf;
+  constructor(context, fieldsOf) {
+    this.#context = context;
+    this.#fieldsOf = fieldsOf;
+  }
+  fold(expression, type) {
+    const inner = unwrap(expression);
+    if (this.#isZeroed(inner)) {
+      return { leaves: [{ kind: "Zero" }] };
+    }
+    switch (type.kind) {
+      case "struct":
+        return this.#structure(inner, type);
+      case "fixedArray":
+        return this.#fixedArray(inner, type);
+      case "array":
+        return this.#array(inner, type);
+      case "string":
+        return this.#string(inner);
+      case "scalar":
+      case "bool":
+      case "pointer":
+      case "fnptr":
+        return this.#scalar(inner, type);
+      default:
+        this.#refuse(inner, "GF0008", `a module-level constant cannot be a \`${renderType(type)}\`.`);
+        return;
+    }
+  }
+  #structure(expression, type) {
+    const fields = this.#fieldsOf(type);
+    if (fields === undefined) {
+      this.#refuse(expression, "GF0008", `a module-level constant cannot be a \`${renderType(type)}\`.`);
+      return;
+    }
+    if (import_typescript9.default.isNewExpression(expression) && this.#context.linalg(expression)) {
+      return this.#positional(expression, fields, expression.arguments ?? import_typescript9.default.factory.createNodeArray(), type);
+    }
+    if (import_typescript9.default.isCallExpression(expression) && import_typescript9.default.isPropertyAccessExpression(expression.expression) && expression.expression.name.text === "zero" && expression.arguments.length === 0 && this.#context.linalg(expression)) {
+      return { leaves: [{ kind: "Zero" }] };
+    }
+    if (!import_typescript9.default.isObjectLiteralExpression(expression)) {
+      const linalg = this.#context.linalg(expression) ? ` A \`${renderType(type)}\` is written with one argument per component ` + "— `new dvec3(0, 1, 0)` — or as `.zero()`." : "";
+      this.#refuse(expression, "GF0007", `this is the value of a module-level \`${renderType(type)}\`, so it has ` + "to be written out as an object literal — that is what makes it " + `resolvable without running anything.${linalg}`);
+      return;
+    }
+    const written = new Map;
+    for (const property of expression.properties) {
+      if (!import_typescript9.default.isPropertyAssignment(property) || !import_typescript9.default.isIdentifier(property.name)) {
+        this.#refuse(property, "GF0007", "a module-level constant's fields are written as `name: value`; a " + "shorthand, a spread or a computed name is not something this can " + "resolve at compile time.");
+        return;
+      }
+      written.set(property.name.text, property.initializer);
+    }
+    const leaves = [];
+    for (const field of fields) {
+      const value = written.get(field.name);
+      if (value === undefined) {
+        this.#refuse(expression, "GF0007", `\`${field.name}\` has no value here, and a module-level constant ` + "has no constructor to supply one.");
+        return;
+      }
+      const folded = this.fold(value, field.type);
+      if (folded === undefined) {
+        return;
+      }
+      leaves.push(...folded.leaves);
+    }
+    return { leaves };
+  }
+  #string(expression) {
+    if (!import_typescript9.default.isStringLiteral(expression) && !import_typescript9.default.isNoSubstitutionTemplateLiteral(expression)) {
+      this.#refuse(expression, "GF0007", "a module-level `string` has to be a literal. Nothing here can build one " + "at compile time: concatenation, `substring` and the rest all allocate, " + "and there is nowhere for that to happen before `main`.");
+      return;
+    }
+    return {
+      leaves: [
+        {
+          kind: "Scalar",
+          value: this.#context.stringConstant(expression.text, expression)
+        }
+      ]
+    };
+  }
+  #array(expression, type) {
+    if (!import_typescript9.default.isArrayLiteralExpression(expression)) {
+      this.#refuse(expression, "GF0007", `this is the value of a module-level \`${renderType(type)}\`, so it has to ` + "be written out as an array literal.");
+      return;
+    }
+    if (expression.elements.length === 0) {
+      return { leaves: [{ kind: "Zero" }] };
+    }
+    const leaves = [{ kind: "Array", value: BigInt(expression.elements.length) }];
+    for (const element of expression.elements) {
+      if (import_typescript9.default.isSpreadElement(element)) {
+        this.#refuse(element, "GF0007", "a spread does not fold.");
+        return;
+      }
+      const folded = this.fold(element, type.element);
+      if (folded === undefined) {
+        return;
+      }
+      leaves.push(...folded.leaves);
+    }
+    return { leaves };
+  }
+  #positional(at, fields, values, type) {
+    if (values.length !== fields.length) {
+      this.#refuse(at, "GF0007", `a \`${renderType(type)}\` has ${fields.length} components and ` + `${values.length} were written.`);
+      return;
+    }
+    const leaves = [];
+    for (const [index, field] of fields.entries()) {
+      const folded = this.fold(values[index], field.type);
+      if (folded === undefined) {
+        return;
+      }
+      leaves.push(...folded.leaves);
+    }
+    return { leaves };
+  }
+  #fixedArray(expression, type) {
+    if (!import_typescript9.default.isCallExpression(expression) || !import_typescript9.default.isIdentifier(expression.expression)) {
+      this.#refuse(expression, "GF0007", `this is the value of a module-level \`${renderType(type)}\`, so it has ` + "to be `fixedArrayOf(…)`, `fixedArray(n, fill)` or `zeroed<…>()` — each " + "of which is resolvable without running anything.");
+      return;
+    }
+    const callee = expression.expression;
+    if (!this.#context.prelude(callee)) {
+      this.#refuse(expression, "GF0007", `\`${callee.text}\` is a call, and a module-level constant's value ` + "cannot come from one: nothing runs before `main`.");
+      return;
+    }
+    if (callee.text === "fixedArrayOf") {
+      if (expression.arguments.length !== type.length) {
+        this.#refuse(expression, "GF0007", `this holds ${type.length} elements and ${expression.arguments.length} ` + "were written.");
+        return;
+      }
+      const leaves = [];
+      for (const argument of expression.arguments) {
+        const folded = this.fold(argument, type.element);
+        if (folded === undefined) {
+          return;
+        }
+        leaves.push(...folded.leaves);
+      }
+      return { leaves };
+    }
+    if (callee.text === "fixedArray") {
+      const fill = expression.arguments[1];
+      if (fill === undefined) {
+        this.#refuse(expression, "GF0007", "`fixedArray` takes a length and a fill.");
+        return;
+      }
+      const folded = this.fold(fill, type.element);
+      if (folded === undefined) {
+        return;
+      }
+      if (folded.leaves.length === 1 && isZeroLeaf(folded.leaves[0])) {
+        return { leaves: [{ kind: "Zero" }] };
+      }
+      const leaves = [];
+      for (let index = 0;index < type.length; index += 1) {
+        leaves.push(...folded.leaves);
+      }
+      return { leaves };
+    }
+    this.#refuse(expression, "GF0007", `\`${callee.text}\` is not something this can resolve at compile time.`);
+    return;
+  }
+  #scalar(expression, type) {
+    if (type.kind === "pointer" || type.kind === "fnptr") {
+      if (expression.kind === import_typescript9.default.SyntaxKind.NullKeyword) {
+        return {
+          leaves: [
+            { kind: "Scalar", value: { kind: "Null", value: this.#ty(type, expression) } }
+          ]
+        };
+      }
+      const address = this.#context.functionAddress(expression, type);
+      if (address !== undefined) {
+        return { leaves: [{ kind: "Scalar", value: address }] };
+      }
+      this.#refuse(expression, "GF0007", type.kind === "fnptr" ? `a module-level \`${renderType(type)}\` has to name a function or be ` + "`null`: a closure captures, and there is no frame here to capture from." : `a module-level \`${renderType(type)}\` can only be \`null\`: every ` + "other address is worked out while the program runs.");
+      return;
+    }
+    const layout = this.#layoutQuery(expression);
+    if (layout !== undefined) {
+      return layout === "reported" ? undefined : { leaves: [layout] };
+    }
+    const value = this.#value(expression, type);
+    if (value === undefined) {
+      return;
+    }
+    const leaf = this.#leafOf(value, type, expression);
+    return leaf === undefined ? undefined : { leaves: [leaf], scalar: value };
+  }
+  #value(expression, type) {
+    const inner = unwrap(expression);
+    if (inner.kind === import_typescript9.default.SyntaxKind.TrueKeyword) {
+      return { kind: "bool", value: true };
+    }
+    if (inner.kind === import_typescript9.default.SyntaxKind.FalseKeyword) {
+      return { kind: "bool", value: false };
+    }
+    if (import_typescript9.default.isNumericLiteral(inner)) {
+      return this.#number(inner.text, type, inner);
+    }
+    if (import_typescript9.default.isPrefixUnaryExpression(inner)) {
+      return this.#unary(inner, type);
+    }
+    if (import_typescript9.default.isBinaryExpression(inner)) {
+      return this.#arithmetic(inner, type);
+    }
+    if (import_typescript9.default.isPropertyAccessExpression(inner)) {
+      const member = this.#context.enumMemberAt(inner);
+      if (member !== undefined) {
+        const constant = this.#context.checker.getConstantValue(member);
+        if (typeof constant === "number") {
+          return { kind: "int", bits: BigInt(constant), type };
+        }
+      }
+    }
+    if (import_typescript9.default.isIdentifier(inner)) {
+      return this.#name(inner, type);
+    }
+    if (this.#isLayoutQuery(inner)) {
+      this.#refuse(inner, "GF0007", "a layout is resolved by the backend, which is the only half of this " + "compiler that lays types out — so there is no number here for the rest " + "of the expression to be worked out with. `sizeOf<T>()` on its own is " + "the whole value of a constant, or it is nothing.");
+      return;
+    }
+    this.#refuse(inner, "GF0007", "a module-level constant's value has to be known at compile time, and this " + "is not: there is no code that runs before `main` for it to be worked out " + "in. Literals, enum members, arithmetic over them, `sizeOf`/`alignOf`, and " + "other module-level constants of this module are what fold.");
+    return;
+  }
+  #name(expression, type) {
+    const global2 = this.#context.globalAt(expression);
+    if (global2 === "not-a-global") {
+      this.#refuse(expression, "GF0007", `\`${expression.text}\` is not a module-level constant of this module, so ` + "its value is not something this can know at compile time.");
+      return;
+    }
+    if (global2 === "imported") {
+      this.#refuse(expression, "GF0007", `\`${expression.text}\` is imported, so what this module has is a symbol ` + "the linker resolves rather than a value — and folding needs the value. " + "Write the number here, or move the constant that needs it into the " + "module that defines this one.");
+      return;
+    }
+    if (global2 === "forward") {
+      return;
+    }
+    if (global2.scalar === undefined) {
+      this.#refuse(expression, "GF0007", `\`${expression.text}\` is not a number this compiler holds — it is an ` + "aggregate, or a `sizeOf` the backend resolves — so it can be copied " + "whole and not used in arithmetic.");
+      return;
+    }
+    return retype(global2.scalar, type);
+  }
+  #unary(expression, type) {
+    if (expression.operator === import_typescript9.default.SyntaxKind.PlusToken) {
+      return this.#value(expression.operand, type);
+    }
+    if (expression.operator === import_typescript9.default.SyntaxKind.ExclamationToken) {
+      const inner = this.#value(expression.operand, type);
+      if (inner === undefined) {
+        return;
+      }
+      if (inner.kind !== "bool") {
+        this.#refuse(expression, "GF0007", "`!` needs a `boolean`.");
+        return;
+      }
+      return { kind: "bool", value: !inner.value };
+    }
+    if (expression.operator === import_typescript9.default.SyntaxKind.TildeToken) {
+      const inner = this.#value(expression.operand, type);
+      if (inner === undefined || inner.kind !== "int") {
+        this.#refuse(expression, "GF0007", "`~` needs an integer.");
+        return;
+      }
+      return { kind: "int", bits: ~inner.bits, type };
+    }
+    if (expression.operator !== import_typescript9.default.SyntaxKind.MinusToken) {
+      this.#refuse(expression, "GF0007", "this operator does not fold.");
+      return;
+    }
+    if (type.kind === "scalar" && rangeOf(type.name)?.min === 0n) {
+      this.#refuse(expression, "GF0007", `unary minus has no meaning on \`${type.name}\`, which is unsigned.`);
+      return;
+    }
+    const inner = this.#value(expression.operand, type);
+    if (inner === undefined) {
+      return;
+    }
+    if (inner.kind === "int") {
+      return { kind: "int", bits: -inner.bits, type };
+    }
+    if (inner.kind === "float") {
+      return { kind: "float", value: -inner.value, type };
+    }
+    this.#refuse(expression, "GF0007", "unary minus needs a number.");
+    return;
+  }
+  #arithmetic(expression, type) {
+    const left = this.#value(expression.left, type);
+    const right = this.#value(expression.right, type);
+    if (left === undefined || right === undefined) {
+      return;
+    }
+    const operator = expression.operatorToken.kind;
+    if (left.kind === "int" && right.kind === "int") {
+      const folded = integerOp(operator, left.bits, right.bits);
+      if (folded === "divide-by-zero") {
+        this.#refuse(expression, "GF0007", "this divides by zero, which has no value to fold to.");
+        return;
+      }
+      if (folded === undefined) {
+        this.#refuse(expression, "GF0007", `\`${import_typescript9.default.tokenToString(operator)}\` does not fold over integers here.`);
+        return;
+      }
+      return { kind: "int", bits: folded, type };
+    }
+    const a = asNumber(left);
+    const b = asNumber(right);
+    if (a !== undefined && b !== undefined) {
+      const folded = floatOp(operator, a, b);
+      if (folded === undefined) {
+        this.#refuse(expression, "GF0007", `\`${import_typescript9.default.tokenToString(operator)}\` does not fold over floats.`);
+        return;
+      }
+      return { kind: "float", value: folded, type };
+    }
+    this.#refuse(expression, "GF0007", "these are not two numbers this compiler holds, so there is nothing to " + "work out here at compile time.");
+    return;
+  }
+  #layoutQuery(expression) {
+    if (!import_typescript9.default.isCallExpression(expression) || !import_typescript9.default.isIdentifier(expression.expression)) {
+      return;
+    }
+    const name = expression.expression.text;
+    if (name !== "sizeOf" && name !== "alignOf") {
+      return;
+    }
+    if (!this.#context.prelude(expression.expression)) {
+      return;
+    }
+    const argument = expression.typeArguments?.[0];
+    if (argument === undefined) {
+      this.#refuse(expression, "GF0007", `\`${name}\` needs the type written out: \`${name}<i32>()\`.`);
+      return "reported";
+    }
+    const type = this.#context.checker.getTypeAtLocation(argument);
+    const erased = this.#erase(argument, type);
+    if (erased === undefined) {
+      return "reported";
+    }
+    const ty = this.#ty(erased, argument);
+    return name === "sizeOf" ? { kind: "SizeOf", value: ty } : { kind: "AlignOf", value: ty };
+  }
+  #erase(at, type) {
+    return this.#context.erase(at, type);
+  }
+  #leafOf(value, type, at) {
+    const ty = this.#ty(type, at);
+    if (value.kind === "bool") {
+      return { kind: "Scalar", value: { kind: "Bool", value: value.value, ty } };
+    }
+    if (value.kind === "int") {
+      if (type.kind === "scalar" && isFloatName(type.name)) {
+        return {
+          kind: "Scalar",
+          value: { kind: "Float", bits: floatBits(Number(value.bits), type.name), ty }
+        };
+      }
+      const range = type.kind === "scalar" ? rangeOf(type.name) : undefined;
+      if (range != null && (value.bits < range.min || value.bits > range.max)) {
+        this.#refuse(at, "GF0007", `${value.bits} does not fit in a \`${renderType(type)}\`.`);
+        return;
+      }
+      return { kind: "Scalar", value: { kind: "Int", bits: mask(value.bits), ty } };
+    }
+    if (type.kind !== "scalar" || !isFloatName(type.name)) {
+      this.#refuse(at, "GF0007", `${value.value} is fractional and a \`${renderType(type)}\` cannot hold it.`);
+      return;
+    }
+    return {
+      kind: "Scalar",
+      value: { kind: "Float", bits: floatBits(value.value, type.name), ty }
+    };
+  }
+  #number(text, type, at) {
+    const cleaned = text.replaceAll("_", "");
+    const float = type.kind === "scalar" && isFloatName(type.name);
+    if (!float && (/^0[xXoObB]/.test(cleaned) || !/[.eE]/.test(cleaned))) {
+      try {
+        return { kind: "int", bits: BigInt(cleaned), type };
+      } catch {
+        this.#refuse(at, "GF0007", `\`${text}\` is not a number this can read.`);
+        return;
+      }
+    }
+    return { kind: "float", value: Number(cleaned), type };
+  }
+  #isLayoutQuery(expression) {
+    return import_typescript9.default.isCallExpression(expression) && import_typescript9.default.isIdentifier(expression.expression) && (expression.expression.text === "sizeOf" || expression.expression.text === "alignOf") && this.#context.prelude(expression.expression);
+  }
+  #isZeroed(expression) {
+    return import_typescript9.default.isCallExpression(expression) && import_typescript9.default.isIdentifier(expression.expression) && expression.expression.text === "zeroed" && this.#context.prelude(expression.expression);
+  }
+  #ty(type, at) {
+    return this.#context.tyOf(type, at);
+  }
+  #refuse(node, code, message) {
+    this.#context.error(node, code, message);
+  }
+}
+function unwrap(expression) {
+  let inner = expression;
+  while (import_typescript9.default.isParenthesizedExpression(inner) || import_typescript9.default.isAsExpression(inner)) {
+    inner = inner.expression;
+  }
+  return inner;
+}
+function isZeroLeaf(leaf) {
+  if (leaf.kind === "Zero") {
+    return true;
+  }
+  if (leaf.kind !== "Scalar") {
+    return false;
+  }
+  const value = leaf.value;
+  return value.kind === "Int" && value.bits === 0n || value.kind === "Float" && value.bits === 0n || value.kind === "Bool" && !value.value;
+}
+function isFloatName(name) {
+  return name === "f32" || name === "f64";
+}
+function floatBits(value, name) {
+  const buffer = new ArrayBuffer(8);
+  const view = new DataView(buffer);
+  if (name === "f32") {
+    view.setFloat32(0, value, true);
+    return BigInt(view.getUint32(0, true));
+  }
+  view.setFloat64(0, value, true);
+  return view.getBigUint64(0, true);
+}
+function mask(bits) {
+  return bits < 0n ? (1n << 64n) + bits : bits;
+}
+function asNumber(value) {
+  if (value.kind === "int") {
+    return Number(value.bits);
+  }
+  if (value.kind === "float") {
+    return value.value;
+  }
+  return;
+}
+function retype(value, type) {
+  if (value.kind === "bool") {
+    return value;
+  }
+  return { ...value, type };
+}
+function integerOp(operator, left, right) {
+  switch (operator) {
+    case import_typescript9.default.SyntaxKind.PlusToken:
+      return left + right;
+    case import_typescript9.default.SyntaxKind.MinusToken:
+      return left - right;
+    case import_typescript9.default.SyntaxKind.AsteriskToken:
+      return left * right;
+    case import_typescript9.default.SyntaxKind.SlashToken:
+      return right === 0n ? "divide-by-zero" : left / right;
+    case import_typescript9.default.SyntaxKind.PercentToken:
+      return right === 0n ? "divide-by-zero" : left % right;
+    case import_typescript9.default.SyntaxKind.AmpersandToken:
+      return left & right;
+    case import_typescript9.default.SyntaxKind.BarToken:
+      return left | right;
+    case import_typescript9.default.SyntaxKind.CaretToken:
+      return left ^ right;
+    case import_typescript9.default.SyntaxKind.LessThanLessThanToken:
+      return left << right;
+    case import_typescript9.default.SyntaxKind.GreaterThanGreaterThanToken:
+      return left >> right;
+    default:
+      return;
+  }
+}
+function floatOp(operator, left, right) {
+  switch (operator) {
+    case import_typescript9.default.SyntaxKind.PlusToken:
+      return left + right;
+    case import_typescript9.default.SyntaxKind.MinusToken:
+      return left - right;
+    case import_typescript9.default.SyntaxKind.AsteriskToken:
+      return left * right;
+    case import_typescript9.default.SyntaxKind.SlashToken:
+      return left / right;
+    default:
+      return;
+  }
+}
+
 // src/lower/body.ts
-var import_typescript13 = __toESM(require_typescript(), 1);
+var import_typescript14 = __toESM(require_typescript(), 1);
 
 // src/lower/linalg.ts
-var import_typescript11 = __toESM(require_typescript(), 1);
+var import_typescript12 = __toESM(require_typescript(), 1);
 
 // src/lower/intrinsics.ts
-var import_typescript10 = __toESM(require_typescript(), 1);
+var import_typescript11 = __toESM(require_typescript(), 1);
 
 // src/lower/width.ts
-var import_typescript9 = __toESM(require_typescript(), 1);
+var import_typescript10 = __toESM(require_typescript(), 1);
 
 // src/lower/emit.ts
 class Emitter {
@@ -175804,39 +176462,46 @@ class WidthPass extends Emitter {
     return computed;
   }
   #computeWidth(expression) {
-    if (import_typescript9.default.isParenthesizedExpression(expression)) {
+    if (import_typescript10.default.isParenthesizedExpression(expression)) {
       return this.width(expression.expression);
     }
-    if (import_typescript9.default.isExpressionWithTypeArguments(expression)) {
+    if (import_typescript10.default.isExpressionWithTypeArguments(expression)) {
       return this.#instantiatedValueWidth(expression);
     }
-    if (import_typescript9.default.isNumericLiteral(expression)) {
+    if (import_typescript10.default.isNumericLiteral(expression)) {
       return POLY;
     }
-    if (import_typescript9.default.isStringLiteralLike(expression)) {
+    if (import_typescript10.default.isStringLiteralLike(expression)) {
       return typed(STRING);
     }
-    if (import_typescript9.default.isTemplateExpression(expression)) {
+    if (import_typescript10.default.isTemplateExpression(expression)) {
       return typed(STRING);
     }
-    if (import_typescript9.default.isPropertyAccessExpression(expression)) {
+    if (import_typescript10.default.isPropertyAccessExpression(expression)) {
       return this.#propertyWidth(expression);
     }
-    if (import_typescript9.default.isElementAccessExpression(expression)) {
+    if (import_typescript10.default.isElementAccessExpression(expression)) {
       return this.#elementWidth(expression);
     }
-    if (import_typescript9.default.isObjectLiteralExpression(expression)) {
+    if (import_typescript10.default.isObjectLiteralExpression(expression)) {
       return POLY;
     }
-    if (expression.kind === import_typescript9.default.SyntaxKind.NullKeyword) {
+    if (expression.kind === import_typescript10.default.SyntaxKind.NullKeyword) {
       return POLY;
     }
-    if (expression.kind === import_typescript9.default.SyntaxKind.TrueKeyword || expression.kind === import_typescript9.default.SyntaxKind.FalseKeyword) {
+    if (expression.kind === import_typescript10.default.SyntaxKind.TrueKeyword || expression.kind === import_typescript10.default.SyntaxKind.FalseKeyword) {
       return typed({ kind: "bool" });
     }
-    if (import_typescript9.default.isIdentifier(expression)) {
+    if (import_typescript10.default.isIdentifier(expression)) {
       const binding = this.scopes.lookup(expression.text);
       if (binding === undefined) {
+        const global2 = this.outer.globalAt(expression);
+        if (global2 === "reported") {
+          return ERROR;
+        }
+        if (global2 !== undefined) {
+          return typed(global2.type);
+        }
         if (this.outer.functionValueAt(expression) !== undefined) {
           return this.#erasedWidth(expression);
         }
@@ -175853,7 +176518,7 @@ class WidthPass extends Emitter {
       }
       return typed(binding.type);
     }
-    if (import_typescript9.default.isConditionalExpression(expression)) {
+    if (import_typescript10.default.isConditionalExpression(expression)) {
       if (this.width(expression.condition).kind === "error") {
         return ERROR;
       }
@@ -175874,13 +176539,13 @@ class WidthPass extends Emitter {
       }
       return whenTrue;
     }
-    if (import_typescript9.default.isPrefixUnaryExpression(expression)) {
-      if (expression.operator === import_typescript9.default.SyntaxKind.ExclamationToken) {
+    if (import_typescript10.default.isPrefixUnaryExpression(expression)) {
+      if (expression.operator === import_typescript10.default.SyntaxKind.ExclamationToken) {
         return typed({ kind: "bool" });
       }
       return this.width(expression.operand);
     }
-    if (expression.kind === import_typescript9.default.SyntaxKind.ThisKeyword) {
+    if (expression.kind === import_typescript10.default.SyntaxKind.ThisKeyword) {
       const binding = this.scopes.lookup("this");
       if (binding === undefined) {
         this.outer.error(expression, "GF0002", "`this` is only meaningful inside a method or a constructor.");
@@ -175888,8 +176553,8 @@ class WidthPass extends Emitter {
       }
       return typed(binding.type);
     }
-    if (import_typescript9.default.isNewExpression(expression)) {
-      if (!import_typescript9.default.isIdentifier(expression.expression)) {
+    if (import_typescript10.default.isNewExpression(expression)) {
+      if (!import_typescript10.default.isIdentifier(expression.expression)) {
         this.outer.unsupported(expression, "an expression after `new`");
         return ERROR;
       }
@@ -175912,7 +176577,7 @@ class WidthPass extends Emitter {
       }
       return typed(created);
     }
-    if (import_typescript9.default.isArrayLiteralExpression(expression)) {
+    if (import_typescript10.default.isArrayLiteralExpression(expression)) {
       const type = this.erase(expression, this.outer.checker.getContextualType(expression) ?? this.outer.checker.getTypeAtLocation(expression));
       if (type === undefined) {
         return ERROR;
@@ -175928,13 +176593,13 @@ class WidthPass extends Emitter {
       }
       return typed(type);
     }
-    if (import_typescript9.default.isCallExpression(expression)) {
+    if (import_typescript10.default.isCallExpression(expression)) {
       return this.#callWidth(expression);
     }
-    if (import_typescript9.default.isBinaryExpression(expression)) {
+    if (import_typescript10.default.isBinaryExpression(expression)) {
       return this.#binaryWidth(expression);
     }
-    if (import_typescript9.default.isArrowFunction(expression) || import_typescript9.default.isFunctionExpression(expression)) {
+    if (import_typescript10.default.isArrowFunction(expression) || import_typescript10.default.isFunctionExpression(expression)) {
       this.outer.error(expression, "GF0239", "a lambda has no type of its own, so it can only be written where one " + "is expected — as an argument to a `LocalFn<F>` parameter. Nothing " + "here says what this one should be.");
       return ERROR;
     }
@@ -175950,6 +176615,10 @@ class WidthPass extends Emitter {
     }
     if (this.staticAt(expression) !== undefined) {
       return this.#erasedWidth(expression);
+    }
+    const staticField = this.staticFieldAt(expression);
+    if (staticField !== undefined) {
+      return typed(staticField.type);
     }
     if (this.outer.namespaceValue(expression) !== undefined) {
       return this.#erasedWidth(expression);
@@ -176063,7 +176732,7 @@ class WidthPass extends Emitter {
     if (this.outer.functionValueAt(expression) !== undefined) {
       return;
     }
-    if (import_typescript9.default.isPropertyAccessExpression(expression) && this.#namesAMethod(expression)) {
+    if (import_typescript10.default.isPropertyAccessExpression(expression) && this.#namesAMethod(expression)) {
       return;
     }
     const type = this.tryErase(expression);
@@ -176111,21 +176780,28 @@ class WidthPass extends Emitter {
   }
   #namesAMethod(access) {
     const symbol = this.outer.checker.getSymbolAtLocation(access.name);
-    return symbol?.declarations?.some((declaration) => import_typescript9.default.isMethodDeclaration(declaration) && !isStaticMember(declaration) || import_typescript9.default.isMethodSignature(declaration)) ?? false;
+    return symbol?.declarations?.some((declaration) => import_typescript10.default.isMethodDeclaration(declaration) && !isStaticMember(declaration) || import_typescript10.default.isMethodSignature(declaration)) ?? false;
   }
   #erasedWidth(expression) {
     const type = this.erase(expression, this.outer.checker.getTypeAtLocation(expression));
     return type === undefined ? ERROR : typed(type);
   }
   staticAt(access) {
-    if (!import_typescript9.default.isIdentifier(access.expression)) {
+    if (!import_typescript10.default.isIdentifier(access.expression)) {
       return;
     }
     const info = this.outer.classInfo(access.expression.text);
     return info?.statics.get(access.name.text);
   }
+  staticFieldAt(access) {
+    if (!import_typescript10.default.isIdentifier(access.expression)) {
+      return;
+    }
+    const info = this.outer.classInfo(access.expression.text);
+    return info?.staticFields.get(access.name.text);
+  }
   staticAccessorAt(access, writing) {
-    if (!import_typescript9.default.isIdentifier(access.expression)) {
+    if (!import_typescript10.default.isIdentifier(access.expression)) {
       return;
     }
     const info = this.outer.classInfo(access.expression.text);
@@ -176168,7 +176844,7 @@ class WidthPass extends Emitter {
   }
   argumentWidths(args) {
     for (const argument of args) {
-      if (import_typescript9.default.isArrowFunction(argument) || import_typescript9.default.isFunctionExpression(argument)) {
+      if (import_typescript10.default.isArrowFunction(argument) || import_typescript10.default.isFunctionExpression(argument)) {
         continue;
       }
       if (this.width(argument).kind === "error") {
@@ -176178,18 +176854,18 @@ class WidthPass extends Emitter {
     return true;
   }
   #callWidth(expression) {
-    if (expression.expression.kind === import_typescript9.default.SyntaxKind.SuperKeyword) {
+    if (expression.expression.kind === import_typescript10.default.SyntaxKind.SuperKeyword) {
       return typed(VOID);
     }
     const callee = expression.expression;
     const callable = this.tryErase(callee);
-    if (callable?.kind === "fnptr" && !this.outer.namesADeclaredFunction(callee) && this.outer.functionValueAt(callee) === undefined && !(import_typescript9.default.isPropertyAccessExpression(callee) && this.#namesAMethod(callee))) {
+    if (callable?.kind === "fnptr" && !this.outer.namesADeclaredFunction(callee) && this.outer.functionValueAt(callee) === undefined && !(import_typescript10.default.isPropertyAccessExpression(callee) && this.#namesAMethod(callee))) {
       if (!this.argumentWidths(expression.arguments)) {
         return ERROR;
       }
       return typed(callable.returns);
     }
-    if (import_typescript9.default.isPropertyAccessExpression(expression.expression)) {
+    if (import_typescript10.default.isPropertyAccessExpression(expression.expression)) {
       const qualified = this.outer.namespaceCallee(expression, expression.expression, this.bindings);
       if (qualified === "reported") {
         return ERROR;
@@ -176203,7 +176879,7 @@ class WidthPass extends Emitter {
       }
       return this.#consoleWidth(expression);
     }
-    if (!import_typescript9.default.isIdentifier(expression.expression)) {
+    if (!import_typescript10.default.isIdentifier(expression.expression)) {
       this.outer.unsupported(expression.expression, "this call target");
       return ERROR;
     }
@@ -176230,7 +176906,7 @@ class WidthPass extends Emitter {
       const target = this.erase(expression, this.outer.checker.getTypeAtLocation(expression));
       return target === undefined ? ERROR : typed(target);
     }
-    if (name === FIXED_ARRAY) {
+    if (name === FIXED_ARRAY || name === FIXED_ARRAY_OF) {
       const type = this.erase(expression, this.outer.checker.getContextualType(expression) ?? this.outer.checker.getTypeAtLocation(expression));
       return type === undefined ? ERROR : typed(type);
     }
@@ -176312,6 +176988,12 @@ class WidthPass extends Emitter {
           return ERROR;
       }
     }
+    if (access.name.text === TO_ARRAY) {
+      const fixed = this.tryErase(access.expression);
+      if (fixed?.kind === "fixedArray") {
+        return typed({ kind: "array", element: fixed.element });
+      }
+    }
     if (this.tryErase(access.expression)?.kind === "string") {
       if (!this.argumentWidths(expression.arguments)) {
         return ERROR;
@@ -176369,9 +177051,9 @@ class WidthPass extends Emitter {
       }
       return typed(method.returns);
     }
-    const info = access.expression.kind === import_typescript9.default.SyntaxKind.SuperKeyword ? this.self?.base : this.outer.classInfo(this.outer.classNameAt(access.expression, this.bindings) ?? "");
+    const info = access.expression.kind === import_typescript10.default.SyntaxKind.SuperKeyword ? this.self?.base : this.outer.classInfo(this.outer.classNameAt(access.expression, this.bindings) ?? "");
     if (info === undefined) {
-      if (access.expression.kind !== import_typescript9.default.SyntaxKind.SuperKeyword) {
+      if (access.expression.kind !== import_typescript10.default.SyntaxKind.SuperKeyword) {
         return "not-a-method";
       }
       this.outer.error(access, "GF0002", "`super` is only meaningful inside a method of a class that extends another.");
@@ -176486,7 +177168,7 @@ class WidthPass extends Emitter {
   }
   #consoleWidth(expression) {
     const access = expression.expression;
-    if (import_typescript9.default.isIdentifier(access.expression) && access.expression.text === "console" && CONSOLE_METHODS[access.name.text] !== undefined) {
+    if (import_typescript10.default.isIdentifier(access.expression) && access.expression.text === "console" && CONSOLE_METHODS[access.name.text] !== undefined) {
       const argument = expression.arguments[0];
       if (argument !== undefined && this.width(argument).kind === "error") {
         return ERROR;
@@ -176503,7 +177185,7 @@ class WidthPass extends Emitter {
     const operator = OPERATOR_TOKENS[expression.operatorToken.kind];
     if (operator === undefined) {
       const kind = expression.operatorToken.kind;
-      if (kind === import_typescript9.default.SyntaxKind.AmpersandAmpersandToken || kind === import_typescript9.default.SyntaxKind.BarBarToken) {
+      if (kind === import_typescript10.default.SyntaxKind.AmpersandAmpersandToken || kind === import_typescript10.default.SyntaxKind.BarBarToken) {
         return typed({ kind: "bool" });
       }
       this.outer.unsupported(expression.operatorToken, `the operator \`${expression.operatorToken.getText()}\``);
@@ -176569,6 +177251,8 @@ class WidthPass extends Emitter {
 }
 
 // src/lower/intrinsics.ts
+var TO_ARRAY_INLINE_LIMIT = 256;
+
 class IntrinsicLowerer extends WidthPass {
   layoutQuery(expression, size) {
     const argument = expression.typeArguments?.[0];
@@ -176614,7 +177298,7 @@ class IntrinsicLowerer extends WidthPass {
       }
       return this.#allocDefault(expression, natural);
     }
-    if (import_typescript10.default.isObjectLiteralExpression(klass)) {
+    if (import_typescript11.default.isObjectLiteralExpression(klass)) {
       if (args.length > 0) {
         this.outer.unsupported(expression, "`alloc` with an initialiser and more arguments");
         return;
@@ -176624,7 +177308,7 @@ class IntrinsicLowerer extends WidthPass {
       }
       return this.#allocInit(expression, natural, klass);
     }
-    if (!import_typescript10.default.isIdentifier(klass)) {
+    if (!import_typescript11.default.isIdentifier(klass)) {
       this.outer.error(expression, "GF0002", "`alloc` takes a class and its constructor's arguments, a type " + "argument and nothing, or a type argument and an initialiser: " + "`alloc(Rect, 6, 7)`, `alloc<i32>()`, or `alloc<Rect>({ w: 6 })`.");
       return;
     }
@@ -176742,7 +177426,7 @@ class IntrinsicLowerer extends WidthPass {
       return false;
     }
     for (const property of literal.properties) {
-      if (!import_typescript10.default.isPropertyAssignment(property)) {
+      if (!import_typescript11.default.isPropertyAssignment(property)) {
         this.outer.unsupported(property, "a shorthand or spread in an initialiser");
         return false;
       }
@@ -176758,7 +177442,7 @@ class IntrinsicLowerer extends WidthPass {
         projection: [...target.projection, { kind: "Field", value: FieldId(index) }]
       };
       const initialiser = property.initializer;
-      if (import_typescript10.default.isObjectLiteralExpression(initialiser) && field.type.kind === "struct" && field.type.union !== true) {
+      if (import_typescript11.default.isObjectLiteralExpression(initialiser) && field.type.kind === "struct" && field.type.union !== true) {
         if (!this.#initFields(initialiser, field.type, slot)) {
           return false;
         }
@@ -177295,6 +177979,68 @@ class IntrinsicLowerer extends WidthPass {
       temporary: array
     };
   }
+  fixedArrayOf(expression, natural) {
+    if (natural.kind !== "fixedArray") {
+      this.outer.error(expression, "GF0161", `\`${FIXED_ARRAY_OF}\` builds a \`FixedArray<T, N>\`, not a ` + `\`${renderType(natural)}\`.`);
+      return;
+    }
+    const values = expression.arguments;
+    if (values.length !== natural.length) {
+      this.outer.error(expression, "GF0002", `\`${FIXED_ARRAY_OF}\` was given ${values.length} ` + `${values.length === 1 ? "value" : "values"} for a ` + `\`${renderType(natural)}\`, which holds ${natural.length}.`);
+      return;
+    }
+    const ty = this.outer.tyOf(natural, expression);
+    const array = this.f.addLocal({ ty, storage: "Temporary" });
+    this.temporaries.push(array);
+    this.push({ kind: "StorageLive", value: array });
+    this.push({ kind: "Init", place: placeOf(array), rvalue: { kind: "Default" } });
+    for (const [index, value] of values.entries()) {
+      const element = this.expressionTyped(value, natural.element);
+      if (element === undefined) {
+        return;
+      }
+      this.push({
+        kind: "Init",
+        place: { local: array, projection: [{ kind: "ConstIndex", value: BigInt(index) }] },
+        rvalue: { kind: "Use", value: this.forStorage(element) }
+      });
+    }
+    return {
+      operand: { kind: "Borrow", value: placeOf(array) },
+      type: natural,
+      temporary: array
+    };
+  }
+  fixedArrayToArray(expression, subject, type) {
+    if (expression.arguments.length !== 0) {
+      this.outer.error(expression, "GF0002", `\`${TO_ARRAY}\` takes no arguments.`);
+      return;
+    }
+    if (type.length > TO_ARRAY_INLINE_LIMIT) {
+      this.outer.unsupported(expression, `\`${TO_ARRAY}\` on a \`${renderType(type)}\`, which is longer than ` + `${TO_ARRAY_INLINE_LIMIT} elements`);
+      return;
+    }
+    const place = this.placeOfSubject(expression, subject);
+    if (place === undefined) {
+      return;
+    }
+    const array = { kind: "array", element: type.element };
+    const fields = [];
+    for (let index = 0;index < type.length; index += 1) {
+      fields.push({
+        kind: "Copy",
+        value: {
+          local: place.local,
+          projection: [...place.projection, { kind: "ConstIndex", value: BigInt(index) }]
+        }
+      });
+    }
+    return this.temporaryTyped(expression, array, {
+      kind: "Aggregate",
+      ty: this.outer.tyOf(array, expression),
+      fields
+    });
+  }
 }
 
 // src/lower/linalg.ts
@@ -177596,7 +178342,7 @@ class LinalgLowerer extends IntrinsicLowerer {
   }
   linalgElementPlace(expression, subject, type) {
     const argument = expression.argumentExpression;
-    if (!import_typescript11.default.isNumericLiteral(argument) || /[.eE]/.test(argument.getText())) {
+    if (!import_typescript12.default.isNumericLiteral(argument) || /[.eE]/.test(argument.getText())) {
       this.outer.error(argument, "GF0002", `a \`${type.name}\` can only be indexed by a literal, because its ` + `${type.family === "mat" ? "columns" : "components"} are fields rather than ` + "elements at a stride. Name the " + `${type.family === "mat" ? "column" : "component"} — ` + `\`${type.family === "mat" ? "m.c0" : "v.x"}\` — or index by a constant.`);
       return;
     }
@@ -179288,17 +180034,17 @@ class BoundaryLowerer extends QuatLowerer {
 }
 
 // src/lower/closures.ts
-var import_typescript12 = __toESM(require_typescript(), 1);
+var import_typescript13 = __toESM(require_typescript(), 1);
 function capturedNames(fn, checker) {
   const found = new Set;
   const visit = (node) => {
-    if (import_typescript12.default.isIdentifier(node) && namesAValue(node)) {
+    if (import_typescript13.default.isIdentifier(node) && namesAValue(node)) {
       const declaration = checker.getSymbolAtLocation(node)?.valueDeclaration;
       if (declaration !== undefined && !within(declaration, fn)) {
         found.add(node.text);
       }
     }
-    import_typescript12.default.forEachChild(node, visit);
+    import_typescript13.default.forEachChild(node, visit);
   };
   visit(fn.body);
   return [...found];
@@ -179308,19 +180054,19 @@ function namesAValue(node) {
   if (parent === undefined) {
     return false;
   }
-  if (import_typescript12.default.isPropertyAccessExpression(parent) && parent.name === node) {
+  if (import_typescript13.default.isPropertyAccessExpression(parent) && parent.name === node) {
     return false;
   }
-  if (import_typescript12.default.isQualifiedName(parent) && parent.right === node) {
+  if (import_typescript13.default.isQualifiedName(parent) && parent.right === node) {
     return false;
   }
-  if (import_typescript12.default.isPropertyAssignment(parent) && parent.name === node) {
+  if (import_typescript13.default.isPropertyAssignment(parent) && parent.name === node) {
     return false;
   }
-  if (import_typescript12.default.isBindingElement(parent) && parent.propertyName === node) {
+  if (import_typescript13.default.isBindingElement(parent) && parent.propertyName === node) {
     return false;
   }
-  return !(import_typescript12.default.isPropertySignature(parent) || import_typescript12.default.isPropertyDeclaration(parent));
+  return !(import_typescript13.default.isPropertySignature(parent) || import_typescript13.default.isPropertyDeclaration(parent));
 }
 function usesThis(fn) {
   let found = false;
@@ -179328,35 +180074,35 @@ function usesThis(fn) {
     if (found) {
       return;
     }
-    if (node.kind === import_typescript12.default.SyntaxKind.ThisKeyword) {
+    if (node.kind === import_typescript13.default.SyntaxKind.ThisKeyword) {
       found = true;
       return;
     }
     if (rebindsThis(node)) {
       return;
     }
-    import_typescript12.default.forEachChild(node, visit);
+    import_typescript13.default.forEachChild(node, visit);
   };
   visit(fn.body);
   return found;
 }
 function thisParameterOf(fn) {
   const first = fn.parameters[0];
-  if (first !== undefined && import_typescript12.default.isIdentifier(first.name) && first.name.text === "this") {
+  if (first !== undefined && import_typescript13.default.isIdentifier(first.name) && first.name.text === "this") {
     return first;
   }
   return;
 }
 function rebindsThis(node) {
-  return import_typescript12.default.isFunctionExpression(node) || import_typescript12.default.isFunctionDeclaration(node) || import_typescript12.default.isClassDeclaration(node) || import_typescript12.default.isClassExpression(node) || import_typescript12.default.isMethodDeclaration(node) || import_typescript12.default.isGetAccessorDeclaration(node) || import_typescript12.default.isSetAccessorDeclaration(node) || import_typescript12.default.isConstructorDeclaration(node);
+  return import_typescript13.default.isFunctionExpression(node) || import_typescript13.default.isFunctionDeclaration(node) || import_typescript13.default.isClassDeclaration(node) || import_typescript13.default.isClassExpression(node) || import_typescript13.default.isMethodDeclaration(node) || import_typescript13.default.isGetAccessorDeclaration(node) || import_typescript13.default.isSetAccessorDeclaration(node) || import_typescript13.default.isConstructorDeclaration(node);
 }
 function isCallArgument(node) {
   let current = node;
-  while (import_typescript12.default.isParenthesizedExpression(current.parent)) {
+  while (import_typescript13.default.isParenthesizedExpression(current.parent)) {
     current = current.parent;
   }
   const parent = current.parent;
-  return parent !== undefined && (import_typescript12.default.isCallExpression(parent) || import_typescript12.default.isNewExpression(parent)) && (parent.arguments?.some((argument) => argument === current) ?? false);
+  return parent !== undefined && (import_typescript13.default.isCallExpression(parent) || import_typescript13.default.isNewExpression(parent)) && (parent.arguments?.some((argument) => argument === current) ?? false);
 }
 function within(node, ancestor) {
   for (let current = node;current !== undefined; current = current.parent) {
@@ -179392,7 +180138,7 @@ class BodyLowerer extends BoundaryLowerer {
         }
       });
     }
-    if (import_typescript13.default.isBlock(body)) {
+    if (import_typescript14.default.isBlock(body)) {
       this.#block(body);
     } else if (this.#returns.kind === "void") {
       this.fullExpression(() => {
@@ -179488,7 +180234,7 @@ class BodyLowerer extends BoundaryLowerer {
     if (linalg !== "not-linalg") {
       return linalg;
     }
-    if (!import_typescript13.default.isIdentifier(expression.expression)) {
+    if (!import_typescript14.default.isIdentifier(expression.expression)) {
       this.outer.unsupported(expression, "an expression after `new`");
       return;
     }
@@ -179517,7 +180263,7 @@ class BodyLowerer extends BoundaryLowerer {
     this.push({ kind: "StorageLive", value: local });
     this.push({ kind: "Init", place: placeOf(local), rvalue: { kind: "Default" } });
     this.temporaries.push(local);
-    const args = this.classCallArgs(expression, info, info.constructorSymbol, expression.arguments ?? import_typescript13.default.factory.createNodeArray(), this.refTo(expression, placeOf(local), type));
+    const args = this.classCallArgs(expression, info, info.constructorSymbol, expression.arguments ?? import_typescript14.default.factory.createNodeArray(), this.refTo(expression, placeOf(local), type));
     if (args === undefined) {
       return;
     }
@@ -179658,46 +180404,46 @@ class BodyLowerer extends BoundaryLowerer {
     this.scopes.pop();
   }
   #statement(statement) {
-    if (import_typescript13.default.isReturnStatement(statement)) {
+    if (import_typescript14.default.isReturnStatement(statement)) {
       return this.#return(statement);
     }
-    if (import_typescript13.default.isVariableStatement(statement)) {
+    if (import_typescript14.default.isVariableStatement(statement)) {
       return this.#declaration(statement);
     }
-    if (import_typescript13.default.isIfStatement(statement)) {
+    if (import_typescript14.default.isIfStatement(statement)) {
       return this.#if(statement);
     }
-    if (import_typescript13.default.isWhileStatement(statement)) {
+    if (import_typescript14.default.isWhileStatement(statement)) {
       return this.#while(statement);
     }
-    if (import_typescript13.default.isDoStatement(statement)) {
+    if (import_typescript14.default.isDoStatement(statement)) {
       return this.#doWhile(statement);
     }
-    if (import_typescript13.default.isForStatement(statement)) {
+    if (import_typescript14.default.isForStatement(statement)) {
       return this.#for(statement);
     }
-    if (import_typescript13.default.isForOfStatement(statement)) {
+    if (import_typescript14.default.isForOfStatement(statement)) {
       return this.#forOf(statement);
     }
-    if (import_typescript13.default.isSwitchStatement(statement)) {
+    if (import_typescript14.default.isSwitchStatement(statement)) {
       return this.#switch(statement);
     }
-    if (import_typescript13.default.isLabeledStatement(statement)) {
+    if (import_typescript14.default.isLabeledStatement(statement)) {
       return this.#labelled(statement);
     }
-    if (import_typescript13.default.isBreakStatement(statement)) {
+    if (import_typescript14.default.isBreakStatement(statement)) {
       return this.#break(statement);
     }
-    if (import_typescript13.default.isContinueStatement(statement)) {
+    if (import_typescript14.default.isContinueStatement(statement)) {
       return this.#continue(statement);
     }
-    if (import_typescript13.default.isBlock(statement)) {
+    if (import_typescript14.default.isBlock(statement)) {
       return this.#block(statement);
     }
-    if (import_typescript13.default.isExpressionStatement(statement)) {
+    if (import_typescript14.default.isExpressionStatement(statement)) {
       return this.#expressionStatement(statement);
     }
-    if (statement.kind === import_typescript13.default.SyntaxKind.EmptyStatement) {
+    if (statement.kind === import_typescript14.default.SyntaxKind.EmptyStatement) {
       return;
     }
     this.outer.unsupported(statement, describe(statement));
@@ -179718,7 +180464,7 @@ class BodyLowerer extends BoundaryLowerer {
     this.seal({ kind: "Return" });
   }
   #returnValue(expression) {
-    if (import_typescript13.default.isIdentifier(expression) && sameType(this.#returns, this.widthType(expression))) {
+    if (import_typescript14.default.isIdentifier(expression) && sameType(this.#returns, this.widthType(expression))) {
       const binding = this.scopes.lookup(expression.text);
       if (binding !== undefined && this.#owns(binding.type) && !this.#isOwningParameter(binding) && !isCapture(binding)) {
         if (this.#readMoved(expression, binding.local, expression.text)) {
@@ -179768,19 +180514,19 @@ class BodyLowerer extends BoundaryLowerer {
   #labelled(statement) {
     const label = statement.label.text;
     const inner = statement.statement;
-    if (import_typescript13.default.isWhileStatement(inner)) {
+    if (import_typescript14.default.isWhileStatement(inner)) {
       return this.#while(inner, label);
     }
-    if (import_typescript13.default.isDoStatement(inner)) {
+    if (import_typescript14.default.isDoStatement(inner)) {
       return this.#doWhile(inner, label);
     }
-    if (import_typescript13.default.isForStatement(inner)) {
+    if (import_typescript14.default.isForStatement(inner)) {
       return this.#for(inner, label);
     }
-    if (import_typescript13.default.isForOfStatement(inner)) {
+    if (import_typescript14.default.isForOfStatement(inner)) {
       return this.#forOf(inner, label);
     }
-    if (import_typescript13.default.isSwitchStatement(inner)) {
+    if (import_typescript14.default.isSwitchStatement(inner)) {
       return this.#switch(inner, label);
     }
     const enclosing = this.scopes.innermost;
@@ -179832,7 +180578,7 @@ class BodyLowerer extends BoundaryLowerer {
   }
   #declarationList(list) {
     for (const declaration of list.declarations) {
-      if (!import_typescript13.default.isIdentifier(declaration.name)) {
+      if (!import_typescript14.default.isIdentifier(declaration.name)) {
         this.outer.unsupported(declaration, "a destructuring binding");
         return;
       }
@@ -179884,7 +180630,7 @@ class BodyLowerer extends BoundaryLowerer {
     if (width.kind === "typed") {
       return width.type;
     }
-    if (initialiser.kind === import_typescript13.default.SyntaxKind.NullKeyword) {
+    if (initialiser.kind === import_typescript14.default.SyntaxKind.NullKeyword) {
       this.outer.error(declaration, "GF0161", `\`${declaration.name.getText()}\` is initialised with \`null\`, which ` + "has no type of its own. Annotate what it is the null of — " + "`const w: Pointer<SDL_Window> | null = null`.");
       return;
     }
@@ -179952,7 +180698,7 @@ class BodyLowerer extends BoundaryLowerer {
   #for(statement, label) {
     const outer = this.scopes.push();
     if (statement.initializer !== undefined) {
-      if (import_typescript13.default.isVariableDeclarationList(statement.initializer)) {
+      if (import_typescript14.default.isVariableDeclarationList(statement.initializer)) {
         this.#declarationList(statement.initializer);
       } else {
         this.fullExpression(() => {
@@ -179990,7 +180736,7 @@ class BodyLowerer extends BoundaryLowerer {
     this.scopes.pop();
   }
   #forOf(statement, label) {
-    if (!import_typescript13.default.isVariableDeclarationList(statement.initializer)) {
+    if (!import_typescript14.default.isVariableDeclarationList(statement.initializer)) {
       this.outer.unsupported(statement.initializer, "a `for…of` binding that is not a declaration");
       return;
     }
@@ -179999,7 +180745,7 @@ class BodyLowerer extends BoundaryLowerer {
       this.outer.unsupported(statement.initializer, "more than one `for…of` binding");
       return;
     }
-    if (!import_typescript13.default.isIdentifier(declaration.name)) {
+    if (!import_typescript14.default.isIdentifier(declaration.name)) {
       this.outer.unsupported(declaration, "a destructuring binding");
       return;
     }
@@ -180136,9 +180882,9 @@ class BodyLowerer extends BoundaryLowerer {
       return;
     }
     const blocks = clauses.map(() => this.f.block());
-    const defaultAt = clauses.findIndex((clause) => import_typescript13.default.isDefaultClause(clause));
+    const defaultAt = clauses.findIndex((clause) => import_typescript14.default.isDefaultClause(clause));
     for (const [index, clause] of clauses.entries()) {
-      if (!import_typescript13.default.isCaseClause(clause)) {
+      if (!import_typescript14.default.isCaseClause(clause)) {
         continue;
       }
       const subject = held;
@@ -180195,7 +180941,7 @@ class BodyLowerer extends BoundaryLowerer {
     this.scopes.pop();
   }
   #loopCondition(expression, body, exit) {
-    if (expression.kind === import_typescript13.default.SyntaxKind.TrueKeyword) {
+    if (expression.kind === import_typescript14.default.SyntaxKind.TrueKeyword) {
       this.seal({ kind: "Goto", value: body });
       return;
     }
@@ -180212,13 +180958,13 @@ class BodyLowerer extends BoundaryLowerer {
     });
   }
   #expressionValue(expression) {
-    if (import_typescript13.default.isCallExpression(expression)) {
+    if (import_typescript14.default.isCallExpression(expression)) {
       this.value(expression, undefined);
       return;
     }
-    if (import_typescript13.default.isBinaryExpression(expression)) {
+    if (import_typescript14.default.isBinaryExpression(expression)) {
       const kind = expression.operatorToken.kind;
-      if (kind === import_typescript13.default.SyntaxKind.EqualsToken) {
+      if (kind === import_typescript14.default.SyntaxKind.EqualsToken) {
         this.#assignment(expression);
         return;
       }
@@ -180228,12 +180974,12 @@ class BodyLowerer extends BoundaryLowerer {
         return;
       }
     }
-    if (import_typescript13.default.isPrefixUnaryExpression(expression) && (expression.operator === import_typescript13.default.SyntaxKind.PlusPlusToken || expression.operator === import_typescript13.default.SyntaxKind.MinusMinusToken)) {
-      this.#incrementDecrement(expression, expression.operand, expression.operator === import_typescript13.default.SyntaxKind.PlusPlusToken);
+    if (import_typescript14.default.isPrefixUnaryExpression(expression) && (expression.operator === import_typescript14.default.SyntaxKind.PlusPlusToken || expression.operator === import_typescript14.default.SyntaxKind.MinusMinusToken)) {
+      this.#incrementDecrement(expression, expression.operand, expression.operator === import_typescript14.default.SyntaxKind.PlusPlusToken);
       return;
     }
-    if (import_typescript13.default.isPostfixUnaryExpression(expression)) {
-      this.#incrementDecrement(expression, expression.operand, expression.operator === import_typescript13.default.SyntaxKind.PlusPlusToken);
+    if (import_typescript14.default.isPostfixUnaryExpression(expression)) {
+      this.#incrementDecrement(expression, expression.operand, expression.operator === import_typescript14.default.SyntaxKind.PlusPlusToken);
       return;
     }
     this.outer.unsupported(expression, "this expression as a statement");
@@ -180255,10 +181001,10 @@ class BodyLowerer extends BoundaryLowerer {
     this.#updateInPlace(at, target, increment ? "+" : "-", spelling, (type) => this.#oneOf(at, type));
   }
   #targetPlace(target) {
-    if (import_typescript13.default.isParenthesizedExpression(target)) {
+    if (import_typescript14.default.isParenthesizedExpression(target)) {
       return this.#targetPlace(target.expression);
     }
-    if (import_typescript13.default.isIdentifier(target)) {
+    if (import_typescript14.default.isIdentifier(target)) {
       const binding = this.scopes.lookup(target.text);
       if (binding === undefined) {
         this.outer.unsupported(target, "updating a non-local name");
@@ -180269,14 +181015,24 @@ class BodyLowerer extends BoundaryLowerer {
       }
       return { place: bindingPlace(binding), type: binding.type };
     }
-    if (import_typescript13.default.isElementAccessExpression(target)) {
+    if (import_typescript14.default.isElementAccessExpression(target)) {
       const element = this.#elementPlace(target);
       if (element === undefined) {
         return;
       }
       return { place: element.place, type: element.element };
     }
-    if (import_typescript13.default.isPropertyAccessExpression(target)) {
+    if (import_typescript14.default.isPropertyAccessExpression(target)) {
+      const staticField = this.#staticFieldRecord(target);
+      if (staticField !== undefined) {
+        if (staticField === "reported") {
+          return;
+        }
+        return {
+          place: this.#globalPlace(target, staticField),
+          type: staticField.type
+        };
+      }
       if (this.staticAccessorAt(target, true) !== undefined || this.staticAccessorAt(target, false) !== undefined) {
         this.outer.unsupported(target, "updating a static accessor in place");
         return;
@@ -180329,11 +181085,11 @@ class BodyLowerer extends BoundaryLowerer {
     return { kind: "Const", value: { kind: "Int", bits: 1n, ty } };
   }
   #assignment(expression) {
-    if (import_typescript13.default.isPropertyAccessExpression(expression.left)) {
+    if (import_typescript14.default.isPropertyAccessExpression(expression.left)) {
       this.#fieldAssignment(expression.left, expression.right);
       return;
     }
-    if (import_typescript13.default.isElementAccessExpression(expression.left)) {
+    if (import_typescript14.default.isElementAccessExpression(expression.left)) {
       const target = this.#elementPlace(expression.left);
       if (target === undefined) {
         return;
@@ -180349,7 +181105,7 @@ class BodyLowerer extends BoundaryLowerer {
       });
       return;
     }
-    if (!import_typescript13.default.isIdentifier(expression.left)) {
+    if (!import_typescript14.default.isIdentifier(expression.left)) {
       this.outer.unsupported(expression.left, "assigning to anything but a local");
       return;
     }
@@ -180370,6 +181126,23 @@ class BodyLowerer extends BoundaryLowerer {
     this.#moved.delete(binding.local);
   }
   #fieldAssignment(target, source) {
+    const staticField = this.#staticFieldRecord(target);
+    if (staticField !== undefined) {
+      if (staticField === "reported") {
+        return;
+      }
+      const place = this.#globalPlace(target, staticField);
+      const value = this.expressionTyped(source, staticField.type);
+      if (value === undefined) {
+        return;
+      }
+      this.push({
+        kind: "Assign",
+        place,
+        rvalue: { kind: "Use", value: this.forStorage(value) }
+      });
+      return;
+    }
     const staticSet = this.staticAccessorAt(target, true);
     if (staticSet !== undefined) {
       this.staticAccessorCall(target, staticSet.accessor, [source]);
@@ -180649,13 +181422,13 @@ class BodyLowerer extends BoundaryLowerer {
     return;
   }
   value(expression, expected) {
-    if (import_typescript13.default.isParenthesizedExpression(expression)) {
+    if (import_typescript14.default.isParenthesizedExpression(expression)) {
       return this.value(expression.expression, expected);
     }
-    if (expression.kind === import_typescript13.default.SyntaxKind.NullKeyword) {
+    if (expression.kind === import_typescript14.default.SyntaxKind.NullKeyword) {
       return this.#null(expression, expected);
     }
-    if (import_typescript13.default.isArrowFunction(expression) || import_typescript13.default.isFunctionExpression(expression)) {
+    if (import_typescript14.default.isArrowFunction(expression) || import_typescript14.default.isFunctionExpression(expression)) {
       return this.#closure(expression, expected);
     }
     const width = this.width(expression);
@@ -180667,10 +181440,10 @@ class BodyLowerer extends BoundaryLowerer {
       this.outer.error(expression, "GF0161", "this expression is built only from literals, so it has no width, and " + "nothing here supplies one. Annotate the binding or convert with " + "`cast`.");
       return;
     }
-    if (import_typescript13.default.isNumericLiteral(expression)) {
+    if (import_typescript14.default.isNumericLiteral(expression)) {
       return this.#literal(expression, natural, false);
     }
-    if (import_typescript13.default.isStringLiteralLike(expression)) {
+    if (import_typescript14.default.isStringLiteralLike(expression)) {
       return {
         operand: {
           kind: "Const",
@@ -180679,33 +181452,37 @@ class BodyLowerer extends BoundaryLowerer {
         type: STRING
       };
     }
-    if (import_typescript13.default.isTemplateExpression(expression)) {
+    if (import_typescript14.default.isTemplateExpression(expression)) {
       return this.#template(expression);
     }
-    if (import_typescript13.default.isExpressionWithTypeArguments(expression)) {
+    if (import_typescript14.default.isExpressionWithTypeArguments(expression)) {
       return this.#instantiatedValue(expression, natural);
     }
-    if (import_typescript13.default.isPropertyAccessExpression(expression)) {
+    if (import_typescript14.default.isPropertyAccessExpression(expression)) {
       return this.#propertyValue(expression, natural);
     }
-    if (import_typescript13.default.isObjectLiteralExpression(expression)) {
+    if (import_typescript14.default.isObjectLiteralExpression(expression)) {
       return this.#objectLiteral(expression, natural);
     }
-    if (import_typescript13.default.isArrayLiteralExpression(expression)) {
+    if (import_typescript14.default.isArrayLiteralExpression(expression)) {
       return this.#arrayLiteral(expression, natural);
     }
-    if (import_typescript13.default.isElementAccessExpression(expression)) {
+    if (import_typescript14.default.isElementAccessExpression(expression)) {
       return this.#elementAccess(expression);
     }
-    if (expression.kind === import_typescript13.default.SyntaxKind.TrueKeyword) {
+    if (expression.kind === import_typescript14.default.SyntaxKind.TrueKeyword) {
       return { operand: { kind: "Const", value: this.boolConst(true) }, type: natural };
     }
-    if (expression.kind === import_typescript13.default.SyntaxKind.FalseKeyword) {
+    if (expression.kind === import_typescript14.default.SyntaxKind.FalseKeyword) {
       return { operand: { kind: "Const", value: this.boolConst(false) }, type: natural };
     }
-    if (import_typescript13.default.isIdentifier(expression)) {
+    if (import_typescript14.default.isIdentifier(expression)) {
       const binding = this.scopes.lookup(expression.text);
       if (binding === undefined) {
+        const global2 = this.#globalValue(expression);
+        if (global2 !== "not-a-global") {
+          return global2;
+        }
         return this.functionValue(expression, natural);
       }
       if (this.#readMoved(expression, binding.local, expression.text)) {
@@ -180713,22 +181490,22 @@ class BodyLowerer extends BoundaryLowerer {
       }
       return { operand: { kind: "Copy", value: bindingPlace(binding) }, type: binding.type };
     }
-    if (expression.kind === import_typescript13.default.SyntaxKind.ThisKeyword) {
+    if (expression.kind === import_typescript14.default.SyntaxKind.ThisKeyword) {
       return this.#thisTyped(expression);
     }
-    if (import_typescript13.default.isNewExpression(expression)) {
+    if (import_typescript14.default.isNewExpression(expression)) {
       return this.#new(expression);
     }
-    if (import_typescript13.default.isConditionalExpression(expression)) {
+    if (import_typescript14.default.isConditionalExpression(expression)) {
       return this.#conditional(expression, natural);
     }
-    if (import_typescript13.default.isPrefixUnaryExpression(expression)) {
+    if (import_typescript14.default.isPrefixUnaryExpression(expression)) {
       return this.#unary(expression, natural);
     }
-    if (import_typescript13.default.isBinaryExpression(expression)) {
+    if (import_typescript14.default.isBinaryExpression(expression)) {
       return this.#binary(expression, natural);
     }
-    if (import_typescript13.default.isCallExpression(expression)) {
+    if (import_typescript14.default.isCallExpression(expression)) {
       return this.#call(expression, natural);
     }
     this.outer.unsupported(expression, describe(expression));
@@ -180867,8 +181644,8 @@ class BodyLowerer extends BoundaryLowerer {
     }
     const values = [];
     for (const field of natural.fields) {
-      const property = expression.properties.find((candidate) => import_typescript13.default.isPropertyAssignment(candidate) && candidate.name !== undefined && candidate.name.getText() === field.name);
-      if (property === undefined || !import_typescript13.default.isPropertyAssignment(property)) {
+      const property = expression.properties.find((candidate) => import_typescript14.default.isPropertyAssignment(candidate) && candidate.name !== undefined && candidate.name.getText() === field.name);
+      if (property === undefined || !import_typescript14.default.isPropertyAssignment(property)) {
         this.outer.unsupported(expression, `an object literal without \`${field.name}\``);
         return;
       }
@@ -180891,7 +181668,7 @@ class BodyLowerer extends BoundaryLowerer {
     }
     const values = [];
     for (const element of expression.elements) {
-      if (import_typescript13.default.isSpreadElement(element)) {
+      if (import_typescript14.default.isSpreadElement(element)) {
         this.outer.unsupported(element, "a spread element in an array literal");
         return;
       }
@@ -180937,7 +181714,7 @@ class BodyLowerer extends BoundaryLowerer {
       return;
     }
     const argument = expression.argumentExpression;
-    if (import_typescript13.default.isNumericLiteral(argument) && !/[.eE]/.test(argument.getText())) {
+    if (import_typescript14.default.isNumericLiteral(argument) && !/[.eE]/.test(argument.getText())) {
       return {
         place: {
           local: base.local,
@@ -181000,6 +181777,10 @@ class BodyLowerer extends BoundaryLowerer {
     }
     if (this.staticAt(expression) !== undefined) {
       return this.functionValue(expression, natural);
+    }
+    const staticField = this.#staticFieldRecord(expression);
+    if (staticField !== undefined) {
+      return staticField === "reported" ? undefined : this.#readGlobal(expression, staticField);
     }
     if (this.outer.namespaceValue(expression) !== undefined) {
       return this.functionValue(expression, natural);
@@ -181164,6 +181945,55 @@ class BodyLowerer extends BoundaryLowerer {
       type: natural
     };
   }
+  #globalValue(expression) {
+    const record = this.outer.globalAt(expression);
+    if (record === undefined) {
+      return "not-a-global";
+    }
+    if (record === "reported") {
+      return;
+    }
+    return this.#readGlobal(expression, record);
+  }
+  #globalPlace(at, record) {
+    const pointer = { kind: "pointer", pointee: record.type };
+    const address = this.f.addLocal({
+      ty: this.outer.tyOf(pointer, at),
+      storage: "Temporary",
+      span: this.outer.span(at)
+    });
+    this.push({ kind: "StorageLive", value: address });
+    this.push({
+      kind: "Init",
+      place: placeOf(address),
+      rvalue: {
+        kind: "Use",
+        value: {
+          kind: "Const",
+          value: {
+            kind: "Global",
+            global: record.kind === "defined" ? { kind: "Local", value: record.id } : { kind: "Extern", value: this.outer.externGlobalIdOf(record) },
+            ty: this.outer.tyOf(pointer, at)
+          }
+        }
+      }
+    });
+    return { local: address, projection: [{ kind: "Deref" }] };
+  }
+  #staticFieldRecord(access) {
+    const field = this.staticFieldAt(access);
+    if (field === undefined) {
+      return;
+    }
+    const record = this.outer.globalFor(field.declaration, field.name);
+    return record ?? "reported";
+  }
+  #readGlobal(at, record) {
+    return {
+      operand: { kind: "Copy", value: this.#globalPlace(at, record) },
+      type: record.type
+    };
+  }
   placeOfSubject(at, subject) {
     if (subject.operand.kind === "Const") {
       this.outer.unsupported(at, "reaching into a constant");
@@ -181173,7 +182003,7 @@ class BodyLowerer extends BoundaryLowerer {
   }
   #unary(expression, natural) {
     const operand = expression.operand;
-    if (expression.operator === import_typescript13.default.SyntaxKind.ExclamationToken) {
+    if (expression.operator === import_typescript14.default.SyntaxKind.ExclamationToken) {
       const inner = this.#condition(operand);
       if (inner === undefined) {
         return;
@@ -181184,15 +182014,15 @@ class BodyLowerer extends BoundaryLowerer {
         operand: inner
       });
     }
-    if (expression.operator === import_typescript13.default.SyntaxKind.PlusToken) {
+    if (expression.operator === import_typescript14.default.SyntaxKind.PlusToken) {
       return this.value(operand, natural);
     }
-    if (expression.operator === import_typescript13.default.SyntaxKind.MinusToken) {
+    if (expression.operator === import_typescript14.default.SyntaxKind.MinusToken) {
       if (natural.kind === "scalar" && rangeOf(natural.name)?.min === 0n) {
         this.outer.error(expression, "GF0165", `unary minus has no meaning on \`${natural.name}\`, which is unsigned. ` + "Nothing it could produce is representable.");
         return;
       }
-      if (import_typescript13.default.isNumericLiteral(operand)) {
+      if (import_typescript14.default.isNumericLiteral(operand)) {
         return this.#literal(operand, natural, true);
       }
       const inner = this.#expression(operand, natural);
@@ -181205,7 +182035,7 @@ class BodyLowerer extends BoundaryLowerer {
         operand: inner
       });
     }
-    if (expression.operator === import_typescript13.default.SyntaxKind.TildeToken) {
+    if (expression.operator === import_typescript14.default.SyntaxKind.TildeToken) {
       if (natural.kind === "scalar" && rangeOf(natural.name) === null) {
         this.outer.error(expression, "GF0162", `\`~\` is defined on integers; this operand is \`${natural.name}\`.`);
         return;
@@ -181220,8 +182050,8 @@ class BodyLowerer extends BoundaryLowerer {
         operand: inner
       });
     }
-    if (expression.operator === import_typescript13.default.SyntaxKind.PlusPlusToken || expression.operator === import_typescript13.default.SyntaxKind.MinusMinusToken) {
-      const spelling = expression.operator === import_typescript13.default.SyntaxKind.PlusPlusToken ? "++" : "--";
+    if (expression.operator === import_typescript14.default.SyntaxKind.PlusPlusToken || expression.operator === import_typescript14.default.SyntaxKind.MinusMinusToken) {
+      const spelling = expression.operator === import_typescript14.default.SyntaxKind.PlusPlusToken ? "++" : "--";
       this.outer.unsupported(expression, `\`${spelling}\` as a value — it updates on its own as a statement`);
       return;
     }
@@ -181234,8 +182064,8 @@ class BodyLowerer extends BoundaryLowerer {
       return this.#nullTest(expression, nullTest);
     }
     const kind = expression.operatorToken.kind;
-    if (kind === import_typescript13.default.SyntaxKind.AmpersandAmpersandToken || kind === import_typescript13.default.SyntaxKind.BarBarToken) {
-      return this.#shortCircuit(expression, kind === import_typescript13.default.SyntaxKind.AmpersandAmpersandToken);
+    if (kind === import_typescript14.default.SyntaxKind.AmpersandAmpersandToken || kind === import_typescript14.default.SyntaxKind.BarBarToken) {
+      return this.#shortCircuit(expression, kind === import_typescript14.default.SyntaxKind.AmpersandAmpersandToken);
     }
     const operator = OPERATOR_TOKENS[kind];
     if (operator === undefined) {
@@ -181390,14 +182220,14 @@ class BodyLowerer extends BoundaryLowerer {
     return { operand: { kind: "Copy", value: placeOf(result) }, type: bool };
   }
   #call(expression, natural) {
-    if (expression.expression.kind === import_typescript13.default.SyntaxKind.SuperKeyword) {
+    if (expression.expression.kind === import_typescript14.default.SyntaxKind.SuperKeyword) {
       return this.#superCall(expression);
     }
     const closure = this.#closureCallee(expression.expression);
     if (closure !== undefined) {
       return this.#localFnCall(expression, closure.place, closure.type);
     }
-    if (import_typescript13.default.isPropertyAccessExpression(expression.expression)) {
+    if (import_typescript14.default.isPropertyAccessExpression(expression.expression)) {
       const linalg = this.linalgCall(expression, expression.expression);
       if (linalg !== "not-linalg") {
         return linalg;
@@ -181407,7 +182237,7 @@ class BodyLowerer extends BoundaryLowerer {
     if (callable !== undefined) {
       return this.#indirectCall(expression, callable.value, callable.type);
     }
-    if (import_typescript13.default.isPropertyAccessExpression(expression.expression)) {
+    if (import_typescript14.default.isPropertyAccessExpression(expression.expression)) {
       const qualified = this.outer.namespaceCallee(expression, expression.expression, this.bindings);
       if (qualified === "reported") {
         return;
@@ -181421,7 +182251,7 @@ class BodyLowerer extends BoundaryLowerer {
       }
       return this.#console(expression);
     }
-    if (!import_typescript13.default.isIdentifier(expression.expression)) {
+    if (!import_typescript14.default.isIdentifier(expression.expression)) {
       return;
     }
     const name = this.outer.shadowsPrelude(expression.expression) ? "" : expression.expression.text;
@@ -181436,6 +182266,9 @@ class BodyLowerer extends BoundaryLowerer {
     }
     if (name === FIXED_ARRAY) {
       return this.fixedArray(expression, natural);
+    }
+    if (name === FIXED_ARRAY_OF) {
+      return this.fixedArrayOf(expression, natural);
     }
     if (name === TRY_CAST) {
       return this.tryCast(expression);
@@ -181525,7 +182358,7 @@ class BodyLowerer extends BoundaryLowerer {
     return this.fromCall(destination, returns);
   }
   #closureCallee(expression) {
-    if (!import_typescript13.default.isIdentifier(expression)) {
+    if (!import_typescript14.default.isIdentifier(expression)) {
       return;
     }
     const binding = this.scopes.lookup(expression.text);
@@ -181990,7 +182823,7 @@ class BodyLowerer extends BoundaryLowerer {
     return this.emitCall(at, { kind: "Virtual", slot: method.slot, sig: record.sig }, [this.refTo(at, asClass.place, { kind: "class", name: asClass.info.name }), ...extra], record.signature.returns);
   }
   #methodCall(expression, access) {
-    if (access.expression.kind === import_typescript13.default.SyntaxKind.SuperKeyword) {
+    if (access.expression.kind === import_typescript14.default.SyntaxKind.SuperKeyword) {
       return this.#superMethodCall(expression, access);
     }
     if (POINTER_METHODS.has(access.name.text) && this.tryErase(access.expression)?.kind === "pointer") {
@@ -182026,6 +182859,16 @@ class BodyLowerer extends BoundaryLowerer {
         default:
           this.outer.unsupported(expression, `\`${access.name.text}\` on an array`);
           return;
+      }
+    }
+    if (access.name.text === TO_ARRAY) {
+      const fixed = this.tryErase(access.expression);
+      if (fixed?.kind === "fixedArray") {
+        const subject = this.value(access.expression, undefined);
+        if (subject === undefined) {
+          return;
+        }
+        return this.fixedArrayToArray(expression, subject, fixed);
       }
     }
     if (this.tryErase(access.expression)?.kind === "string") {
@@ -182094,12 +182937,12 @@ class BodyLowerer extends BoundaryLowerer {
   }
   nullTestOf(expression) {
     const kind = expression.operatorToken.kind;
-    const equals = kind === import_typescript13.default.SyntaxKind.EqualsEqualsToken || kind === import_typescript13.default.SyntaxKind.EqualsEqualsEqualsToken;
-    const differs = kind === import_typescript13.default.SyntaxKind.ExclamationEqualsToken || kind === import_typescript13.default.SyntaxKind.ExclamationEqualsEqualsToken;
+    const equals = kind === import_typescript14.default.SyntaxKind.EqualsEqualsToken || kind === import_typescript14.default.SyntaxKind.EqualsEqualsEqualsToken;
+    const differs = kind === import_typescript14.default.SyntaxKind.ExclamationEqualsToken || kind === import_typescript14.default.SyntaxKind.ExclamationEqualsEqualsToken;
     if (!equals && !differs) {
       return;
     }
-    const isNull = (node) => node.kind === import_typescript13.default.SyntaxKind.NullKeyword;
+    const isNull = (node) => node.kind === import_typescript14.default.SyntaxKind.NullKeyword;
     const subject = isNull(expression.right) ? expression.left : isNull(expression.left) ? expression.right : undefined;
     if (subject === undefined) {
       return;
@@ -182376,7 +183219,7 @@ class BodyLowerer extends BoundaryLowerer {
     if (argument === undefined) {
       return;
     }
-    if (!import_typescript13.default.isIdentifier(argument)) {
+    if (!import_typescript14.default.isIdentifier(argument)) {
       this.outer.error(argument, "GF0002", "`move` empties a *name*, and what makes that safe is that the name " + "cannot be read afterwards — which is checkable for a binding and is " + `not for an element or a field. \`${TAKE}\` is the one for a place: it ` + "hands back the value and leaves the default behind, so what stays " + "there is a real value rather than a hole.");
       return;
     }
@@ -182409,15 +183252,15 @@ class BodyLowerer extends BoundaryLowerer {
       this.outer.error(expression, "GF0002", `\`${TAKE}\` takes exactly one place.`);
       return;
     }
-    if (!import_typescript13.default.isIdentifier(argument) && !import_typescript13.default.isElementAccessExpression(argument) && !import_typescript13.default.isPropertyAccessExpression(argument)) {
+    if (!import_typescript14.default.isIdentifier(argument) && !import_typescript14.default.isElementAccessExpression(argument) && !import_typescript14.default.isPropertyAccessExpression(argument)) {
       this.outer.error(argument, "GF0002", `\`${TAKE}\` needs somewhere to put the default back — a name, an element ` + "or a field. This expression is a value rather than a place, and it is " + "already yours: use it directly.");
       return;
     }
-    if (import_typescript13.default.isElementAccessExpression(argument) && this.outer.readonlyArrayAt(argument.expression)) {
+    if (import_typescript14.default.isElementAccessExpression(argument) && this.outer.readonlyArrayAt(argument.expression)) {
       this.outer.error(argument, "GF0240", `\`${TAKE}\` empties the slot it reads, so it is a write — and this is a ` + "`readonly` array, which this code may read and may not write. Take a " + "mutable `T[]` where the array is this function's to empty, or copy the " + "element, which is what assigning it does.");
       return;
     }
-    if (import_typescript13.default.isIdentifier(argument)) {
+    if (import_typescript14.default.isIdentifier(argument)) {
       const binding = this.scopes.lookup(argument.text);
       if (binding === undefined) {
         this.outer.unsupported(argument, `the name \`${argument.text}\``);
@@ -182489,6 +183332,12 @@ class Lowerer {
   #requireMain;
   #root;
   #entry;
+  #globals = new Map;
+  #pendingGlobals = new Map;
+  #foldingGlobals = new Set;
+  #failedGlobals = new Set;
+  #externGlobals = new Map;
+  #folder;
   #classes = new Map;
   #genericClasses = new Map;
   #localFns = new Map;
@@ -182516,6 +183365,43 @@ class Lowerer {
     this.#requireMain = requireMain;
     this.#root = root.replaceAll("\\", "/");
     this.#entry = entry.replaceAll("\\", "/");
+    this.#folder = new ConstantFolder({
+      tyOf: (type, at) => this.tyOf(type, at),
+      enumMemberAt: (expression) => this.enumMemberAt(expression),
+      globalAt: (expression) => this.#foldOperand(expression),
+      prelude: (name) => !this.shadowsPrelude(name),
+      erase: (at, type) => this.erase(at, type, NO_BINDINGS),
+      linalg: (expression) => linalgTypeOf(this.#checker.getTypeAtLocation(expression)) !== null,
+      functionAddress: (expression, type) => this.#functionAddress(expression, type),
+      stringConstant: (text) => ({
+        kind: "Str",
+        text: this.#mir.sym(text),
+        ty: this.#mir.ty({ kind: "Str" })
+      }),
+      checker: this.#checker,
+      error: (node, code, message) => this.error(node, code, message)
+    }, (type) => type.kind === "struct" && !type.union ? type.fields : undefined);
+  }
+  #foldOperand(expression) {
+    const declaration = this.#globalDeclarationAt(expression);
+    if (declaration === undefined) {
+      return "not-a-global";
+    }
+    const key = this.#keyOf(declaration, declaration.name.getText());
+    if (!this.#pendingGlobals.has(key) && !this.#globals.has(key)) {
+      return "not-a-global";
+    }
+    const record = this.#globalRecord(key);
+    if (record === undefined) {
+      return "not-a-global";
+    }
+    if (record === "reported") {
+      return "forward";
+    }
+    if (record.kind === "imported") {
+      return "imported";
+    }
+    return { leaves: record.leaves, ...record.scalar !== undefined ? { scalar: record.scalar } : {} };
   }
   get mir() {
     return this.#mir;
@@ -182682,7 +183568,7 @@ ${trail.slice(-5).map((step, index) => `    #${trail.length - 4 + index}  ${step
         at: node
       }));
     }
-    const resolved = use.node.kind === import_typescript14.default.SyntaxKind.CallExpression ? this.#checker.getResolvedSignature(use.node) : undefined;
+    const resolved = use.node.kind === import_typescript15.default.SyntaxKind.CallExpression ? this.#checker.getResolvedSignature(use.node) : undefined;
     const declared = this.#checker.getSignatureFromDeclaration(declaration);
     const inferred = resolved === undefined || declared === undefined ? undefined : inferBindings(this.#checker, template.parameters, declared, resolved);
     if (inferred !== undefined) {
@@ -182694,7 +183580,7 @@ ${trail.slice(-5).map((step, index) => `    #${trail.length - 4 + index}  ${step
     const undetermined = template.parameters.map((p) => `\`${p.name}\``).join(" and ");
     const one = template.parameters.length === 1;
     const angles = template.parameters.map(() => "…").join(", ");
-    this.error(use.node, "GF0404", use.node.kind === import_typescript14.default.SyntaxKind.CallExpression ? `this call does not determine ${undetermined}, so there is no way to ` + `know which copy of \`${template.name}\` to compile. Write ` + `\`${template.name}<${angles}>(…)\` with a concrete type in place of ` + `each \`…\`.
+    this.error(use.node, "GF0404", use.node.kind === import_typescript15.default.SyntaxKind.CallExpression ? `this call does not determine ${undetermined}, so there is no way to ` + `know which copy of \`${template.name}\` to compile. Write ` + `\`${template.name}<${angles}>(…)\` with a concrete type in place of ` + `each \`…\`.
 
 A generic is compiled once for each set of type ` + `arguments, so ${one ? "it has" : "they have"} to be settled at the ` + "call — either by an argument whose type says so, or in writing." : `\`${template.name}\` is generic and this takes its *address*, which ` + `has no arguments to determine ${undetermined} from. Write ` + `\`${template.name}<${angles}>\` with a concrete type in place of each ` + "`…`.\n\nA generic has no address of its own: each set of type " + "arguments is a separate function, so naming one is how you say which " + "function you meant.");
     return;
@@ -182728,10 +183614,10 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
     if (symbol === undefined) {
       return;
     }
-    if ((symbol.flags & import_typescript14.default.SymbolFlags.Alias) !== 0) {
+    if ((symbol.flags & import_typescript15.default.SymbolFlags.Alias) !== 0) {
       symbol = this.#checker.getAliasedSymbol(symbol);
     }
-    return symbol.declarations?.find(import_typescript14.default.isFunctionDeclaration);
+    return symbol.declarations?.find(import_typescript15.default.isFunctionDeclaration);
   }
   tryErase(expression, bindings) {
     try {
@@ -182744,27 +183630,27 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
     }
   }
   namesADeclaredFunction(expression) {
-    if (!import_typescript14.default.isIdentifier(expression)) {
+    if (!import_typescript15.default.isIdentifier(expression)) {
       return false;
     }
     let symbol = this.#checker.getSymbolAtLocation(expression);
     if (symbol === undefined) {
       return false;
     }
-    if ((symbol.flags & import_typescript14.default.SymbolFlags.Alias) !== 0) {
+    if ((symbol.flags & import_typescript15.default.SymbolFlags.Alias) !== 0) {
       symbol = this.#checker.getAliasedSymbol(symbol);
     }
-    return symbol.declarations?.some(import_typescript14.default.isFunctionDeclaration) ?? false;
+    return symbol.declarations?.some(import_typescript15.default.isFunctionDeclaration) ?? false;
   }
   shadowsPrelude(expression) {
-    if (!import_typescript14.default.isIdentifier(expression)) {
+    if (!import_typescript15.default.isIdentifier(expression)) {
       return false;
     }
     let symbol = this.#checker.getSymbolAtLocation(expression);
     if (symbol === undefined) {
       return false;
     }
-    if ((symbol.flags & import_typescript14.default.SymbolFlags.Alias) !== 0) {
+    if ((symbol.flags & import_typescript15.default.SymbolFlags.Alias) !== 0) {
       symbol = this.#checker.getAliasedSymbol(symbol);
     }
     const declarations = symbol.declarations ?? [];
@@ -182775,7 +183661,7 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
     return declarations.every((declaration) => normalisePath2(declaration.getSourceFile().fileName) !== prelude);
   }
   functionValueAt(expression) {
-    if (import_typescript14.default.isPropertyAccessExpression(expression) && import_typescript14.default.isIdentifier(expression.expression)) {
+    if (import_typescript15.default.isPropertyAccessExpression(expression) && import_typescript15.default.isIdentifier(expression.expression)) {
       const info = this.#classes.get(expression.expression.text);
       const method = info?.statics.get(expression.name.text);
       if (method !== undefined) {
@@ -182822,14 +183708,31 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
     if (symbol === undefined) {
       return false;
     }
-    const resolved = (symbol.flags & import_typescript14.default.SymbolFlags.Alias) !== 0 ? this.#checker.getAliasedSymbol(symbol) : symbol;
-    return (resolved.flags & import_typescript14.default.SymbolFlags.Module) !== 0;
+    const resolved = (symbol.flags & import_typescript15.default.SymbolFlags.Alias) !== 0 ? this.#checker.getAliasedSymbol(symbol) : symbol;
+    return (resolved.flags & import_typescript15.default.SymbolFlags.Module) !== 0;
   }
   run() {
     const sources = this.#program.getSourceFiles().filter((file) => !file.isDeclarationFile);
     this.#declarePreludeExterns();
     this.#collectAddressTaken(sources);
     const classBodies = this.#declareClasses();
+    this.#collectGlobals(sources);
+    for (const info of this.#classes.values()) {
+      for (const field of info.staticFields.values()) {
+        if (field.type.kind === "array" && !this.#globalArrayIsReadonly(field.declaration)) {
+          this.#failedGlobals.add(this.#keyOf(field.declaration, field.name));
+          continue;
+        }
+        this.#pendingGlobals.set(this.#keyOf(field.declaration, field.name), {
+          declaration: field.declaration,
+          name: `${field.owner}.${field.name}`,
+          symbol: `${field.owner}$${field.name}`,
+          type: field.type,
+          mutable: !field.isReadonly,
+          exported: false
+        });
+      }
+    }
     const declared = [];
     for (const source of sources) {
       for (const statement of source.statements) {
@@ -182838,6 +183741,9 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
           declared.push(one);
         }
       }
+    }
+    for (const key of [...this.#pendingGlobals.keys()]) {
+      this.#globalRecord(key);
     }
     for (const body of classBodies) {
       this.#lowerClassBody(body);
@@ -182931,7 +183837,7 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
   accessorType(info, accessor) {
     const bindings = info.bindings;
     const declaration = accessor.declaration;
-    if (import_typescript14.default.isSetAccessorDeclaration(declaration)) {
+    if (import_typescript15.default.isSetAccessorDeclaration(declaration)) {
       const parameter = declaration.parameters[0];
       if (parameter === undefined) {
         this.unsupported(declaration, "a setter with no parameter");
@@ -182953,7 +183859,7 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
       if (!this.#checker.isArrayType(part)) {
         continue;
       }
-      const element = this.#checker.getIndexTypeOfType(part, import_typescript14.default.IndexKind.Number);
+      const element = this.#checker.getIndexTypeOfType(part, import_typescript15.default.IndexKind.Number);
       if (element === undefined) {
         continue;
       }
@@ -182968,7 +183874,7 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
       if (!this.#checker.isArrayType(part)) {
         continue;
       }
-      const info = this.#checker.getIndexInfoOfType(part, import_typescript14.default.IndexKind.Number);
+      const info = this.#checker.getIndexInfoOfType(part, import_typescript15.default.IndexKind.Number);
       if (info !== undefined) {
         return info.isReadonly;
       }
@@ -183068,7 +183974,7 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
   }
   liftClosure(node, type, enclosing, self, bindings) {
     const declaredThis = thisParameterOf(node);
-    if (declaredThis !== undefined || import_typescript14.default.isFunctionExpression(node) && usesThis(node)) {
+    if (declaredThis !== undefined || import_typescript15.default.isFunctionExpression(node) && usesThis(node)) {
       this.error(declaredThis ?? node, "GF0002", "a `function` expression takes its `this` from the receiver at the call " + "site, and a `LocalFn` is a code address and an environment with no " + "receiver in it — so nothing here can supply one. Write it as an arrow " + "function, which captures the enclosing `this` instead of expecting to " + "be given one.");
       return;
     }
@@ -183079,7 +183985,7 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
     }
     const params = [];
     for (const [index, parameter] of written.entries()) {
-      if (!import_typescript14.default.isIdentifier(parameter.name)) {
+      if (!import_typescript15.default.isIdentifier(parameter.name)) {
         this.unsupported(parameter, "a destructured closure parameter");
         return;
       }
@@ -183282,7 +184188,7 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
   }
   enumMemberAt(expression) {
     const declaration = this.#checker.getSymbolAtLocation(expression.name)?.declarations?.[0];
-    return declaration !== undefined && import_typescript14.default.isEnumMember(declaration) ? declaration : undefined;
+    return declaration !== undefined && import_typescript15.default.isEnumMember(declaration) ? declaration : undefined;
   }
   erase(at, type, bindings) {
     try {
@@ -183381,28 +184287,28 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
   #collectAddressTaken(sources) {
     const callees = new Set;
     const findCalls = (node) => {
-      if (import_typescript14.default.isCallExpression(node)) {
+      if (import_typescript15.default.isCallExpression(node)) {
         callees.add(node.expression);
       }
-      import_typescript14.default.forEachChild(node, findCalls);
+      import_typescript15.default.forEachChild(node, findCalls);
     };
     for (const source of sources) {
       findCalls(source);
     }
     const scan = (node) => {
       const parent = node.parent;
-      const isDeclarationName = parent !== undefined && (import_typescript14.default.isFunctionDeclaration(parent) || import_typescript14.default.isMethodDeclaration(parent) || import_typescript14.default.isClassDeclaration(parent) || import_typescript14.default.isVariableDeclaration(parent) || import_typescript14.default.isParameter(parent) || import_typescript14.default.isPropertyDeclaration(parent) || import_typescript14.default.isBindingElement(parent)) && parent.name === node;
-      const isMemberName = parent !== undefined && (import_typescript14.default.isPropertyAccessExpression(parent) && parent.name === node || import_typescript14.default.isQualifiedName(parent) && parent.right === node);
-      if ((import_typescript14.default.isIdentifier(node) || import_typescript14.default.isPropertyAccessExpression(node)) && !callees.has(node) && !isMemberName && !isDeclarationName) {
+      const isDeclarationName = parent !== undefined && (import_typescript15.default.isFunctionDeclaration(parent) || import_typescript15.default.isMethodDeclaration(parent) || import_typescript15.default.isClassDeclaration(parent) || import_typescript15.default.isVariableDeclaration(parent) || import_typescript15.default.isParameter(parent) || import_typescript15.default.isPropertyDeclaration(parent) || import_typescript15.default.isBindingElement(parent)) && parent.name === node;
+      const isMemberName = parent !== undefined && (import_typescript15.default.isPropertyAccessExpression(parent) && parent.name === node || import_typescript15.default.isQualifiedName(parent) && parent.right === node);
+      if ((import_typescript15.default.isIdentifier(node) || import_typescript15.default.isPropertyAccessExpression(node)) && !callees.has(node) && !isMemberName && !isDeclarationName) {
         for (const declaration of this.#checker.getSymbolAtLocation(node)?.declarations ?? []) {
-          if (import_typescript14.default.isFunctionDeclaration(declaration)) {
+          if (import_typescript15.default.isFunctionDeclaration(declaration)) {
             this.#addressTaken.add(declaration);
-          } else if (import_typescript14.default.isMethodDeclaration(declaration) && isStaticMember(declaration)) {
+          } else if (import_typescript15.default.isMethodDeclaration(declaration) && isStaticMember(declaration)) {
             this.#addressTaken.add(declaration);
           }
         }
       }
-      import_typescript14.default.forEachChild(node, scan);
+      import_typescript15.default.forEachChild(node, scan);
     };
     for (const source of sources) {
       scan(source);
@@ -183552,7 +184458,7 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
   }
   #registerDeclaredInterfaces(info) {
     for (const clause of info.node.heritageClauses ?? []) {
-      if (clause.token !== import_typescript14.default.SyntaxKind.ImplementsKeyword) {
+      if (clause.token !== import_typescript15.default.SyntaxKind.ImplementsKeyword) {
         continue;
       }
       for (const expression of clause.types) {
@@ -183617,7 +184523,7 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
       if (parameter === declaredThis) {
         continue;
       }
-      if (!import_typescript14.default.isIdentifier(parameter.name)) {
+      if (!import_typescript15.default.isIdentifier(parameter.name)) {
         this.unsupported(parameter, "a destructured parameter");
         return;
       }
@@ -183683,24 +184589,245 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
     });
     return builder;
   }
-  #declare(statement) {
-    if (import_typescript14.default.isInterfaceDeclaration(statement) || import_typescript14.default.isTypeAliasDeclaration(statement) || import_typescript14.default.isImportDeclaration(statement) || import_typescript14.default.isExportDeclaration(statement) || statement.kind === import_typescript14.default.SyntaxKind.EmptyStatement) {
+  #collectGlobals(sources) {
+    for (const source of sources) {
+      for (const statement of source.statements) {
+        if (!import_typescript15.default.isVariableStatement(statement)) {
+          continue;
+        }
+        const list = statement.declarationList;
+        if ((list.flags & import_typescript15.default.NodeFlags.Const) === 0) {
+          this.unsupported(statement, list.flags & import_typescript15.default.NodeFlags.Let ? "a top-level `let` (a module-level constant is `const`)" : "a top-level `var`");
+          continue;
+        }
+        if (list.declarations.length !== 1) {
+          this.unsupported(statement, "several declarators in one top-level `const`");
+          continue;
+        }
+        const declaration = list.declarations[0];
+        if (!import_typescript15.default.isIdentifier(declaration.name)) {
+          this.unsupported(statement, "a destructuring pattern at the top level");
+          continue;
+        }
+        const ambient = statement.modifiers?.some((m) => m.kind === import_typescript15.default.SyntaxKind.DeclareKeyword) ?? false;
+        if (ambient) {
+          this.#declareGlobalImport(declaration, declaration.name.text);
+          continue;
+        }
+        if (declaration.initializer === undefined) {
+          this.error(declaration, "GF0007", "a module-level constant has to be given its value here: there is " + "no later point at which one could be assigned, because nothing " + "runs before `main`. A constant some other library defines is " + "`declare const` instead, which names its symbol and has no value " + "on this side.");
+          continue;
+        }
+        const type = this.erase(declaration.type ?? declaration, this.#checker.getTypeAtLocation(declaration.type ?? declaration), NO_BINDINGS);
+        const key = this.#keyOf(declaration, declaration.name.text);
+        if (type === undefined) {
+          this.#failedGlobals.add(key);
+          continue;
+        }
+        if (!this.#globalTypeAllowed(type, declaration.type ?? declaration, type)) {
+          this.#failedGlobals.add(key);
+          continue;
+        }
+        if (type.kind === "array" && !this.#globalArrayIsReadonly(declaration)) {
+          this.#failedGlobals.add(key);
+          continue;
+        }
+        this.#pendingGlobals.set(key, {
+          declaration,
+          name: declaration.name.text,
+          symbol: declaration.name.text,
+          type,
+          mutable: false,
+          exported: statement.modifiers?.some((m) => m.kind === import_typescript15.default.SyntaxKind.ExportKeyword) ?? false
+        });
+      }
+    }
+  }
+  #functionAddress(expression, type) {
+    if (type.kind !== "fnptr") {
       return;
     }
-    if (import_typescript14.default.isEnumDeclaration(statement)) {
+    const target = this.functionValueAt(expression);
+    if (target === undefined) {
+      return;
+    }
+    return {
+      kind: "Func",
+      func: target.kind === "defined" ? { kind: "Local", value: target.id } : { kind: "Extern", value: this.externIdOf(target) },
+      ty: this.tyOf(type, expression)
+    };
+  }
+  #declareGlobalImport(declaration, name) {
+    const key = this.#keyOf(declaration, name);
+    const type = this.erase(declaration.type ?? declaration, this.#checker.getTypeAtLocation(declaration.type ?? declaration), NO_BINDINGS);
+    if (type === undefined) {
+      this.#failedGlobals.add(key);
+      return;
+    }
+    if (!this.#globalTypeAllowed(type, declaration.type ?? declaration, type)) {
+      this.#failedGlobals.add(key);
+      return;
+    }
+    this.#globals.set(key, {
+      kind: "imported",
+      declaration,
+      name,
+      symbol: name,
+      type
+    });
+  }
+  externGlobalIdOf(record) {
+    const existing = this.#externGlobals.get(record.symbol);
+    if (existing !== undefined) {
+      return existing;
+    }
+    const id = this.#mir.externGlobal({
+      name: record.symbol,
+      ty: this.tyOf(record.type, record.declaration),
+      span: this.span(record.declaration)
+    });
+    this.#externGlobals.set(record.symbol, id);
+    return id;
+  }
+  #globalRecord(key) {
+    const known = this.#globals.get(key);
+    if (known !== undefined) {
+      return known;
+    }
+    if (this.#failedGlobals.has(key)) {
+      return "reported";
+    }
+    const pending = this.#pendingGlobals.get(key);
+    if (pending === undefined) {
+      return;
+    }
+    if (this.#foldingGlobals.has(key)) {
+      this.error(pending.declaration, "GF0008", `\`${pending.name}\` is defined in terms of itself, directly or through ` + "other constants. A module-level constant is folded at compile time, so " + "a cycle has no value to fold to rather than merely no order to run in.");
+      return "reported";
+    }
+    this.#foldingGlobals.add(key);
+    const record = this.#foldGlobal(pending);
+    this.#foldingGlobals.delete(key);
+    if (record === undefined) {
+      this.#failedGlobals.add(key);
+      return "reported";
+    }
+    this.#globals.set(key, record);
+    return record;
+  }
+  #foldGlobal(pending) {
+    const { declaration, name, type, mutable, exported } = pending;
+    const initializer = declaration.initializer;
+    if (initializer === undefined) {
+      return;
+    }
+    const folded = this.#folder.fold(initializer, type);
+    if (folded === undefined) {
+      return;
+    }
+    const symbol = this.#globalSymbolOf(declaration, pending.symbol);
+    const id = this.#mir.global({
+      name: symbol,
+      ty: this.tyOf(type, declaration),
+      linkage: exported ? "Export" : "Internal",
+      mutable,
+      init: folded.leaves,
+      span: this.span(declaration)
+    });
+    return {
+      kind: "defined",
+      id,
+      name,
+      symbol,
+      type,
+      exported,
+      mutable,
+      leaves: folded.leaves,
+      scalar: folded.scalar
+    };
+  }
+  #globalTypeAllowed(type, at, outer) {
+    switch (type.kind) {
+      case "scalar":
+      case "bool":
+      case "pointer":
+      case "fnptr":
+      case "string":
+        return true;
+      case "fixedArray":
+        return this.#globalTypeAllowed(type.element, at, outer);
+      case "array":
+        if (type !== outer) {
+          this.error(at, "GF0008", `a \`${renderType(outer)}\` holds a \`${renderType(type)}\`, and a ` + "module-level constant can hold an array only as the whole value. " + "Nested, there is nowhere to say it is `readonly`, and a writable " + "one would put its elements in read-only memory.");
+          return false;
+        }
+        return this.#globalTypeAllowed(type.element, at, outer);
+      case "struct":
+        return type.fields.every((field) => this.#globalTypeAllowed(field.type, at, outer));
+      default: {
+        const what = type === outer ? `a \`${renderType(type)}\`` : `a \`${renderType(outer)}\`, which holds a \`${renderType(type)}\`,`;
+        this.error(at, "GF0008", `${what} cannot be a module-level constant. Its value would have to be ` + "bytes decided at compile time, and this owns something a scope has to " + "release — so it needs code to run before `main`, and nothing does.");
+        return false;
+      }
+    }
+  }
+  #globalArrayIsReadonly(declaration) {
+    const type = this.#checker.getTypeAtLocation(declaration.type ?? declaration);
+    if (this.#checker.getPropertyOfType(type, "push") === undefined) {
+      return true;
+    }
+    this.error(declaration.type ?? declaration, "GF0008", "a module-level constant holding an array has to be `readonly`. `const` " + "stops the name being rebound and nothing else, so `push` and `xs[0] = v` " + "would both still be allowed — and both would write to read-only memory. " + "Write `readonly` before the element type and tsc refuses them instead.");
+    return false;
+  }
+  #globalSymbolOf(node, name) {
+    const tag = moduleTag(this.#relative(node.getSourceFile().fileName));
+    return `__gf_g$${tag}$${name}`;
+  }
+  globalFor(declaration, name) {
+    return this.#globalRecord(this.#keyOf(declaration, name));
+  }
+  globalAt(expression) {
+    const declaration = this.#globalDeclarationAt(expression);
+    if (declaration === undefined) {
+      return;
+    }
+    return this.#globalRecord(this.#keyOf(declaration, declaration.name.getText()));
+  }
+  #globalDeclarationAt(expression) {
+    let symbol = this.#checker.getSymbolAtLocation(expression);
+    if (symbol === undefined) {
+      return;
+    }
+    if ((symbol.flags & import_typescript15.default.SymbolFlags.Alias) !== 0) {
+      symbol = this.#checker.getAliasedSymbol(symbol);
+    }
+    const declaration = symbol.valueDeclaration ?? symbol.declarations?.[0];
+    if (declaration === undefined || !import_typescript15.default.isVariableDeclaration(declaration) || !import_typescript15.default.isIdentifier(declaration.name) || !import_typescript15.default.isSourceFile(declaration.parent.parent.parent)) {
+      return;
+    }
+    return declaration;
+  }
+  #declare(statement) {
+    if (import_typescript15.default.isInterfaceDeclaration(statement) || import_typescript15.default.isTypeAliasDeclaration(statement) || import_typescript15.default.isImportDeclaration(statement) || import_typescript15.default.isExportDeclaration(statement) || statement.kind === import_typescript15.default.SyntaxKind.EmptyStatement) {
+      return;
+    }
+    if (import_typescript15.default.isEnumDeclaration(statement)) {
       this.#checkEnum(statement);
       return;
     }
-    if (import_typescript14.default.isModuleDeclaration(statement)) {
+    if (import_typescript15.default.isModuleDeclaration(statement)) {
       if (!this.#checkEnumNamespace(statement)) {
         return;
       }
       return;
     }
-    if (import_typescript14.default.isClassDeclaration(statement)) {
+    if (import_typescript15.default.isClassDeclaration(statement)) {
       return;
     }
-    if (!import_typescript14.default.isFunctionDeclaration(statement)) {
+    if (import_typescript15.default.isVariableStatement(statement)) {
+      return;
+    }
+    if (!import_typescript15.default.isFunctionDeclaration(statement)) {
       this.unsupported(statement, describe(statement));
       return;
     }
@@ -183721,7 +184848,7 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
       return;
     }
     const name = statement.name.text;
-    const exported = statement.modifiers?.some((m) => m.kind === import_typescript14.default.SyntaxKind.ExportKeyword) ?? false;
+    const exported = statement.modifiers?.some((m) => m.kind === import_typescript15.default.SyntaxKind.ExportKeyword) ?? false;
     const isPublic = this.#isPublic(statement, exported);
     const signature = this.#signature(statement, NO_BINDINGS);
     if (signature === undefined) {
@@ -183830,18 +184957,18 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
         continue;
       }
       for (const statement of file.statements) {
-        if (!import_typescript14.default.isModuleDeclaration(statement) || !import_typescript14.default.isStringLiteral(statement.name)) {
+        if (!import_typescript15.default.isModuleDeclaration(statement) || !import_typescript15.default.isStringLiteral(statement.name)) {
           continue;
         }
         const members = STD_MODULES.get(statement.name.text);
         if (members === undefined || statement.body === undefined) {
           continue;
         }
-        if (!import_typescript14.default.isModuleBlock(statement.body)) {
+        if (!import_typescript15.default.isModuleBlock(statement.body)) {
           continue;
         }
         for (const declaration of statement.body.statements) {
-          if (!import_typescript14.default.isFunctionDeclaration(declaration) || declaration.name === undefined) {
+          if (!import_typescript15.default.isFunctionDeclaration(declaration) || declaration.name === undefined) {
             continue;
           }
           const symbol = members.get(declaration.name.text);
@@ -183854,7 +184981,7 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
   }
   #hasImplementation(node) {
     const symbol = node.name === undefined ? undefined : this.#checker.getSymbolAtLocation(node.name);
-    return symbol?.declarations?.some((declaration) => import_typescript14.default.isFunctionDeclaration(declaration) && declaration.body !== undefined) ?? false;
+    return symbol?.declarations?.some((declaration) => import_typescript15.default.isFunctionDeclaration(declaration) && declaration.body !== undefined) ?? false;
   }
   #checkCBoundary(type, at, what) {
     if (type.kind === "reference") {
@@ -183887,7 +185014,7 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
       return;
     }
     for (const parameter of node.parameters) {
-      if (!import_typescript14.default.isIdentifier(parameter.name)) {
+      if (!import_typescript15.default.isIdentifier(parameter.name)) {
         this.unsupported(parameter, "a destructured parameter");
         return;
       }
@@ -184154,17 +185281,17 @@ A generic is compiled once for each set of type ` + `arguments, so ${one ? "it h
   }
   #checkEnumNamespace(statement) {
     const merged = this.#checker.getSymbolAtLocation(statement.name);
-    const mergesWithEnum = merged?.declarations?.some((declaration) => import_typescript14.default.isEnumDeclaration(declaration));
+    const mergesWithEnum = merged?.declarations?.some((declaration) => import_typescript15.default.isEnumDeclaration(declaration));
     if (mergesWithEnum !== true) {
       this.unsupported(statement, `a namespace — the only one this language has is ` + `\`declare namespace E { type ${ENUM_UNDERLYING} = … }\`, which gives an ` + `enum its width`);
       return false;
     }
     const body = statement.body;
-    if (body === undefined || !import_typescript14.default.isModuleBlock(body)) {
+    if (body === undefined || !import_typescript15.default.isModuleBlock(body)) {
       return true;
     }
     for (const inner of body.statements) {
-      if (import_typescript14.default.isTypeAliasDeclaration(inner) && inner.name.text === ENUM_UNDERLYING) {
+      if (import_typescript15.default.isTypeAliasDeclaration(inner) && inner.name.text === ENUM_UNDERLYING) {
         continue;
       }
       this.unsupported(inner, `\`${statement.name.getText()}\` is an enum's width declaration, so ` + `\`type ${ENUM_UNDERLYING} = …\` is the only thing it may contain`);

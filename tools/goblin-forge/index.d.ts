@@ -164,14 +164,14 @@ declare class Compiler {
 	constructor(options: CompileOptions);
 	build(): Promise<CompileResult>;
 }
-import ts3 from "typescript";
+import ts4 from "typescript";
 import { Module as MirModule } from "@goblin-forge/backend";
 import { Diagnostic as Diagnostic2 } from "@goblin-forge/checker";
 interface LowerResult {
 	readonly module: MirModule | undefined;
 	readonly diagnostics: readonly Diagnostic2[];
 }
-declare function lower(program: ts3.Program, checker: ts3.TypeChecker, moduleName: string, options?: {
+declare function lower(program: ts4.Program, checker: ts4.TypeChecker, moduleName: string, options?: {
 	readonly requireMain?: boolean
 	readonly root?: string
 	/** The entry file. Its exports are the build's public ABI. */
