@@ -6,8 +6,8 @@
 // clip volume is `-w <= x,y <= w` and `0 <= z <= w` whatever built it, so the
 // planes are sums and differences of the matrix's rows and an orthographic
 // matrix — where `w` is the constant 1 — falls out of the same arithmetic as a
-// perspective one. That is the whole reason the shadow passes need no geometry
-// of their own to cull with.
+// perspective one. That is why the shadow passes need no culling geometry of
+// their own.
 //
 // **Deriving the planes from the matrix, rather than rebuilding them from the
 // cascade's centre and radius, is what makes shadow culling safe.** The stored

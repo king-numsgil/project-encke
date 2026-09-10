@@ -1,8 +1,8 @@
 // What an id is, in bits.
 //
 // Everything in this ECS is addressed by one `u64`: an entity, a component type,
-// a relationship kind. They are all the same kind of thing, which is what lets
-// one query engine, one storage layer and one cleanup pass serve all three.
+// a relationship kind. All three are the same kind of thing, so one query
+// engine, one storage layer and one cleanup pass serve all of them.
 //
 //     [63..48]  16 flag bits, all reserved
 //     [47..32]  generation, 16 bits
@@ -12,19 +12,19 @@
 // `entities.ts` retires the index rather than wrapping it, so **no handle is
 // ever reissued**.
 //
-// ## The flag bits are reserved, and that is deliberate
+// ## The flag bits are reserved
 //
 // Nothing sets one today. An earlier design spent bit 63 marking an id as a
-// *pair* — `(ChildOf, ship)` packed into a single id that sat in an archetype's
-// signature, the way flecs does it — and that is gone, because a pair in the
+// *pair* — `(ChildOf, ship)` packed into a single id sitting in an archetype's
+// signature, the way flecs does it. That is gone, because a pair in the
 // signature means a separate table per target. Measured: 10,000 entities across
 // 2,000 parents iterated **22 times slower** than the same 10,000 across one,
 // because the query pays per-table setup for five entities at a time.
 //
-// A relationship's target now lives in a column, where it is ordinary data. See
-// `relation.ts`. The bits stay reserved because the next thing that wants one is
-// a marker for a relation that holds *many* targets at once, and renumbering an
-// id layout afterwards is not something to do twice.
+// Relationships now live outside the archetypes entirely and put nothing in a
+// signature; see `relation.ts`. The bits stay reserved because the next thing
+// likely to want one is a marker for a relation holding several targets at once,
+// and renumbering an id layout is not a thing to do twice.
 
 /** 16 bits of generation, at bit 32. */
 function generationMask(): u32 {
@@ -68,10 +68,10 @@ export function noneId(): u64 {
 /**
  * Index 1 is **reserved and unused**.
  *
- * It was the wildcard, `*`, which a query needed when a relationship lived in
- * the archetype signature and `(ChildOf, *)` had to match many ids at once. With
- * the target in a column, "has any parent" is `has(childOf)` — an ordinary term
- * over one id — and there is nothing left for a wildcard to do.
+ * It was the wildcard, `*`, which a query needed back when a relationship lived
+ * in the archetype signature and `(ChildOf, *)` had to match many ids at once.
+ * Relationships have their own stores now, and every query term is one exact id,
+ * so a wildcard has nothing left to do.
  *
  * Held rather than reclaimed so the numbers below do not move, and because a
  * relation holding several targets would want a marker of some kind.

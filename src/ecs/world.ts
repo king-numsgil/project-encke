@@ -1,10 +1,10 @@
 // The world: everything that exists, and the operations that change it.
 //
-// Four things live here and nothing else does. The entity index says which
-// handles are alive and where each one's row is; the tables hold the rows; the
-// component registry says how big each id's data is; and the archetype graph
-// remembers where adding or removing an id leads, so the second entity down a
-// route follows a cached edge instead of hashing a signature.
+// Four things live here and nothing else. The entity index says which handles
+// are alive and where each one's row is; the tables hold the rows; the component
+// registry says how big each id's data is; and the archetype graph remembers
+// where adding or removing an id leads, so the second entity down a route
+// follows a cached edge instead of hashing a signature.
 //
 // ## An id is stored one of three ways, and this file decides which
 //
@@ -29,13 +29,13 @@
 // `add`, `remove` and `destroy` each have one path rather than two, and the
 // reserved entities from `id.ts` are ordinary rows like everything else.
 //
-// ## Tables are pointers, and that is not incidental
+// ## Tables are held by pointer, and they have to be
 //
-// `alloc(Archetype, …)` puts each table on the heap and `tables` holds addresses,
-// so a table's address survives the array growing. Code here routinely takes a
-// table, creates another one — which may reallocate `tables` — and then keeps
-// using the first. Held by value that would be a dangling reference on the line
-// after every `findOrCreateTable`.
+// `alloc(Archetype, …)` puts each table on the heap and `tables` holds
+// addresses, so a table's address survives the array growing. Code here
+// routinely takes a table, creates another one — which may reallocate `tables` —
+// and goes on using the first. Held by value, that would be a dangling reference
+// on the line after every `findOrCreateTable`.
 
 import { HashMap } from "std/collection";
 import {
@@ -83,12 +83,12 @@ export class World {
     /**
      * One store per registered relation, held by pointer.
      *
-     * Nothing about a relation touches an archetype, which is the point: a
-     * relation id is not a component id, so there is nothing for `add`, `remove`
-     * or `set` to reach and no guard against them needed.
+     * Nothing about a relation touches an archetype. A relation id is not a
+     * component id, so `add`, `remove` and `set` have nothing here to reach and
+     * need no guard against doing so.
      *
      * By pointer rather than by value so a store's address survives this array
-     * growing — a store holds several arrays and copying one to grow the outer
+     * growing: a store holds several arrays, and copying one to grow the outer
      * array would deep-copy every link in it.
      */
     private stores: Pointer<RelationStore>[];
@@ -217,10 +217,9 @@ export class World {
      * A relation's target is stored as a **full handle**, generation included, so
      * a turret whose ship has died already reads as pointing at something dead —
      * `targetOf` says so without anyone having to clean up first. This pass is
-     * therefore about *policy* rather than about correctness: `Remove` clears the
+     * therefore about *policy* rather than correctness: `Remove` clears the
      * relation so the holder is not left pointing at a ghost, and `Delete`
-     * destroys the holder as well, which is what makes a ship take its turrets
-     * with it.
+     * destroys the holder too, so a ship takes its turrets with it.
      *
      * **Worklist, not recursion.** A hierarchy is as deep as the content makes
      * it, and a cycle — which nothing forbids — would be a recursion that does
@@ -241,7 +240,7 @@ export class World {
             at += 1;
 
             // Already gone: reached twice through two relations, or through a
-            // cycle. This is what makes the walk terminate.
+            // cycle. This check is what terminates the walk.
             if (!this.entities.isAlive(current)) {
                 continue;
             }
@@ -272,9 +271,9 @@ export class World {
      *     const Position = world.component<Position>("Position");
      *     world.set<Position>(e, Position, {x: 1.0, y: 2.0, z: 3.0});
      *
-     * The id is an ordinary entity — it can hold components, be a relation, and
-     * be destroyed — which is what makes `(ChildOf, Ship)` and `Position` the
-     * same kind of thing to everything downstream of here.
+     * The id is an ordinary entity: it can hold components, be a relation, and
+     * be destroyed. That is what lets everything downstream treat `ChildOf` and
+     * `Position` as the same kind of thing.
      */
     component<T>(name: string): u64 {
         const id = this.create();
@@ -460,9 +459,9 @@ export class World {
      *
      * A relation is **not a component**. It gets a store of its own outside the
      * archetypes — see `relation.ts` — so its id never enters a signature, never
-     * creates a table, and cannot be reached by `add`, `remove` or `set`. There
-     * is nothing to guard against, which is the whole reason it is built this
-     * way: while the target lived in a column it was a component, and everything
+     * creates a table, and cannot be reached by `add`, `remove` or `set`. That
+     * leaves nothing to guard against, which is why it is built this way: while
+     * the target lived in a column a relation *was* a component, and anything
      * that could touch a component could corrupt it.
      *
      * **One target at a time.** Relating to a second replaces the first. The
@@ -491,10 +490,10 @@ export class World {
     /**
      * Say what happens to the entities pointing at a target when it is destroyed.
      *
-     * {@link removeId} — the default — clears the relation and leaves the holder
-     * alone. {@link deleteId} destroys the holder too, which is what makes a
-     * hierarchy behave like one: deleting a ship deletes its turrets, and
-     * anything parented to those.
+     * {@link removeId}, the default, clears the relation and leaves the holder
+     * alone. {@link deleteId} destroys the holder too, so a hierarchy behaves
+     * like one: deleting a ship deletes its turrets, and anything parented to
+     * those.
      */
     setOnDelete(relation: u64, policy: u64): void {
         if (this.isRelation(relation)) {
@@ -854,9 +853,10 @@ export class World {
     /**
      * How big `id`'s data is, and how to move it.
      *
-     * One lookup, and a relation is not a special case: it was registered with a
-     * `u64` layout, so its column holds one entity handle per row exactly as a
-     * `Position` column holds three floats.
+     * One lookup, answering only for **dense** ids. A sparse component's layout
+     * belongs to its pool and never lands in this map, and a relation has no
+     * layout here at all — neither can reach a signature, and this is what
+     * `findOrCreateTable` reads to give a signature its columns.
      */
     infoFor(id: u64): ComponentInfo {
         return this.infos.getOr(id, tagInfo());
@@ -908,9 +908,9 @@ export class World {
      * turret that dies has to stop being listed among its ship's parts, or the
      * ship keeps handing out a handle to something that no longer exists.
      *
-     * A store per registered relation, each one a sparse lookup that answers no
-     * almost every time — which is why the relation list wants to stay short even
-     * though nothing else here cares how long it is.
+     * One sparse lookup per registered relation, answering no almost every time.
+     * Nothing else here cares how long the relation list is, but this does, so
+     * keep it short.
      */
     private forgetLinks(handle: u64): void {
         for (let i: usize = 0; i < this.stores.length; i++) {

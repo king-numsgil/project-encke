@@ -18,63 +18,60 @@
 // did: the generation returned to zero and a handle from the very beginning read
 // as alive again, naming an entity that had nothing to do with it.
 //
-// **So the slot is retired instead.** The destroy that would wrap it takes the
-// index off the free list permanently, and `create` allocates a fresh one. The
-// consequence is worth stating plainly, because it is the property everything
-// above this layer gets to rely on:
+// **So the slot is retired instead.** The destroy that would have wrapped it
+// takes the index off the free list permanently, and `create` allocates a fresh
+// one. Everything above this layer relies on what that buys:
 //
 //     No handle is ever reissued. A handle names one entity for the life of the
 //     process, and once that entity is destroyed the handle is dead forever.
 //
-// That turns the generation from a probabilistic defence into a guarantee, and
-// it is what makes it safe to keep an entity handle in a save file, a UI widget,
-// a script, or an undo stack.
+// The generation stops being a probabilistic defence and becomes a guarantee,
+// which is what makes it safe to keep an entity handle in a save file, a UI
+// widget, a script, or an undo stack.
 //
 // ## The free list is a stack
 //
 // Push the dying index, pop the newest. One field, and the record just written
-// is still in L1 when the next `create` reads it — which is most of why a
+// is still in L1 when the next `create` reads it, which is most of why a
 // create/destroy pair benches around 80 ns.
 //
-// A queue was tried, and the reason for it was to spread generation churn across
-// every index in flight so that no single one burned through its 65,536 quickly.
-// Retirement removes that reason entirely: the total number of retirements is
-// `destroys / 65,536` whichever end of the list you take from, so the order buys
-// nothing and the stack is warmer. It is the right structure *because* of the
-// paragraph above, not in spite of it.
+// A queue was tried first, to spread generation churn across every index in
+// flight so no single one burned through its 65,536 quickly. Retirement removes
+// the need for that: the number of retirements is `destroys / 65,536` whichever
+// end of the list you take from, so the order buys nothing and the stack stays
+// warmer.
 //
 // ## What retirement costs, and the compaction that is not here
 //
 // **The record array never shrinks.** Two things grow it and neither gives
 // anything back:
 //
-//   * the **high-water mark** of concurrent entities — peak at two million once
-//     and the 24 MB is held for the life of the process, even at five thousand
-//     live afterwards. This is much the larger of the two.
+//   * the **high-water mark** of concurrent entities. Peak at two million once
+//     and the 24 MB stays for the life of the process, even with five thousand
+//     live afterwards. Much the larger of the two.
 //   * **retirement**, at one slot per 65,536 destroys of that slot. Twelve bytes
 //     per 65,536 entity lifetimes is about 0.0002 bytes a lifetime: a session
 //     killing a million entities a second for seven hours retires 385,000 slots
-//     and spends 4.6 MB on them. Real, and far below the high-water mark.
+//     and spends 4.6 MB on them. Real, but far below the high-water mark.
 //
-// A compaction pass would have to deal with both, and the hard part is not
-// finding the dead slots — it is that **an index is the handle**. Moving a live
-// entity's slot invalidates every handle anyone is holding, and those live in
-// user data structures this file cannot see. Three shapes it could take:
+// A compaction pass would have to handle both, and the hard part is not finding
+// the dead slots. It is that **an index is the handle**: moving a live entity's
+// slot invalidates every handle anyone is holding, and those sit in user data
+// structures this file cannot see. Three ways it could go:
 //
-//   * **Trim the tail.** Give back trailing slots that are free or retired. Safe,
-//     needs no fixup, and reclaims nothing when a live entity sits at the end —
-//     which after a high-water peak is exactly where one will be.
+//   * **Trim the tail.** Give back trailing slots that are free or retired.
+//     Safe, needs no fixup, and reclaims nothing when a live entity sits at the
+//     end — which is where one will sit after a high-water peak.
 //   * **Remap with a fixup pass.** Compact properly and rewrite every stored
-//     handle. Only possible if every holder is reachable, which is a promise the
-//     ECS cannot make on its own.
-//   * **Reset at a boundary.** At a level load or a world reset, everything is
-//     destroyed anyway, so the whole index can go back to zero. This is the one
-//     a game actually wants, and it is a `World.reset()` rather than a
-//     compactor.
+//     handle. Only possible if every holder is reachable, and the ECS cannot
+//     promise that on its own.
+//   * **Reset at a boundary.** At a level load, everything is destroyed anyway,
+//     so the whole index can go back to zero. This is the one a game actually
+//     wants, and it is a `World.reset()` rather than a compactor.
 //
-// None of them is written. The counters are: {@link Entities.retiredCount} and
-// {@link Entities.freeCount} are what a running program watches to find out
-// whether any of this matters to it yet.
+// None of them is written. {@link Entities.retiredCount} and
+// {@link Entities.freeCount} are the counters to watch to find out whether any
+// of this matters to a given program yet.
 
 import { firstUserIndex, generationOf, indexOf, makeEntity, noneId } from "./id.ts";
 
@@ -306,9 +303,10 @@ export class Entities {
     /**
      * Whether `handle` still names what it named when it was handed out.
      *
-     * The generation comparison is the whole point. Without it a recycled index
-     * would make every stale handle silently valid, and with it one is only
-     * valid again after 65,536 recycles — see the note at the top of `id.ts`.
+     * The generation comparison is what does the work. Without it a recycled
+     * index would make every stale handle silently valid; with it, a handle can
+     * only read as valid again after 65,536 recycles, and `id.ts` explains why
+     * even that does not happen.
      */
     isAlive(handle: u64): boolean {
         const at = cast<usize>(indexOf(handle));

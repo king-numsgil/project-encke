@@ -1,20 +1,20 @@
 // Assertions, and a tally of them.
 //
-// Deliberately small. There is no `expect`, no matcher chain and no fixture
+// Small on purpose. There is no `expect`, no matcher chain and no fixture
 // mechanism, because a check here is nearly always "this number should be that
-// number" and the elaborate spelling of it buys nothing in a project this size.
+// number", and a more elaborate spelling of that buys nothing at this size.
 //
 // Two rules the surface follows:
 //
-//   * **A failure prints both values.** A check that only says "failed" makes you
-//     rerun it under a debugger to learn what a debugger would have told you.
-//     That is why there is a comparison per width rather than one generic one —
-//     `${}` cannot interpolate a struct, and a generic `equal<T>` therefore has
-//     nothing to print. It is still here, for the POD structs that need it.
-//   * **Nothing throws and nothing stops.** There are no exceptions in this
-//     language, and a suite that stopped at the first failure would hide every
-//     other one behind it. A failing check records itself and the suite carries
-//     on, so one run tells you everything that is wrong.
+//   * **A failure prints both values.** A check that only says "failed" makes
+//     you rerun it under a debugger to learn what the debugger would have told
+//     you. Hence one comparison per width rather than a single generic one:
+//     `${}` cannot interpolate a struct, so a generic `equal<T>` has nothing to
+//     print. It is still here, for the POD structs that need it.
+//   * **Nothing throws and nothing stops.** This language has no exceptions,
+//     and a suite that stopped at the first failure would hide every other one
+//     behind it. A failing check records itself and the suite carries on, so one
+//     run tells you everything that is wrong.
 
 import { format } from "../core/stats.ts";
 

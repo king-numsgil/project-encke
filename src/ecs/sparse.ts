@@ -1,11 +1,12 @@
 // Entity index to slot, in pages allocated only where something lives.
 //
-// The lookup structure a relationship store is built on, and the reason it is
-// not a hash map: answering "where is this entity's link" is a shift, a bounds
-// check and two array reads. No hash to compute, no key to compare, no probe
-// sequence. Measured over 100,000 links in random order, that is **9 ns against
-// 40 ns** for a `HashMap<u64, u64>` — and it uses less memory, because a hash
-// map at a 0.7 load factor carries a slot array half again as large as the data.
+// The lookup structure under both `relation.ts` and `pool.ts`, and the reason
+// neither uses a hash map: answering "where is this entity's row" is a shift, a
+// bounds check and two array reads. No hash to compute, no key to compare, no
+// probe sequence. Measured over 100,000 links in random order, that is **9 ns
+// against 40 ns** for a `HashMap<u64, u64>`, and it uses less memory too — a
+// hash map at a 0.7 load factor carries a slot array half again as large as the
+// data.
 //
 // ## Pages, and what they cost
 //
@@ -14,13 +15,12 @@
 // thousand entities whose indices happen to be contiguous occupies twenty-five
 // of them — 400 KB — and one holding nothing occupies none.
 //
-// **The failure mode is scatter.** The cost is one page per 4096-index span that
-// contains *anything*, so a relation held by one entity in every span pays 16 KB
-// per link. That is pathological rather than likely: entity indices are handed
-// out sequentially and recycled, so entities created together — which is what
-// the members of a hierarchy are — land in the same span. It is worth knowing
-// because it is the one input that turns this structure from the cheapest option
-// into the most expensive one.
+// **The failure mode is scatter.** Each 4096-index span holding *anything* costs
+// a whole page, so an id held by one entity per span pays 16 KB a row. That is
+// pathological rather than likely — entity indices are handed out sequentially
+// and recycled, so entities created together, which is what the members of a
+// hierarchy are, land in the same span. Worth knowing anyway: it is the one
+// input that turns this from the cheapest structure into the most expensive.
 
 /** No slot. Not a valid index: a store never holds four billion links. */
 export function noSlot(): u32 {

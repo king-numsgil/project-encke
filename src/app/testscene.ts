@@ -14,9 +14,10 @@
 //   * **Spheres of varying roughness**, because a specular lobe sliding across a
 //     curved surface is where a wrong BRDF shows up first.
 //   * **Fifty scattered helmets**, loaded from one glTF file. They are the only
-//     geometry here that nobody in this repository authored, which is the point:
-//     real content has UV seams, a normal map that disagrees with the geometry
-//     at the silhouette, and fifteen thousand triangles where a crate has twelve.
+//     geometry here that nobody in this repository authored, which is why they
+//     are worth having: real content comes with UV seams, a normal map that
+//     disagrees with the geometry at the silhouette, and fifteen thousand
+//     triangles where a crate has twelve.
 //
 // Everything placed here is **deterministic**, the scattering included. A
 // benchmark whose scene differs between runs is a benchmark that cannot be
@@ -83,11 +84,11 @@ class Rng {
 /**
  * A prop's footprint on the floor, for keeping the scattered helmets out of it.
  *
- * A circle in `xz` rather than the instance's own bounding sphere, and that is
- * the whole reason this exists: a pillar is 1.2 wide and 6 tall, so the sphere
- * around it has a radius of 3.1, and rejecting against *that* would clear a
- * five-metre disc around every pillar and leave nowhere on the floor to stand.
- * Height is irrelevant to whether two things on a floor collide.
+ * A circle in `xz` rather than the instance's own bounding sphere, which is why
+ * this exists at all: a pillar is 1.2 wide and 6 tall, so the sphere around it
+ * has a radius of 3.1, and rejecting against *that* would clear a five-metre
+ * disc around every pillar and leave nowhere on the floor to stand. Height has
+ * nothing to do with whether two things on a floor collide.
  */
 class Footprint {
     x: f32;
@@ -188,8 +189,8 @@ export function buildTestScene(
     // -- untextured materials --
     //
     // These take the shared 1x1 fallbacks, so they shade exactly as they did
-    // before any of this existed. That is the whole point of the fallback
-    // scheme: textured and untextured take one code path.
+    // before any of this existed. That is what the fallback scheme is for:
+    // textured and untextured materials take one code path.
     const concrete = scene.addMaterial(makeMaterial(new fvec3(0.32, 0.31, 0.30), 0.85), fallbacks);
     const paint = scene.addMaterial(makeMaterial(new fvec3(0.55, 0.18, 0.14), 0.55), fallbacks);
     const steel = scene.addMaterial(makeMetal(new fvec3(0.56, 0.57, 0.58), 0.35), fallbacks);

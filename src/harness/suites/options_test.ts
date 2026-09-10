@@ -6,7 +6,7 @@
 // this suite, and none of it fails loudly: a mis-parsed `--present` runs the
 // benchmark in the wrong mode and reports a number that looks fine.
 //
-// **The `options: ...` lines this suite prints are the point, not noise.** Half
+// **The `options: ...` lines this suite prints are expected, not noise.** Half
 // the checks here are negative — a value the parser must refuse — and refusing
 // one means printing why. A silent run of this suite would mean the parser had
 // stopped explaining itself.

@@ -358,10 +358,10 @@ export function benchEcs(b: Reference<Bench>): void {
 
     // -- a relationship query ------------------------------------------------------------
     //
-    // Fifty thousand children over a hundred parents, so `(ChildOf, *)` matches
-    // a hundred tables — one per parent, because a pair is part of the
-    // signature. That table count is the cost of relationships being ids, and
-    // this is the measurement that shows it.
+    // Fifty thousand children spread over four thousand parents, walked by an
+    // ordinary component query. Relations live outside the archetypes, so the
+    // parent count changes nothing here: this should match the plain iteration
+    // figure above, and `frag_bench.ts` is what watches it stay that way.
 
     const tree = new World();
     const treePosition = tree.component<Position>("Position");

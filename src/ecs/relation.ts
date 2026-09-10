@@ -2,9 +2,9 @@
 //
 // A relation is **not a component**. Its id never enters a signature, never
 // creates a table, never reaches a query, and cannot be reached by `add`,
-// `remove` or `set`. That is the whole reason this file exists as it does: when
-// the target lived in a column it was a component, and everything that could
-// touch a component could corrupt it.
+// `remove` or `set`. That separation is why this file exists: while the target
+// lived in a column a relation *was* a component, and anything that could touch
+// a component could corrupt it.
 //
 // ## A link is a row, threaded into a chain
 //
@@ -33,18 +33,18 @@
 // ## Handles, whole, in the dense arrays
 //
 // `holder` and `target` hold **full 64-bit handles**, generations included, and
-// every read compares the one it was given against the one stored. A sparse
-// index is keyed by an entity *index*, so without that comparison a stale handle
-// to a dead ship would find whatever entity took its index over — which is a bug
-// this file has already had once, in an earlier shape, and the comparison is
-// what makes it structurally impossible rather than something to remember.
+// every read compares the handle it was given against the one stored. A sparse
+// index is keyed by an entity index, so without that comparison a stale handle
+// to a dead ship would find whatever entity took its index over. This file has
+// had that bug once already, in an earlier shape; the comparison rules it out
+// rather than leaving it to be remembered.
 //
 // ## One target for now
 //
 // {@link relate} replaces rather than appends, so a holder has at most one row.
-// The generalisation is small and deliberately left open: give the holder side
-// its own `nextForHolder`/`prevForHolder` chain — eight more bytes a link — and
-// the same structure is a full many-to-many graph with O(1) attach and detach.
+// The generalisation is left open and is small: give the holder side its own
+// `nextForHolder`/`prevForHolder` chain, eight more bytes a link, and the same
+// structure becomes a many-to-many graph with O(1) attach and detach.
 
 import { indexOf } from "./id.ts";
 import { noSlot, SparseIndex } from "./sparse.ts";
@@ -101,9 +101,9 @@ export class RelationStore {
     /**
      * The row `handle` occupies, or {@link noSlot}.
      *
-     * The handle comparison is the load-bearing line: a sparse index is keyed by
-     * an entity *index*, so a stale handle finds the row of whoever took that
-     * index over, and this is what refuses it.
+     * The handle comparison is what refuses a stale handle. A sparse index is
+     * keyed by entity index, so without it a dead entity's handle would find the
+     * row belonging to whoever took that index over.
      */
     private rowOf(handle: u64): u32 {
         const slot = this.slotOf.get(indexOf(handle));
@@ -214,9 +214,9 @@ export class RelationStore {
     /**
      * Append everything pointing at `to` onto `out`.
      *
-     * A copy rather than a walk the caller drives, and deliberately: what a
-     * caller does with a ship's parts is usually to destroy or re-relate them,
-     * and doing that mid-chain would unlink the row the walk is standing on.
+     * A copy rather than a walk the caller drives, because what a caller usually
+     * does with a ship's parts is destroy or re-relate them, and doing that
+     * mid-chain would unlink the row the walk is standing on.
      */
     collect(to: u64, out: Reference<u64[]>): void {
         let slot = this.firstNaming(to);
@@ -284,10 +284,10 @@ export class RelationStore {
      * Move the last row into `slot` and drop the last.
      *
      * The row being removed must already be unlinked. The row that *moves* is
-     * still in a chain, so three things have to be repointed at its new address
-     * — its holder's sparse entry, its neighbours, and its target's head if it
-     * was one. Missing any of them is a corrupt chain rather than a crash, which
-     * is why the tests walk every chain end to end afterwards.
+     * still in a chain, so three things have to be repointed at its new address:
+     * its holder's sparse entry, its neighbours, and its target's head if it was
+     * one. Missing any of them corrupts a chain instead of crashing, so the
+     * tests walk every chain end to end afterwards.
      */
     private swapRemove(slot: u32): void {
         const last = cast<u32>(this.holder.length - 1);

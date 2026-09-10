@@ -10,15 +10,15 @@
 // ## Components are plain data
 //
 // Scalars, enums, `fvec3`, fixed arrays, and structs of those. **No `string`, no
-// `T[]`, no classes.** That is a rule about content, not a limit of the
-// mechanism: `init`, `copy` and `drop` below are written so an owning component
-// would be correct, because writing them any other way would have been writing
-// them wrongly on purpose. But nothing tests that case and nothing promises it,
-// and a component with a heap allocation per entity is the thing an SoA layout
-// exists to avoid. A component that wants a name holds an interned handle.
+// `T[]`, no classes.** That is a rule about content rather than a limit of the
+// mechanism: `init`, `copy` and `drop` below would be correct for an owning
+// component, since writing them any other way would have meant writing them
+// wrongly on purpose. But nothing tests that case and nothing promises it, and
+// a heap allocation per entity is what an SoA layout exists to avoid in the
+// first place. A component that wants a name holds an interned handle instead.
 //
-// The one place the rule is load-bearing rather than advisory is column growth:
-// `column.ts` moves rows to a new buffer **bitwise**, which is right for plain
+// Column growth is the one place the rule has teeth rather than being advice.
+// `column.ts` moves rows to a new buffer **bitwise**, which is correct for plain
 // data and for anything trivially relocatable, and wrong for a type whose
 // constructor records its own address. Nothing in this language does that today.
 
@@ -55,7 +55,7 @@ export interface ComponentInfo {
     /**
      * Destroy what `slot` holds and leave a default behind.
      *
-     * A default rather than garbage, and that is the important half: the slot
+     * A default rather than garbage, which is the half that matters: the slot
      * stays a valid `T` afterwards, so the column's own teardown can run over
      * every slot without tracking which ones have been emptied.
      */

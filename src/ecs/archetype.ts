@@ -7,43 +7,41 @@
 // pointer chasing. The price is paid when an entity's *shape* changes: adding a
 // component moves it to a different table, which copies its whole row.
 //
-// That trade is the right way round for a simulation, where shape changes are
-// rare and iteration happens every frame for every entity.
+// That suits a simulation, where shape changes are rare and iteration happens
+// every frame for every entity.
 //
-// ## The signature is sorted, and that is load-bearing
+// ## Signatures are sorted
 //
-// Two entities with the same ids in a different order are the same archetype, so
-// the signature has to have a canonical form, and ascending is it. Two things
-// fall out and both get used:
-//
-// Membership is then a binary search rather than a scan.
+// Two entities with the same ids in a different order belong in the same
+// archetype, so a signature needs a canonical form, and ascending is it. That
+// also makes membership a binary search instead of a scan.
 //
 // ## Rows are reused; tables are not
 //
-// A row is a slot in a dense array, and `removeRow` swap-removes it — so the
+// A row is a slot in a dense array and `removeRow` swap-removes it, so the
 // columns and the entity list keep their buffers and a create/destroy pair costs
 // nothing after the first one. Measured: 200,000 spawns through one archetype
 // leave its column capacity at eight, where it started. **Entity churn does not
 // grow storage.**
 //
 // **An archetype, once created, is never destroyed.** It stays in the world's
-// table list, empty, with its signature, its two edge maps and its columns —
-// about six allocations and a few hundred bytes. That is fine when the number of
-// distinct shapes is the number of distinct shapes a program has: a few dozen.
+// table list, empty, holding its signature, its two edge maps and its columns —
+// about six allocations and a few hundred bytes. That is affordable while the
+// table count is the number of distinct shapes a program has: a few dozen.
 //
 // **Relationships do not add to that count**, and it took a redesign to make
-// that true. An earlier version put the target in the signature — `(ChildOf,
-// ship)` as an id — so every ship was its own archetype: two thousand ships
+// that true. An earlier version put the target in the signature as an id,
+// `(ChildOf, ship)`, so every ship became its own archetype: two thousand ships
 // holding thirteen parts each meant two thousand tables of thirteen rows, and
 // iterating them measured 22 times slower than the same entities in one table,
-// because the query paid per-table setup for thirteen entities at a time. The
-// target is a column now, so a relation contributes exactly one id to a
-// signature however many targets exist. See `relation.ts`.
+// because the query paid per-table setup for thirteen entities at a time.
+// Relations now live outside the archetypes entirely and contribute nothing to
+// any signature. See `relation.ts`.
 //
-// The only remaining growth is one table per distinct *shape*, which is the
-// number of shapes a program has. Nothing reclaims an empty one; see the
-// compaction note at the top of `entities.ts`, which is the same problem from
-// the other end and has the same answer — a `World.reset()` at a level boundary.
+// What still grows is one table per distinct shape. Nothing reclaims an empty
+// one; see the compaction note at the top of `entities.ts`, which is the same
+// problem from the other end, with the same answer — a `World.reset()` at a
+// level boundary.
 
 import { HashMap } from "std/collection";
 import { Column } from "./column.ts";
@@ -168,9 +166,9 @@ export class Archetype {
     /**
      * The column holding `id`'s data, or -1.
      *
-     * -1 means either "not here" or "here but a tag", and the two are
-     * deliberately not distinguished: every caller either already knows the id
-     * is present or has no data to read either way.
+     * -1 covers both "not here" and "here, but a tag". The two are not worth
+     * telling apart: every caller either knows already that the id is present,
+     * or has no data to read in either case.
      */
     columnFor(id: u64): i32 {
         const at = this.indexOfId(id);
@@ -194,11 +192,10 @@ export class Archetype {
      * Take row `row` out, and say which entity was moved into it.
      *
      * The last row fills the hole, so this **reorders**, and the returned handle
-     * is the entity whose record now says the wrong row. The caller must repoint
-     * it. Returning it rather than fixing it here is the split that keeps this
-     * file from needing to know what an entity index is — and the caller
-     * forgetting is the classic archetype bug, which is why it comes back as a
-     * value rather than being left to be looked up.
+     * belongs to the entity whose record now names the wrong row. The caller has
+     * to repoint it. Doing it that way keeps this file from needing to know what
+     * an entity index is, and returning the handle as a value makes the fixup
+     * hard to forget — forgetting it is the classic archetype bug.
      *
      * {@link noneId} when the removed row was the last one and nothing moved.
      */
@@ -222,10 +219,10 @@ export class Archetype {
      * Copy the data at `row` of `source` into `row` of this table, for every id
      * the two signatures share.
      *
-     * A merge walk over two sorted arrays, so it is linear in the larger
-     * signature rather than quadratic. Ids present in only one side are exactly
-     * the ones being added or removed, and are skipped — the added one keeps the
-     * default `addRow` put there.
+     * A merge walk over two sorted arrays, so it costs the larger signature
+     * rather than the product of the two. An id present on only one side is the
+     * one being added or removed, and is skipped; the added one keeps whatever
+     * default `addRow` left in it.
      */
     copySharedFrom(source: Pointer<Archetype>, sourceRow: usize, row: usize): void {
         let here: usize = 0;

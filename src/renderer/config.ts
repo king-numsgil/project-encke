@@ -138,8 +138,8 @@ export function cascadeSplitLambda(): f32 {
 /**
  * Constant depth bias for the sun's comparisons, in **world units**.
  *
- * World units, not clip depth, and the difference is the whole reason this
- * renderer had peter-panning. A cascade's orthographic projection maps its
+ * World units, not clip depth. Confusing the two is what gave this renderer
+ * peter-panning. A cascade's orthographic projection maps its
  * entire depth range onto `[0, 1]`, and that range is far wider for a distant
  * cascade than a near one — so one clip-depth number means a few centimetres in
  * cascade 0 and better than half a metre in cascade 3. Expressed in world units
@@ -331,8 +331,8 @@ export function uiSansFontPath(): string {
 /**
  * The monospaced face, for anything numeric.
  *
- * Every digit the same width is not a preference here: a proportional `1` is
- * narrower than a `0`, so a readout counting up reflows on every frame and the
+ * Equal-width digits matter for a concrete reason: a proportional `1` is
+ * narrower than a `0`, so a readout counting up reflows every frame and the
  * whole line jitters. Baked second — `uiFontMono()`, index 1.
  */
 export function uiMonoFontPath(): string {

@@ -5,9 +5,9 @@
 // renderer must not import the test harness. `core/` is the layer both sides
 // already depend on.
 //
-// The distribution rather than the mean is the point, and it is the same point
-// in both places: a build that is faster on average and worse at the 99th
-// percentile is a worse build, and an accumulator cannot tell you that.
+// Both callers want the distribution rather than the mean, for the same reason:
+// a build that is faster on average and worse at the 99th percentile is a worse
+// build, and a running average cannot tell you that.
 
 /**
  * Insertion sort, ascending, **in place**.

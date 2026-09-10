@@ -12,10 +12,10 @@
 // every later `set` and `get` against that id quietly did nothing, far from the
 // mistake.
 //
-// One thing in `ecs/` calls this, and that is the whole list. Every ordinary
-// refusal — a dead handle, an id an entity does not hold, a relation that was
-// never registered — is a `false` or a `null` and stays one. Adding a second
-// caller needs the same argument: something the source decided, not the input.
+// Exactly one thing in `ecs/` calls this. Every ordinary refusal — a dead
+// handle, an id an entity does not hold, a relation that was never registered —
+// is a `false` or a `null` and stays one. Adding a second caller needs the same
+// argument: something the source decided, not something the input did.
 
 /**
  * C's `abort`. Raises `SIGABRT`, so a debugger stops here with the stack intact

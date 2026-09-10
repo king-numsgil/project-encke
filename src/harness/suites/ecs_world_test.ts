@@ -340,8 +340,8 @@ export function testEcsWorld(t: Reference<Tester>): void {
     t.equalU64("but the target changed", world.targetOf(child, childOf), secondShip);
 
     // A relation id passed to the component API is an ordinary tag with nothing
-    // behind it. Meaningless, but not corrupting — which is the whole reason the
-    // guard that used to sit on `add` could be deleted.
+    // behind it: meaningless, but harmless. That is why the guard that used to
+    // sit on `add` could be deleted.
     t.ok("a relation id can be added as a plain tag", world.add(child, childOf));
     t.ok("which the archetype now says yes to", world.has(child, childOf));
     t.equalU64("without disturbing the relation at all", world.targetOf(child, childOf), secondShip);

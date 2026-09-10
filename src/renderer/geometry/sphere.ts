@@ -45,8 +45,8 @@ export function makeSphere(radius: f32, segments: u32, rings: u32): MeshData {
             // azimuth leaves `(cos a, 0, -sin a)`. It stays unit length at every
             // latitude because the `sin p` falls out of both surviving terms.
             //
-            // Handedness is -1 everywhere, and that is derived rather than
-            // guessed: `cross(normal, tangent)` works out to
+            // Handedness is -1 everywhere, worked out rather than guessed:
+            // `cross(normal, tangent)` comes to
             // `(-cos p * sin a, sin p, -cos p * cos a)`, whose dot with the
             // v-derivative is exactly `-(cos^2 p + sin^2 p)`, or -1.
             mesh.addVertex(

@@ -6,12 +6,12 @@
 // When the target lived in the archetype signature — `(ChildOf, ship)` as an id,
 // the way flecs does it — this measured a **22-fold** slowdown from one parent
 // to two thousand, because the query paid per-table setup for five entities at a
-// time. That is the shape a ship full of doors and turrets actually has, so the
-// storage moved into a column and the design changed with it.
+// time. A ship full of doors and turrets is exactly that shape, so relationships
+// moved out of the archetypes and into a store of their own.
 //
-// **This line should now be flat**, and that is what it is here to check. A
-// future change that reintroduces per-target tables will show up as this curve
-// bending again, which is exactly how it was found the first time.
+// **This line should now be flat.** A future change that reintroduces per-target
+// tables will bend the curve again, which is how the problem was found in the
+// first place.
 
 import { has, Query } from "../../ecs/query.ts";
 import { World } from "../../ecs/world.ts";

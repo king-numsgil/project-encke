@@ -267,8 +267,8 @@ export class ClusterPasses {
         SDL_PushGPUComputeUniformData(cmd, 0, frame, frameBytes);
         SDL_BindGPUComputePipeline(pass, pipeline);
 
-        // One workgroup per cluster. The workgroup returns immediately for a
-        // cluster nothing marked, which is the whole point of the marking pass.
+        // One workgroup per cluster. A workgroup whose cluster nothing marked
+        // returns immediately, which is what the marking pass buys.
         SDL_DispatchGPUCompute(pass, clusterCount(), 1, 1);
         SDL_EndGPUComputePass(pass);
     }

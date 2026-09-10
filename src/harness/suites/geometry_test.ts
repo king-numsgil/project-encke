@@ -163,9 +163,9 @@ export function testGeometry(t: Reference<Tester>): void {
 
     t.ok("paper-thin: a real box passes", warnIfPaperThin(box, "box", 0.05));
 
-    // This one prints a line of its own, which is the whole point of the check —
-    // it is a warning aimed at whoever authored the mesh, and a test that
-    // silenced it would not be testing it.
+    // This one prints a line of its own, which is what the check is for: a
+    // warning aimed at whoever authored the mesh. A test that silenced it would
+    // not be testing it.
     const wall = makeBox(4.0, 4.0, 0.001);
     t.ok("paper-thin: a 1mm wall is reported", !warnIfPaperThin(wall, "test wall", 0.05));
 

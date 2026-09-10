@@ -116,7 +116,7 @@ export class GpuMesh {
         }
 
         // The same block seen as words, past the vertices. Both views alias one
-        // mapping, which is the point — one upload, two streams.
+        // mapping, so this is one upload carrying two streams.
         const words = staging.words();
         const indexBase = mesh.vertices.length;
         for (let i: usize = 0; i < mesh.indices.length; i++) {

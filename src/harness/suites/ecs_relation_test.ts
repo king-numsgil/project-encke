@@ -1,20 +1,21 @@
-// Relationships: targets in columns, the reverse index, views, and cleanup.
+// Relationships: the link store, the reverse index, views, and cleanup.
 //
-// A relation is a component whose value is an entity handle. Relating a turret
-// to a ship writes the ship's handle into the turret's row, so every turret in
-// the game shares one table however many ships there are — which is the whole
-// reason this design replaced the one that put the target in the table's
-// identity and cost a table per ship.
+// A relation lives outside the archetypes, in a store of its own. Relating a
+// turret to a ship adds a row there and touches no table, so every turret in the
+// game stays in one table however many ships there are. That is why this design
+// replaced the one that put the target in the table's identity and cost a table
+// per ship; `frag_bench.ts` is the measurement that decided it.
 //
 // Two consequences get most of the attention here:
 //
-//   * a column holds a **full handle, generation included**, so a turret whose
-//     ship has died reads as pointing at something dead all by itself. Cleanup
-//     is policy, not correctness, and that distinction is worth pinning.
-//   * the reverse direction — "what are this ship's parts" — is an index, and an
-//     index is a thing that goes wrong quietly. Every operation that changes a
-//     link has to update it, including the ones nobody thinks about: an entity
-//     being destroyed has to stop being listed among its ship's parts.
+//   * the store holds a **full handle, generation included**, so a turret whose
+//     ship has died reads as pointing at something dead without anyone tidying
+//     up first. Cleanup is policy rather than correctness, and that distinction
+//     is worth pinning.
+//   * the reverse direction, "what are this ship's parts", is an index, and an
+//     index goes wrong quietly. Every operation that changes a link has to
+//     update it, including the ones nobody thinks about: an entity being
+//     destroyed has to stop being listed among its ship's parts.
 
 import { deleteId, indexOf, noneId, removeId } from "../../ecs/id.ts";
 import { has, Query } from "../../ecs/query.ts";

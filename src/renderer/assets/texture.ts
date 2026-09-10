@@ -16,9 +16,9 @@
 // Images arrive two ways and both end at the same `textureFromSurface`: a path
 // on disk, for the material folders under `assets/materials/`, and a block of
 // still-encoded bytes, for the images inside a glTF file. SDL3_image decodes
-// both, which is the point of handing the bytes across the loader boundary
-// rather than decoding them in Rust — one library in this program knows what a
-// JPEG is.
+// both. That is why the bytes cross the loader boundary still encoded instead of
+// being decoded in Rust — it keeps exactly one library in this program that
+// knows what a JPEG is.
 
 import {
     SDL_AcquireGPUCommandBuffer,

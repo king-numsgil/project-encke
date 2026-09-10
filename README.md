@@ -102,7 +102,7 @@ otherwise be solid black everywhere a punctual highlight does not land.
 ### Materials
 
 **Five maps per material, and they are glTF's own set** — base colour, normal,
-metallic-roughness, occlusion, emissive. That is not a coincidence: a folder
+metallic-roughness, occlusion, emissive. Matching glTF is the point: a folder
 under `assets/materials/` and a loaded `.glb` produce the same five textures, so
 the forward pass cannot tell a procedural material from an imported one and there
 is no second path to keep working.
@@ -329,9 +329,9 @@ one entity for the life of the process, and once that entity is destroyed the
 handle is dead forever — which is what makes it safe to keep one in a save file,
 a UI widget, a script, or an undo stack.
 
-That guarantee is four lines in `destroy`, and it is worth what it costs. The
-free list can then be an ordinary stack, taken from the warm end, because the
-number of retirements is `destroys / 65,536` whichever end you take from.
+That guarantee is four lines in `destroy` and cheap at the price. The free list
+can then be an ordinary stack, taken from the warm end, because the number of
+retirements is `destroys / 65,536` whichever end you take from.
 
 The cost is that **the record array never shrinks**, and two things grow it:
 
@@ -503,9 +503,10 @@ hands the body a contiguous run of parent handles.
 
 **A relation is not a component.** It owns a store outside the archetypes, so its
 id never enters a signature, never creates a table, never reaches a query, and
-cannot be touched by `add`, `remove` or `set`. There is nothing to guard against,
-which is the point — while the target lived in a column a relation *was* a
-component, and everything that could touch a component could corrupt it.
+cannot be touched by `add`, `remove` or `set`. That leaves nothing to guard
+against, which is why it is built this way: while the target lived in a column a
+relation *was* a component, and anything that could touch a component could
+corrupt it.
 
 ```ts
 const childOf = world.relation("ChildOf");
@@ -681,10 +682,10 @@ Those are the fastest batch of twenty, which is the statistic least polluted by
 whatever else the machine was doing — the mean on a busy machine is two to three
 times worse and says more about the scheduler than about this code.
 
-The first line is the whole point of the layout. The fifth is what it costs, and
-the reason to change an entity's shape at spawn rather than every frame. The
-sixth and seventh are the same trade taken the other way round, which is what
-`sparseComponent` is for. The last two are the view earning its keep: about twice
+The first line is what the layout exists for. The fifth is what it costs, and the
+reason to change an entity's shape at spawn rather than every frame. The sixth
+and seventh are the same trade taken the other way round, which is what
+`sparseComponent` is for. The last two show a view paying for itself: about twice
 as fast as the lookup, for one `u64` per member.
 
 ### Not in it

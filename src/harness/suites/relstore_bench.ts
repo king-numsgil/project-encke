@@ -6,13 +6,15 @@
 //   1. `HashMap<u64, u64>` — one probe per lookup.
 //   2. A **paged sparse set** — entity index into a page table, then a direct
 //      array index. No hashing, no key compare.
-//   3. A plain column read, which is what the archetype version does today and
-//      is the floor nothing beats.
+//   3. A plain column read, the floor that nothing beats, and what the earlier
+//      archetype-backed version cost.
 //
 // And for "parent -> children", two:
 //
-//   4. A map to a per-parent list, which is what `relation.ts` does now.
+//   4. A map to a per-parent list, which allocates once per parent.
 //   5. An intrusive sibling chain threaded through the dense arrays.
+//
+// `relation.ts` ended up with 2 and 5, which is what those numbers argued for.
 
 import { HashMap } from "std/collection";
 import { noSlot, SparseIndex } from "../../ecs/sparse.ts";

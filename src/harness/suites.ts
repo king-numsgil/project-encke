@@ -1,12 +1,12 @@
 // The registry.
 //
-// Explicit, and it has to be: there is no top-level code in this language and no
-// static initialiser, so nothing can register itself by existing. A suite is in
-// the harness because it is named here and for no other reason — which is worse
-// for ceremony and better for reading, since this file is the whole list.
+// Explicit, and it has to be: this language has no top-level code and no static
+// initialiser, so nothing can register itself by existing. A suite runs because
+// it is named here and for no other reason. More ceremony than a decorator, but
+// this file is then the whole list.
 //
-// Names are `area/what`, and the `--filter` match is a substring over the whole
-// thing, so `--filter geometry` and `--filter ecs/` both do the obvious thing.
+// Names are `area/what`, and `--filter` matches a substring of the whole thing,
+// so `--filter geometry` and `--filter ecs/` both do the obvious thing.
 
 import type { Benchmark } from "./bench.ts";
 import { testCascades } from "./suites/cascades_test.ts";

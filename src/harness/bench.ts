@@ -1,11 +1,10 @@
 // CPU benchmarks, on the same terms the renderer's benchmarks run on.
 //
-// The rule this project already follows for the GPU — that a measurement is
-// meaningless without saying what it measured under — has a CPU equivalent, and
-// it is the batch. Timing one call to something that takes 40 ns measures the
-// clock; timing a hundred thousand of them measures the thing. So a body is
-// handed a count and does that many iterations itself, and the reported number
-// is the batch divided by it.
+// This project already insists that a GPU measurement say what it measured
+// under. The CPU equivalent is the batch. Timing one call to something that
+// takes 40 ns measures the clock; timing a hundred thousand of them measures the
+// code. So a body is handed a count, runs that many iterations itself, and the
+// reported number is the batch divided by the count.
 //
 // The distribution is reported rather than the mean, for the reason
 // `renderer/profiler.ts` gives at length: the tail is where a regression shows
@@ -34,11 +33,11 @@ export class Bench {
      *         }
      *     });
      *
-     * One batch runs first and is thrown away. That is not superstition: the
-     * first call through a path faults its pages in, warms the branch predictors,
-     * and — here more than most places — makes mimalloc claim the arenas every
-     * later batch reuses. Including it would put the allocator's first-touch cost
-     * in the minimum, which is the one statistic that should be clean.
+     * One batch runs first and is thrown away, for concrete reasons rather than
+     * out of habit: the first call through a path faults its pages in, warms the
+     * branch predictors, and makes mimalloc claim the arenas every later batch
+     * reuses. Keeping it would put the allocator's first-touch cost into the
+     * minimum, and the minimum is the one statistic that should be clean.
      */
     run(name: string, batches: usize, perBatch: usize, body: LocalFn<(count: usize) => void>): void {
         body(perBatch);

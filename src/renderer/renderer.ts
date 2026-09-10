@@ -10,10 +10,10 @@
 //     8  tonemap                colour, into the swapchain
 //     9  overlay                colour, blended over the swapchain
 //
-// The dependencies that fix that order, and they are not all obvious:
+// The dependencies that fix that order, several of which are not obvious:
 //
-//   * **4 before 5** — marking reads the depth buffer. This is the entire reason
-//     the pre-pass is mandatory rather than an optimisation.
+//   * **4 before 5** — marking reads the depth buffer. That dependency is why
+//     the pre-pass is mandatory here and not merely an optimisation.
 //   * **4 before 6** — SSAO reads depth too, and reconstructs its normals from it.
 //   * **1 before 5** — culling reads the light buffer, and `Frame.lightCount`
 //     has to be the number that was actually uploaded.

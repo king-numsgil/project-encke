@@ -1,8 +1,8 @@
 // The console harness.
 //
 // `main.ts` branches here immediately after SDL is up, before a window or a GPU
-// device exists, so nothing reachable from this file may touch either. That is
-// the constraint that makes the harness useful: it runs on a machine with no
+// device exists, so nothing reachable from this file may touch either. Keeping
+// to that is what makes the harness useful: it runs on a machine with no
 // display, in CI, and over a remote shell, and it is the only way to execute a
 // line of this program without a driver.
 //
