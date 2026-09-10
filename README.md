@@ -302,10 +302,13 @@ machine, and against nothing else.
 ## The ECS
 
 `src/ecs/` is an archetype ECS with entity relationships. It imports nothing from
-`app/`, `renderer/` or `bindings/` — only `std/` — and **nothing in the renderer
-uses it yet**. It is developed entirely against the headless harness, and
-replacing `renderer/scene/scene.ts` with it is a later change with its own risk;
-doing both at once would make a renderer regression and an ECS bug look identical.
+`app/`, `renderer/` or `bindings/` — only `std/` — and the dependency runs one
+way: the renderer reads the world, the world knows nothing about the renderer.
+
+**It drives the scene.** Every drawable in the test scene is an entity with a
+transform, a parent link and a mesh and material index, and
+`renderer/scene/sync.ts` copies that into `Scene` once a frame. See
+[The sync boundary](#the-sync-boundary).
 
 ### Everything is one u64
 
@@ -622,6 +625,60 @@ What the signature layout bought — contiguous *data* for one parent's children
 is a real thing to give up, and the way to get it back is a view: pay memory to
 cache the answer, which is what `world.view` is.
 
+### The sync boundary
+
+An ECS is the right shape for simulation and the wrong shape for drawing. A
+renderer wants a flat list it can sort so that draws sharing a material end up
+adjacent; an archetype world hands out whatever order the tables happen to hold.
+So there are two structures, and `renderer/scene/sync.ts` copies one into the
+other once a frame:
+
+```ts
+const world = new World();
+const sync = new SceneSync(world);
+
+const ship = sync.spawn(world, hullMesh, steel, fmat4.fromTranslation(at));
+const turret = sync.spawn(world, turretMesh, steel, fmat4.fromTranslation(mount));
+sync.attach(world, turret, ship);      // turret.world = ship.world * turret.local
+
+sync.run(world, scene);                // every frame, before rendering
+```
+
+**Rebuilt from scratch, every frame.** No dirty flags and no change ticks. The
+walk is over archetype columns at about 1.7 ns an entity, so a hundred thousand
+drawables cost a fraction of a millisecond against a 16 ms budget, and change
+tracking is an optimisation that should have to beat a measurement first. It
+would also not be free: the ECS hands out raw pointers with no write barrier, so
+noticing a mutation would mean changing how components are accessed at all.
+
+**The copy goes one way.** Culling results, sort order and which instance landed
+where are the renderer's and are never written back.
+
+Transforms compose as `parent * local`, resolved by walking *up* from each entity
+to the first ancestor already done this frame and composing back down. Entities
+come in table order, so a child is routinely reached before its parent, and
+walking up rather than down is what makes the answer independent of that order —
+each entity is composed exactly once however the visit order falls out. A frame
+stamp on `WorldTransform` is what marks "already done", which needs no clearing
+pass. Nothing forbids a parent cycle, so the walk is capped at 64; a cycle then
+produces a wrong transform rather than a hang.
+
+The draw list is sorted by material and then by mesh, with two stable counting
+sorts — both keys index arrays the scene already has, so the bucket counts are
+known and nothing is compared. The forward pass then skips the uniform push and
+five texture rebinds for every draw after the first of each material run.
+
+Worth stating plainly: **on the current test scene that sorting is a wash.** 109
+instances across 10 materials benchmarks at a median 3.301 ms against 3.300 ms
+unsorted, which is noise. The rebinds were never the bottleneck at this size. The
+sort is there because it is what makes instancing possible later, and because the
+cost of having it is also nothing.
+
+The glTF loader is where parenting earns its place already: a placement becomes a
+pivot entity and every node of the model becomes a child of it, so
+`placement * node` is composed by the same code that composes a turret onto a
+ship. Fifty helmets are fifty pivots and one mesh.
+
 ### Why the rows are not chunked
 
 Several archetype ECSs — Unity's DOTS, gaia — cut a table's rows into fixed
@@ -741,6 +798,8 @@ src/
     pool.ts                 one sparse component's storage, outside the tables
     relation.ts             one store per relation, and cached views
     fatal.ts                the two things that abort instead of returning
+  renderer/scene/
+    sync.ts                 the ECS-to-renderer boundary, run once a frame
   harness/
     run.ts                  the --headless entry point
     suites.ts               the registry, which is the whole list

@@ -27,6 +27,7 @@
 import { fmat4, fvec3 } from "std/linalg";
 import { fcos, fpi, fsin, fsqrt, ftau } from "std/math";
 import type { SDL_GPUDevice } from "../bindings/SDL3";
+import { World } from "../ecs/world.ts";
 import { loadGltf } from "../renderer/assets/gltf.ts";
 import { Fallbacks, MaterialTextures } from "../renderer/assets/material_set.ts";
 import { makeBox } from "../renderer/geometry/box.ts";
@@ -36,6 +37,7 @@ import { makeSphere } from "../renderer/geometry/sphere.ts";
 import { makePointLight, makeSpotLight } from "../renderer/scene/light.ts";
 import { makeMaterial, makeMetal, Material } from "../renderer/scene/material.ts";
 import { Scene } from "../renderer/scene/scene.ts";
+import { SceneSync } from "../renderer/scene/sync.ts";
 
 /** Minimum thickness a mesh must have on every axis, in world units. */
 function minimumThickness(): f32 {
@@ -138,6 +140,8 @@ function addTextured(
 
 export function buildTestScene(
     device: Pointer<SDL_GPUDevice>,
+    world: Reference<World>,
+    sync: Reference<SceneSync>,
     fallbacks: Reference<Fallbacks>,
     pointLights: u32,
 ): Scene {
@@ -230,7 +234,7 @@ export function buildTestScene(
     const claimed: Footprint[] = [];
 
     // -- the floor --
-    scene.add(floor, concrete, fmat4.fromTranslation(new fvec3(0.0, -0.2, 0.0)));
+    sync.spawn(world, floor, concrete, fmat4.fromTranslation(new fvec3(0.0, -0.2, 0.0)));
 
     // -- pillars on a grid, so the sun has something to cast with --
     for (let x: i32 = -2; x <= 2; x++) {
@@ -239,7 +243,12 @@ export function buildTestScene(
                 continue;
             }
             const position = new fvec3(cast<f32>(x) * 8.0, 3.0, cast<f32>(z) * 8.0);
-            scene.add(pillar, (x + z) % 2 === 0 ? concrete : paint, fmat4.fromTranslation(position));
+            sync.spawn(
+                world,
+                pillar,
+                (x + z) % 2 === 0 ? concrete : paint,
+                fmat4.fromTranslation(position),
+            );
             // Half the diagonal of a 1.2 square, so a rotated helmet clears the
             // corners and not just the faces.
             claimed.push(footprint(position.x, position.z, 0.85));
@@ -258,7 +267,7 @@ export function buildTestScene(
         // three so a single screenshot has a dielectric with strong relief, a
         // dielectric with fine grain, and a metal.
         const material = i % 3 === 0 ? bricks : (i % 3 === 1 ? planks : plates);
-        scene.add(crate, material, transform);
+        sync.spawn(world, crate, material, transform);
         claimed.push(footprint(position.x, position.z, 1.14));
     }
 
@@ -272,20 +281,25 @@ export function buildTestScene(
             fallbacks,
         );
         const position = new fvec3(-10.5 + cast<f32>(i) * 3.0, 1.0, -12.0);
-        scene.add(sphere, material, fmat4.fromTranslation(position));
+        sync.spawn(world, sphere, material, fmat4.fromTranslation(position));
         claimed.push(footprint(position.x, position.z, 0.9));
     }
 
-    scene.add(sphere, copper, fmat4.fromTranslation(new fvec3(0.0, 1.4, 0.0)));
-    scene.add(sphere, steel, fmat4.fromTranslation(new fvec3(3.0, 1.4, 2.0)));
+    sync.spawn(world, sphere, copper, fmat4.fromTranslation(new fvec3(0.0, 1.4, 0.0)));
+    sync.spawn(world, sphere, steel, fmat4.fromTranslation(new fvec3(3.0, 1.4, 2.0)));
     claimed.push(footprint(0.0, 0.0, 0.9));
     claimed.push(footprint(3.0, 2.0, 0.9));
 
     // -- helmets, scattered --
-    scatterHelmets(device, scene, fallbacks, claimed);
+    scatterHelmets(device, world, sync, scene, fallbacks, claimed);
 
     // -- lights --
     populateLights(scene, 0.0, pointLights);
+
+    // Once here so the summary below counts something, and so the scene is not
+    // empty for the first frame — the frame loop rebuilds it from the world
+    // every frame after this.
+    sync.run(world, scene);
 
     console.log(
         `scene: ${scene.instances.length} instances, ${scene.meshes.length} meshes, ${scene.lights.length} lights`,
@@ -313,6 +327,8 @@ export function buildTestScene(
  */
 function scatterHelmets(
     device: Pointer<SDL_GPUDevice>,
+    world: Reference<World>,
+    sync: Reference<SceneSync>,
     scene: Reference<Scene>,
     fallbacks: Reference<Fallbacks>,
     claimed: Reference<Footprint[]>,
@@ -364,7 +380,7 @@ function scatterHelmets(
         );
     }
 
-    loadGltf(device, scene, fallbacks, helmetPath(), placements);
+    loadGltf(device, world, sync, scene, fallbacks, helmetPath(), placements);
 }
 
 /**

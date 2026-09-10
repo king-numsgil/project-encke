@@ -28,11 +28,13 @@ import {
 } from "../bindings/SDL3";
 import { Clock, Stopwatch } from "../core/clock.ts";
 import { Input } from "../core/input.ts";
+import { World } from "../ecs/world.ts";
 import { loadGltf } from "../renderer/assets/gltf.ts";
 import { cameraFar, cameraFovY, cameraNear } from "../renderer/config.ts";
 import { Profiler } from "../renderer/profiler.ts";
 import { Renderer } from "../renderer/renderer.ts";
 import { Camera } from "../renderer/scene/camera.ts";
+import { SceneSync } from "../renderer/scene/sync.ts";
 import { saveTexturePng } from "../renderer/screenshot.ts";
 import { UiDrawList } from "../renderer/ui/draw.ts";
 import { Overlay, OverlayInfo } from "../renderer/ui/overlay.ts";
@@ -85,7 +87,13 @@ export function run(options: Reference<Options>): i32 {
         console.log("run: capture target failed — no screenshot will be written");
     }
 
-    const scene = buildTestScene(device, renderer.fallbacks, options.lights);
+    // The simulation side. Entities own transforms, parent links and what to
+    // draw; `SceneSync` copies that into `Scene` once a frame. See
+    // `renderer/scene/sync.ts` for the shape of the boundary.
+    const world = new World();
+    const sync = new SceneSync(world);
+
+    const scene = buildTestScene(device, world, sync, renderer.fallbacks, options.lights);
 
     // Dropped into the test scene rather than replacing it, and placed on the
     // floor in front of the pillar grid: a loaded model is easiest to judge next
@@ -97,7 +105,7 @@ export function run(options: Reference<Options>): i32 {
             fmat4.fromTranslation(new fvec3(0.0, 0.0, 7.0))
                 .mul(fmat4.fromScale(fvec3.splat(options.modelScale))),
         );
-        loadGltf(device, scene, renderer.fallbacks, options.model, placements);
+        loadGltf(device, world, sync, scene, renderer.fallbacks, options.model, placements);
     }
 
     const camera = new Camera();
@@ -161,6 +169,12 @@ export function run(options: Reference<Options>): i32 {
         driveCamera(camera, input, delta);
         populateLights(scene, clock.elapsed, options.lights);
         overlay.record(delta);
+
+        // The sync boundary. Everything the ECS did this frame — a transform
+        // written, a parent changed, an entity spawned or destroyed — reaches
+        // the renderer here and nowhere else, and `Scene.instances` is rebuilt
+        // from scratch rather than patched.
+        sync.run(world, scene);
 
         if (display.readSize()) {
             // The window changed size, so the targets and the cluster bounds are
@@ -282,6 +296,7 @@ export function run(options: Reference<Options>): i32 {
     event.free();
 
     scene.release(device);
+    world.release();
     renderer.release(device);
     display.close();
     return 0;

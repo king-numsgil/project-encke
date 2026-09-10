@@ -33,10 +33,12 @@ import {
 } from "../../bindings/encke_gltf";
 import type { EnckeGltfScene } from "../../bindings/encke_gltf";
 import type { SDL_GPUDevice, SDL_GPUTexture } from "../../bindings/SDL3";
+import { World } from "../../ecs/world.ts";
 import { GpuMesh } from "../geometry/mesh.ts";
 import { MeshData, vertexFloats } from "../geometry/meshdata.ts";
 import { Material } from "../scene/material.ts";
 import type { Scene } from "../scene/scene.ts";
+import { SceneSync } from "../scene/sync.ts";
 import { Fallbacks, MaterialTextures } from "./material_set.ts";
 import { loadTextureFromMemory } from "./texture.ts";
 
@@ -53,15 +55,21 @@ function expectedAbi(): u32 {
 }
 
 /**
- * Load a model and add it to `scene` once at every transform in `placements`.
+ * Load a model and spawn it once at every transform in `placements`.
  *
- * Each placement is applied on top of the model's own world transforms, so an
+ * Each placement is applied on top of the model's own node transforms, so an
  * asset authored at the origin can be put anywhere without editing it. A list
  * rather than a single matrix because **the file is read once whatever the
  * count is**: the meshes, materials and decoded textures are registered one
- * time and every placement is another entry in `Scene.instances`, which is
- * exactly the split the scene is arranged around. Fifty helmets are fifty
- * transforms and one mesh, not fifty of everything.
+ * time and every placement is another handful of entities. Fifty helmets are
+ * fifty transforms and one mesh, not fifty of everything.
+ *
+ * **A placement is a parent.** It becomes a pivot entity holding that matrix,
+ * and every node of the model becomes a child carrying its own node transform.
+ * `SceneSync` then composes `placement * node` exactly as this function used to
+ * compute it by hand — same operands, same order — so nothing about the result
+ * moves, and moving a whole model afterwards is one write to one pivot rather
+ * than a walk over its parts.
  *
  * glTF is Y-up, right-handed, `-Z` forward and counter-clockwise wound, which is
  * exactly what this renderer is — so there is no basis change anywhere in this
@@ -72,6 +80,8 @@ function expectedAbi(): u32 {
  */
 export function loadGltf(
     device: Pointer<SDL_GPUDevice>,
+    world: Reference<World>,
+    sync: Reference<SceneSync>,
     scene: Reference<Scene>,
     fallbacks: Reference<Fallbacks>,
     path: string,
@@ -104,6 +114,14 @@ export function loadGltf(
     const materials = registerMaterials(scene, fallbacks, loaded, textures, label);
     const meshes = uploadMeshes(device, scene, loaded, label);
 
+    // One pivot per placement, before the node loop, because the loop is
+    // node-major and every node of the model has to hang off the same one.
+    const pivots: u64[] = [];
+    pivots.reserve(placements.length);
+    for (let p: usize = 0; p < placements.length; p++) {
+        pivots.push(sync.spawnPivot(world, placements[p]));
+    }
+
     let instances: usize = 0;
     for (let i: usize = 0; i < cast<usize>(loaded.node_count); i++) {
         const node = loaded.nodes[i];
@@ -124,7 +142,8 @@ export function loadGltf(
 
         const which = loaded.meshes[cast<usize>(node.mesh)].material;
         for (let p: usize = 0; p < placements.length; p++) {
-            scene.add(cast<usize>(mesh), materials[cast<usize>(which)], placements[p].mul(local));
+            const part = sync.spawn(world, cast<usize>(mesh), materials[cast<usize>(which)], local);
+            sync.attach(world, part, pivots[p]);
             instances += 1;
         }
     }

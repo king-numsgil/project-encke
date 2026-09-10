@@ -214,6 +214,18 @@ export class ForwardPass {
 
         this.frustum.build(frame.viewProj);
 
+        // The material most recently bound, or -1 for none. `SceneSync` sorts
+        // the instances by material, so consecutive draws usually share one and
+        // this skips a uniform push and five texture rebinds for every draw
+        // after the first of each run. Bindings and pushed uniforms persist for
+        // the life of a render pass, so not rebinding is not merely cheaper — it
+        // leaves exactly what the previous draw left.
+        //
+        // Tracking what was *bound* rather than what the previous instance held
+        // is what makes this correct across the frustum rejection above: a culled
+        // instance never binds, so it cannot make the next one skip.
+        let bound: isize = -1;
+
         for (let i: usize = 0; i < world.instances.length; i++) {
             if (!this.frustum.containsSphere(world.instances[i].boundsCenter, world.instances[i].boundsRadius)) {
                 continue;
@@ -223,20 +235,24 @@ export class ForwardPass {
             SDL_PushGPUVertexUniformData(cmd, 1, object, objectBytes);
 
             const which = world.instances[i].material;
-            fillMaterial(material, world.materials[which]);
-            SDL_PushGPUFragmentUniformData(cmd, 2, material, materialBytes);
+            if (cast<isize>(which) !== bound) {
+                fillMaterial(material, world.materials[which]);
+                SDL_PushGPUFragmentUniformData(cmd, 2, material, materialBytes);
 
-            maps[0].texture = world.textures[which].color;
-            maps[0].sampler = materialSampler;
-            maps[1].texture = world.textures[which].normal;
-            maps[1].sampler = materialSampler;
-            maps[2].texture = world.textures[which].orm;
-            maps[2].sampler = materialSampler;
-            maps[3].texture = world.textures[which].occlusion;
-            maps[3].sampler = materialSampler;
-            maps[4].texture = world.textures[which].emissive;
-            maps[4].sampler = materialSampler;
-            SDL_BindGPUFragmentSamplers(pass, 3, maps, 5);
+                maps[0].texture = world.textures[which].color;
+                maps[0].sampler = materialSampler;
+                maps[1].texture = world.textures[which].normal;
+                maps[1].sampler = materialSampler;
+                maps[2].texture = world.textures[which].orm;
+                maps[2].sampler = materialSampler;
+                maps[3].texture = world.textures[which].occlusion;
+                maps[3].sampler = materialSampler;
+                maps[4].texture = world.textures[which].emissive;
+                maps[4].sampler = materialSampler;
+                SDL_BindGPUFragmentSamplers(pass, 3, maps, 5);
+
+                bound = cast<isize>(which);
+            }
 
             world.meshes[world.instances[i].mesh].draw(pass);
         }

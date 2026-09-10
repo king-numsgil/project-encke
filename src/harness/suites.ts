@@ -25,6 +25,7 @@ import { testFrustum } from "./suites/frustum_test.ts";
 import { benchGeometry } from "./suites/geometry_bench.ts";
 import { testGeometry } from "./suites/geometry_test.ts";
 import { testOptions } from "./suites/options_test.ts";
+import { testSceneCycle, testSceneSort, testSceneSync } from "./suites/sync_test.ts";
 import type { Suite } from "./testing.ts";
 
 /**
@@ -46,6 +47,9 @@ export function allSuites(): Suite[] {
     suites.push({name: "ecs/query", run: testEcsQuery});
     suites.push({name: "ecs/relation", run: testEcsRelation});
     suites.push({name: "ecs/sparse", run: testEcsSparse});
+    suites.push({name: "scene/sync", run: testSceneSync});
+    suites.push({name: "scene/sort", run: testSceneSort});
+    suites.push({name: "scene/cycles", run: testSceneCycle});
     return suites;
 }
 
