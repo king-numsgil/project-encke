@@ -16,6 +16,7 @@ import { testEcsEntities } from "./suites/ecs_entities_test.ts";
 import { testEcsId } from "./suites/ecs_id_test.ts";
 import { testEcsQuery } from "./suites/ecs_query_test.ts";
 import { testEcsRelation } from "./suites/ecs_relation_test.ts";
+import { testEcsSparse } from "./suites/ecs_sparse_test.ts";
 import { testEcsWorld } from "./suites/ecs_world_test.ts";
 import { benchFragmentation } from "./suites/frag_bench.ts";
 import { benchRelationStore } from "./suites/relstore_bench.ts";
@@ -44,6 +45,7 @@ export function allSuites(): Suite[] {
     suites.push({name: "ecs/world", run: testEcsWorld});
     suites.push({name: "ecs/query", run: testEcsQuery});
     suites.push({name: "ecs/relation", run: testEcsRelation});
+    suites.push({name: "ecs/sparse", run: testEcsSparse});
     return suites;
 }
 

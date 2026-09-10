@@ -6,6 +6,22 @@
 // remembers where adding or removing an id leads, so the second entity down a
 // route follows a cached edge instead of hashing a signature.
 //
+// ## An id is stored one of three ways, and this file decides which
+//
+// `add`, `remove`, `get`, `set` and `has` all take an id, and each has to work
+// out what is behind it first:
+//
+//   * a **dense** component or tag — a column in whatever table the entity is
+//     in. Changing it moves the entity's whole row. This is the default.
+//   * a **sparse** component or tag — a pool of its own outside the archetypes,
+//     registered with `sparseComponent`. Changing it moves nothing. `pool.ts`.
+//   * a **relation** — a store of its own, reached through `relate` and friends
+//     and never through the five operations above. `relation.ts`.
+//
+// Dense and sparse share every entry point, so all five start with one sparse
+// index lookup to decide which way to go. A `pools.length === 0` test guards it,
+// so a world that registered no sparse component pays a load and a compare.
+//
 // ## Every alive entity is in exactly one table
 //
 // Including a brand new one, which lands in table 0 — the archetype with an
@@ -30,8 +46,9 @@ import {
     signatureWithout,
     signaturesEqual,
 } from "./archetype.ts";
-import { type ComponentInfo, infoOf, tagInfo } from "./component.ts";
+import { type ComponentInfo, infoOf, maxComponentBytes, tagInfo } from "./component.ts";
 import { Entities } from "./entities.ts";
+import { fatal } from "./fatal.ts";
 import {
     componentId,
     deleteId,
@@ -41,6 +58,7 @@ import {
     relationId,
     removeId,
 } from "./id.ts";
+import { SparsePool } from "./pool.ts";
 import { RelationStore, View } from "./relation.ts";
 import { noSlot, SparseIndex } from "./sparse.ts";
 
@@ -92,6 +110,31 @@ export class World {
     /** What each relation does when one of its targets is destroyed. */
     private policies: HashMap<u64, u64>;
 
+    /**
+     * One pool per component registered {@link sparseComponent sparse}.
+     *
+     * Held by pointer for the same reason {@link stores} is: a pool owns three
+     * arrays and a column buffer, and growing the outer array would deep-copy
+     * every one of them.
+     */
+    private pools: Pointer<SparsePool>[];
+
+    /**
+     * A sparse component's entity index to its slot in {@link pools}.
+     *
+     * The same shape as {@link storeOf}, for the same reason: this sits on the
+     * way in to every `add`, `remove`, `get` and `has`, so it has to cost less
+     * than the operation it is choosing between. A sparse index is three loads,
+     * where a hash probe would put fifteen nanoseconds in front of everything.
+     *
+     * `pools.length === 0` short-circuits even that, so a world with no sparse
+     * components pays one compare on each of those calls.
+     */
+    private poolOf: SparseIndex;
+
+    /** The registered sparse ids, parallel to {@link pools}. */
+    private poolList: u64[];
+
     constructor() {
         this.entities = new Entities();
         this.tables = [];
@@ -102,6 +145,9 @@ export class World {
         this.storeOf = new SparseIndex();
         this.relationList = [];
         this.policies = new HashMap<u64, u64>();
+        this.pools = [];
+        this.poolOf = new SparseIndex();
+        this.poolList = [];
 
         // Table 0, empty, before anything can want one.
         const empty: u64[] = [];
@@ -145,6 +191,13 @@ export class World {
             this.stores[i].free();
         }
         this.stores = [];
+
+        // A pool owns a column buffer as well, which no destructor reaches.
+        for (let i: usize = 0; i < this.pools.length; i++) {
+            this.pools[i].release();
+            this.pools[i].free();
+        }
+        this.pools = [];
     }
 
     // -- entities -----------------------------------------------------------
@@ -195,6 +248,7 @@ export class World {
 
             this.settleHolders(current, doomed);
             this.forgetLinks(current);
+            this.forgetSparse(current);
             this.removeEntity(current);
         }
 
@@ -224,10 +278,31 @@ export class World {
      */
     component<T>(name: string): u64 {
         const id = this.create();
-        this.infos.set(id, infoOf<T>());
+        this.infos.set(id, this.checkedInfo<T>(name));
         this.names.set(id, name);
         this.add(id, componentId());
         return id;
+    }
+
+    /**
+     * `T`'s layout, or the process stops.
+     *
+     * The one check between a component type and the storage. It aborts instead
+     * of returning `false` because there is nothing a caller could do with a
+     * `false`: the size comes from a type written in the source, so a component
+     * over the limit is wrong in every run of the program. See `fatal.ts`.
+     */
+    private checkedInfo<T>(name: string): ComponentInfo {
+        const info = infoOf<T>();
+        if (info.size > maxComponentBytes()) {
+            fatal(
+                `component "${name}" is ${info.size} bytes, over the ` +
+                `${maxComponentBytes()} byte limit. Split it into smaller ` +
+                `components, or keep the data somewhere else and make the ` +
+                `component a handle to it.`,
+            );
+        }
+        return info;
     }
 
     /** Register an id with no data: an entity either has it or has not. */
@@ -236,6 +311,143 @@ export class World {
         this.names.set(id, name);
         this.add(id, componentId());
         return id;
+    }
+
+    /**
+     * Register `T` as a **sparse** component and hand back its id.
+     *
+     *     const stunned = world.sparseComponent<Stunned>("Stunned");
+     *     world.set<Stunned>(fighter, stunned, {turns: 3});
+     *
+     * The id works exactly like any other — `add`, `remove`, `get`, `set`, `has`
+     * and query terms all take it — but its data lives in a pool outside the
+     * archetypes. **Adding or removing it moves no rows and creates no table**:
+     * a push and a sparse write, instead of copying the entity's whole row into
+     * a table with a different signature.
+     *
+     * Iteration pays for that. A query reading it does a lookup per entity where
+     * a dense component does an increment, and a `has` or `not` term on one has
+     * no per-table answer, so it is tested per row and the body is called once
+     * per run of entities that pass. `pool.ts` has the storage; `query.ts` has
+     * what a term does.
+     *
+     * **Use it for ids that change more often than they are walked**:
+     * `Selected`, `Dirty`, `Stunned`, `JustSpawned` — the ones a gameplay rule
+     * toggles and a few systems ask about, rather than the ones a frame's hot
+     * loop streams through. Nothing here guesses. Dense is the default and this
+     * is the exception, stated where the component is named.
+     */
+    sparseComponent<T>(name: string): u64 {
+        return this.registerPool(name, this.checkedInfo<T>(name));
+    }
+
+    /**
+     * Register a sparse id with no data.
+     *
+     * The cheapest thing in this ECS to put on and take off an entity: two array
+     * writes and no data to copy. A tag that goes on and off every frame is what
+     * the archetype layout handles worst, since each change moves a whole row to
+     * another table, and this is the way out of that.
+     */
+    sparseTag(name: string): u64 {
+        return this.registerPool(name, tagInfo());
+    }
+
+    /** The body of the two above. */
+    private registerPool(name: string, info: ComponentInfo): u64 {
+        const id = this.create();
+        this.names.set(id, name);
+        // On the component's own entity, exactly as a dense one carries it.
+        // Sparse is a storage choice, not a different kind of thing.
+        this.add(id, componentId());
+
+        // Deliberately not in `infos`. `findOrCreateTable` reads that map to
+        // give a signature its columns, and a sparse id must never reach a
+        // signature.
+        this.poolOf.set(indexOf(id), cast<u32>(this.pools.length));
+        this.pools.push(alloc(SparsePool, info));
+        this.poolList.push(id);
+        return id;
+    }
+
+    /** Whether `id` was registered with {@link sparseComponent} or {@link sparseTag}. */
+    isSparse(id: u64): boolean {
+        return this.slotOfPool(id) !== noSlot();
+    }
+
+    /**
+     * Which pool `id` owns, or {@link noSlot}.
+     *
+     * The handle comparison inside refuses a stale component handle, for the
+     * same reason {@link slotOfRelation} has one: the sparse index is keyed by
+     * entity index, so a destroyed component whose index was recycled would
+     * otherwise hand back somebody else's pool.
+     */
+    poolSlotOf(id: u64): u32 {
+        return this.slotOfPool(id);
+    }
+
+    /** Pool `slot`. The query layer resolves its terms through here; nothing else should. */
+    poolAt(slot: u32): Pointer<SparsePool> {
+        return this.pools[cast<usize>(slot)];
+    }
+
+    /** How much a sparse component occupies: its pages, its handles and its rows. */
+    sparseBytes(id: u64): usize {
+        const pool = this.poolFor(id);
+        if (pool === null) {
+            return 0;
+        }
+        return pool.bytes;
+    }
+
+    /** How many entities hold `id`, when it is sparse. Zero when it is not. */
+    sparseCount(id: u64): usize {
+        const pool = this.poolFor(id);
+        if (pool === null) {
+            return 0;
+        }
+        return pool.count;
+    }
+
+    /**
+     * Call `body` with every holder of a sparse `id`, in the pool's own order.
+     *
+     * The one walk this layout is good at: straight down the dense arrays, with
+     * no table to find and nothing to skip. It cannot join two components, so a
+     * body wanting a second one asks for it by handle.
+     */
+    eachSparse(id: u64, body: LocalFn<(handle: u64) => void>): void {
+        const pool = this.poolFor(id);
+        if (pool === null) {
+            return;
+        }
+        pool.each((handle, row) => {
+            body(handle);
+        });
+    }
+
+    private slotOfPool(id: u64): u32 {
+        if (this.pools.length === 0) {
+            return noSlot();
+        }
+        const slot = this.poolOf.get(indexOf(id));
+        if (slot === noSlot()) {
+            return noSlot();
+        }
+        if (this.poolList[cast<usize>(slot)] !== id) {
+            return noSlot();
+        }
+        return slot;
+    }
+
+    /** The pool behind `id`, or null when it is not a sparse component. */
+    private poolFor(id: u64): Pointer<SparsePool> | null {
+        const slot = this.slotOfPool(id);
+        if (slot === noSlot()) {
+            return null;
+        }
+        return this.pools[cast<usize>(slot)];
     }
 
     /**
@@ -334,15 +546,26 @@ export class World {
         if (!this.entities.isAlive(handle)) {
             return false;
         }
+        const pool = this.poolFor(id);
+        if (pool !== null) {
+            return pool.has(handle);
+        }
         return this.tableOf(handle).has(id);
     }
 
     /**
-     * Give `handle` the id, moving it to the table that has one.
+     * Give `handle` the id.
      *
      * `false` when the entity is dead or already had it — neither is an error,
      * and adding twice in particular is the ordinary shape of code that does not
      * want to check first.
+     *
+     * What it costs depends on how the id was registered, though the caller
+     * writes the same line either way. A **dense** id moves the entity to the
+     * table that has one, copying its whole row. A **sparse** id is a push and
+     * one write into that component's pool, moving nothing and creating no
+     * archetype. Measured as a pair with {@link remove}, on an entity holding
+     * two components: 168 ns dense, 67 ns sparse.
      *
      * A relation id passed here is an ordinary tag and has **nothing to do with
      * the relation** — relations live outside the archetypes entirely, so there
@@ -366,6 +589,19 @@ export class World {
             return false;
         }
 
+        // A sparse id never enters a signature, so this is the whole of it: a
+        // push and one write, with no table to find, no row to copy and no
+        // archetype to create.
+        const pool = this.poolFor(id);
+        if (pool !== null) {
+            // Comparing the count rather than calling `has` first. `add` is
+            // idempotent and finds the row itself, so a `has` would be a second
+            // sparse lookup answering what the first one is about to.
+            const before = pool.count;
+            pool.add(handle);
+            return pool.count !== before;
+        }
+
         const from = this.entities.archetypeAt(indexOf(handle));
         const source = this.tables[cast<usize>(from)];
         if (source.has(id)) {
@@ -380,6 +616,11 @@ export class World {
     private detach(handle: u64, id: u64): boolean {
         if (!this.entities.isAlive(handle)) {
             return false;
+        }
+
+        const pool = this.poolFor(id);
+        if (pool !== null) {
+            return pool.remove(handle);
         }
 
         const from = this.entities.archetypeAt(indexOf(handle));
@@ -400,10 +641,26 @@ export class World {
      * change**, exactly as a pointer into a `std::vector` is: adding a component
      * to anything in the same table can reallocate the column, and adding one to
      * *this* entity moves the row to a different table entirely.
+     *
+     * A **sparse** id follows the same rule with a different scope. The pointer
+     * is into that component's pool, so it survives anything done to the
+     * entity's archetype, and it is invalidated by adding or removing *that*
+     * component on *any* entity, since a removal swap-moves the last row into
+     * the hole. It is also the cheaper read: two array loads and no table
+     * lookup.
      */
     get<T>(handle: u64, id: u64): Pointer<T> | null {
         if (!this.entities.isAlive(handle)) {
             return null;
+        }
+
+        const pool = this.poolFor(id);
+        if (pool !== null) {
+            const row = pool.rowOf(handle);
+            if (row === noSlot() || pool.isTag) {
+                return null;
+            }
+            return pool.at(cast<usize>(row)).reify<T>();
         }
 
         const index = indexOf(handle);
@@ -658,6 +915,28 @@ export class World {
     private forgetLinks(handle: u64): void {
         for (let i: usize = 0; i < this.stores.length; i++) {
             this.stores[i].unrelate(handle);
+        }
+    }
+
+    /**
+     * Take `handle` out of every sparse pool it is in.
+     *
+     * A dense component disappears when the row does. A sparse one has to be
+     * hunted down, so **every destroy costs one sparse lookup per registered
+     * sparse component** — three loads apiece, answering no almost every time.
+     * That is a cost sparse components impose on the whole world rather than on
+     * their own users, and the reason to keep the list short. `forgetLinks` says
+     * the same about relations.
+     *
+     * It cannot be skipped the way it can for relations, where the whole handle
+     * stored in a link already reads as dead. A pool is keyed by entity index,
+     * so a row left behind would sit there holding data forever, and the next
+     * entity to take that index would land on it. {@link SparsePool.rowOf}
+     * compares the handle and refuses to return it, but the row is still there.
+     */
+    private forgetSparse(handle: u64): void {
+        for (let i: usize = 0; i < this.pools.length; i++) {
+            this.pools[i].remove(handle);
         }
     }
 

@@ -115,3 +115,22 @@ export function tagInfo(): ComponentInfo {
 export function isTag(info: Reference<ComponentInfo>): boolean {
     return info.size === 0;
 }
+
+/**
+ * The largest a single component's data may be, in bytes.
+ *
+ * A component this big is nearly always a mistake, and the layout is what makes
+ * it one. A column is read by walking it, so a system that wants one `f32` out
+ * of a 4 KiB component still drags all 4 KiB past the cache — sixty-four lines
+ * fetched to use four bytes of one. Two smaller components, or a handle to the
+ * data held elsewhere, both fix that.
+ *
+ * The limit also bounds the two places a component's size multiplies: growing a
+ * column allocates a second buffer beside the first and copies it, and an
+ * archetype move copies a whole row.
+ *
+ * `World.component` checks it, and aborts rather than refusing. See `fatal.ts`.
+ */
+export function maxComponentBytes(): usize {
+    return 4096;
+}

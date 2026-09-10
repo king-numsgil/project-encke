@@ -1,9 +1,15 @@
-// One component's storage inside one archetype: a contiguous run of rows.
+// One component's storage: a contiguous run of type-erased rows.
 //
-// This is the array in "structure of arrays". Every entity in an archetype has
-// the same components, so each component is one column and iterating a query is
-// a straight walk down however many of them the query asked for — no indirection
-// per entity, no per-entity branch, and the prefetcher gets what it wants.
+// This is the array in "structure of arrays", and two things hold one. An
+// **archetype** gives a column to each of its ids that carries data, so every
+// entity in the table has the same components and iterating a query is a
+// straight walk down however many of them the query asked for — no indirection
+// per entity, no per-entity branch, and the prefetcher gets what it wants. A
+// **sparse pool** holds exactly one, for the dense half of its sparse set; see
+// `pool.ts`.
+//
+// Neither has to know what the other does with it. That is what the type erasure
+// below is for.
 //
 // The bytes come from `allocArray<u8>` rather than a `u8[]`, for two reasons
 // that are really one: an `allocArray` pointer is **non-null** so `at` needs no

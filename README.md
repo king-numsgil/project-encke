@@ -366,7 +366,9 @@ id that carries data. An entity's components sit at the same row across those
 columns, so a query walks contiguous arrays with no per-entity lookup and no
 branch. The price is paid when an entity's *shape* changes: adding a component
 moves its whole row to a different table. That trade is the right way round for a
-simulation, where shape changes are rare and iteration happens every frame.
+simulation, where shape changes are rare and iteration happens every frame — and
+where it is the wrong way round, [a component can be registered
+sparse](#sparse-components) and sit outside the archetypes entirely.
 
 Signatures sort ascending, which makes membership a binary search.
 
@@ -381,9 +383,80 @@ of those. No `string`, no `T[]`, no classes. The hooks are written so an owning
 component would be correct, but nothing tests that and column growth relocates
 rows bitwise. A component that wants a name holds an interned handle.
 
+**A component is at most 4 KiB**, and `world.component<T>()` aborts on one that
+is not. The layout is what makes a big component a mistake: a column is read by
+walking it, so a system that wants one `f32` out of a 4 KiB component still drags
+all 4 KiB past the cache — sixty-four lines fetched to use four bytes of one. The
+limit also bounds the two places a size multiplies, since growing a column copies
+the whole buffer and an archetype move copies a whole row. Hitting it means
+either splitting the component in two, or keeping the data elsewhere and making
+the component a handle to it. It aborts rather than refusing because the size is
+fixed when the program is compiled, so there is nothing a caller could do with a
+`false`.
+
 Adding or removing an id follows a cached graph edge between tables, and both
 directions are written when either is built, so an entity that is tagged and
 untagged every frame hashes no signatures at all.
+
+### Sparse components
+
+The archetype makes the same trade everywhere: iteration is a contiguous walk,
+and changing which components an entity has copies its whole row to another
+table. That suits a `Position`. It does not suit a `Selected`, a `Dirty` or a
+`Stunned` — an id a gameplay rule toggles several times a frame, reads one entity
+at a time, and never streams.
+
+So a component can be registered the other way round:
+
+```ts
+const stunned = world.sparseComponent<Stunned>("Stunned");
+const selected = world.sparseTag("Selected");
+
+world.set<Stunned>(fighter, stunned, {turns: 3});   // no table, no row moved
+world.add(fighter, selected);
+world.remove(fighter, selected);
+```
+
+The id works exactly like any other — `add`, `remove`, `get`, `set`, `has` and
+query terms all take it — but it lives in a pool outside the archetypes: a paged
+sparse index from entity to row, a dense array of whole handles, and a column of
+data. **The id never enters a signature**, so putting it on and taking it off is
+a push and one write instead of a row copied into another table, and it creates
+no archetype however many entities hold it.
+
+Measured against the same operation on a dense tag:
+
+| | |
+|---|---|
+| add + remove a **dense** tag, two archetype moves | 168 ns |
+| add + remove a **sparse** tag | **67 ns** |
+
+Iteration is where that is paid back, and it is not cheap:
+
+| | |
+|---|---|
+| iterate 1M, two dense components | **1.7 ns** an entity |
+| iterate 1M, reading a sparse component | **27 ns** an entity |
+| iterate 1M, a sparse tag keeping 100k, per row *tested* | **18 ns** |
+
+Fifteen times slower to read. The pool's rows are in its own insertion order and
+nothing keeps them in step with a table's, so reading one is a lookup per entity
+where a dense component is an increment. There is no way around that, which is
+why the choice is left to whoever registers the component.
+
+**Nothing infers it.** EnTT reaches the same place from the other side: its
+storage is sparse by default, and a `group` is the user marking a set of
+components as a hot path to be clumped together. Here the default is the
+archetype and `sparseComponent` is the exception. Either way a person decides. A
+heuristic counting accesses would be guessing at what the next frame does, and it
+would guess wrong quietly.
+
+Two more costs to know before reaching for one. **Every `destroy` pays one sparse
+lookup per registered sparse component**, because a dense component disappears
+when its row does and a sparse one has to be hunted down — so keep the list
+short, the same caution relations carry. And a pointer from `world.get` on a
+sparse component is invalidated by adding or removing that component on *any*
+entity, since a removal swap-moves the pool's last row into the hole.
 
 ### Queries
 
@@ -409,6 +482,15 @@ Matching is incremental. Tables are only ever appended, so a query keeps a curso
 and each rematch looks only at what is new — which makes a settled world free to
 re-query, and makes a query **built before the archetypes it matches** pick them
 up the moment they exist.
+
+A **sparse** term is in no signature, so "does this table hold it" has no answer
+and matching ignores it. Filtering happens a row at a time instead: `each` calls
+the body once per **run** of consecutive rows that pass, with every column base
+offset to the start of its run. The body above is the same code either way, so a
+term can change from dense to sparse without touching it. A query with no sparse
+terms gets one run per table and costs what it always did, while a term only
+every third entity passes gets a body call per entity. Reading a sparse
+component's data is `it.sparse<T>(term, i)`, one pool lookup per entity.
 
 There are no wildcards and nothing needs them. A relation is an ordinary id, so
 `has(childOf)` is "everything with a parent" — one table, and `it.column<u64>(n)`
@@ -539,6 +621,42 @@ What the signature layout bought — contiguous *data* for one parent's children
 is a real thing to give up, and the way to get it back is a view: pay memory to
 cache the answer, which is what `world.view` is.
 
+### Why the rows are not chunked
+
+Several archetype ECSs — Unity's DOTS, gaia — cut a table's rows into fixed
+blocks of 8 to 16 KiB holding every column at once, rather than giving each
+column one buffer that grows. The argument is cache locality: an entity's
+components all land inside one block, and a block fits in L1.
+
+It was built here and **measured slower on every iteration case**, so it is not
+in the tree. Both layouts, same machine, same benchmarks:
+
+| | one buffer per column | 16 KiB chunks | 32 KiB | 64 KiB |
+|---|---|---|---|---|
+| iterate 1M, two components | **1.75** | 2.33 | 1.82 | 1.72 |
+| iterate 400k, six of eight components | **4.42** | 6.68 | 5.18 | 4.69 |
+| add + remove a tag | 161 | **146** | 148 | 147 |
+| get three components by handle, scattered | 164 | 162 | 161 | **158** |
+
+The locality argument does not hold up. A hardware prefetcher wants a **long**
+stream, and 16 KiB is 256 rows of three small components, or 128 rows of eight.
+Restarting six streams at every block boundary costs more than keeping an
+entity's data together saves. Random access should have been chunking's best case
+and came out a wash, because the entity record lookup and the miss it ends in
+dominate whatever the components' addresses are.
+
+Chunking did buy two things. Appending never reallocates, so a 400 MB column
+never transiently wants 1.2 GB and there is no pause proportional to the table;
+and a shape change got about 9% faster. Neither is worth a 34 to 51% iteration
+cost at the block size the argument is normally made at, and the growth problem
+has cheaper answers anyway — `Column.reserve` before a spawn loop, and the
+additive growth past a megabyte that `column.ts` already does.
+
+`ecs/iterate 400k, 6 of 8 components` and `ecs/get 3 components by handle,
+scattered` are in `bun bench --filter ecs` because of this exercise. The older
+benchmarks could not see either case, and a future attempt at chunking has to
+beat both.
+
 ### What it costs
 
 From `bun bench`, on one machine, with the usual caveat that these compare
@@ -546,12 +664,17 @@ against another run of themselves and nothing else:
 
 | | |
 |---|---|
-| iterate 1M entities, two components | **1.8 ns** an entity |
+| iterate 1M entities, two components | **1.7 ns** an entity |
+| iterate 400k entities, six of eight components | **4.2 ns** an entity |
 | iterate 50k parented entities, 4,000 parents | **0.43 ns** an entity |
-| create + destroy | 71 ns |
-| add + remove a tag (two archetype moves) | 161 ns |
+| create + destroy | 70 ns |
+| add + remove a tag (two archetype moves) | 168 ns |
+| add + remove a **sparse** tag (no archetype move) | **67 ns** |
+| iterate 1M, reading a sparse component | 27 ns an entity |
+| iterate 1M, a sparse tag keeping 100k, per row tested | 18 ns |
+| get three components by handle, scattered | 199 ns |
 | `targetOf` | 15 ns |
-| `related`, one parent of twelve | 126 ns |
+| `related`, one parent of twelve | 125 ns |
 | walking a settled `view` of twelve | 41 ns |
 
 Those are the fastest batch of twenty, which is the statistic least polluted by
@@ -559,9 +682,10 @@ whatever else the machine was doing — the mean on a busy machine is two to thr
 times worse and says more about the scheduler than about this code.
 
 The first line is the whole point of the layout. The fifth is what it costs, and
-the reason a shape change is something to do at spawn rather than per frame. The
-last two are the view earning its keep: about twice as fast as the lookup, for one
-`u64` per member.
+the reason to change an entity's shape at spawn rather than every frame. The
+sixth and seventh are the same trade taken the other way round, which is what
+`sparseComponent` is for. The last two are the view earning its keep: about twice
+as fast as the lookup, for one `u64` per member.
 
 ### Not in it
 
@@ -607,13 +731,15 @@ src/
   ecs/
     id.ts                   the u64 bit layout, pairs, wildcards
     entities.ts             liveness, generations, the free list
-    component.ts            size, alignment, and the per-type hooks
+    component.ts            size, alignment, the per-type hooks, the size cap
     column.ts               one component's rows, type-erased
     archetype.ts            a table, its signature and its graph edges
     world.ts                the front door
     query.ts                terms, matching, iteration
     sparse.ts               paged entity-index-to-slot lookup
+    pool.ts                 one sparse component's storage, outside the tables
     relation.ts             one store per relation, and cached views
+    fatal.ts                the two things that abort instead of returning
   harness/
     run.ts                  the --headless entry point
     suites.ts               the registry, which is the whole list
