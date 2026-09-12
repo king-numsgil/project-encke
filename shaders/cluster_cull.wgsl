@@ -124,7 +124,16 @@ fn cs_main(
     sort_key[lane] = -1.0;
     sort_value[lane] = 0u;
     if lane == 0u {
-        atomicStore(&found, 0u);
+        // `atomicExchange` and discard, rather than `atomicStore`. The two are
+        // the same operation here, but SPIRV-Cross mistranslates an
+        // `OpAtomicStore` in any shader it has to compile twice: the temporary
+        // holding the discarded old value is declared on the first pass and
+        // skipped on the second, because the map it is cached in survives the
+        // reset between them. The bitonic sort below is what forces the second
+        // pass, so this shader hits it and the emitted HLSL names a variable
+        // that was never declared. `OpAtomicExchange` declares its result
+        // inline and is unaffected.
+        _ = atomicExchange(&found, 0u);
     }
     workgroupBarrier();
 

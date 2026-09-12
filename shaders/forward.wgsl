@@ -198,7 +198,19 @@ fn debug_view(
         let cascade = cascade_for(view_z, shadows.cascade_split);
         let tint = heat(f32(cascade) / f32(CASCADE_COUNT - 1u));
         let sun_dir = normalize(frame_fs.sun_direction.xyz);
-        let lit = sun_shadow(shadow_atlas, shadow_sampler, shadows, world_pos, normal, sun_dir, view_z);
+        let next = min(cascade + 1u, CASCADE_COUNT - 1u);
+        let lit = sun_shadow(
+            shadow_atlas,
+            shadow_sampler,
+            shadows,
+            cascade,
+            shadows.cascade_view_proj[cascade],
+            shadows.cascade_view_proj[next],
+            world_pos,
+            normal,
+            sun_dir,
+            view_z,
+        );
         return vec4<f32>(tint * mix(0.25, 1.0, lit), 1.0);
     }
 
@@ -267,10 +279,15 @@ fn fs_main(in : VertexOut) -> @location(0) vec4<f32> {
     var color = vec3<f32>(0.0);
 
     if dot(normal, sun_dir) > 0.0 {
+        let cascade = cascade_for(view_z, shadows.cascade_split);
+        let next = min(cascade + 1u, CASCADE_COUNT - 1u);
         let sun_visibility = sun_shadow(
             shadow_atlas,
             shadow_sampler,
             shadows,
+            cascade,
+            shadows.cascade_view_proj[cascade],
+            shadows.cascade_view_proj[next],
             in.world_pos,
             normal,
             sun_dir,
@@ -325,11 +342,13 @@ fn fs_main(in : VertexOut) -> @location(0) vec4<f32> {
         }
 
         if light.shadow >= 0 {
+            let slot = u32(light.shadow);
             attenuation = attenuation * spot_shadow(
                 spot_atlas,
                 spot_sampler,
                 shadows,
-                u32(light.shadow),
+                slot,
+                shadows.spot_view_proj[slot],
                 in.world_pos,
                 normal,
                 to_light,

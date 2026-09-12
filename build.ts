@@ -1,5 +1,5 @@
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { compile, formatAll, systemLib } from "goblin-forge";
 
 // ---------------------------------------------------------------------------
@@ -31,6 +31,17 @@ const SPV_DIR = "shaders/out";
 const MANIFEST = "src/renderer/shaders.generated.ts";
 
 const SHADERCC = ["cargo", "run", "--quiet", "--release", "--manifest-path", "tools/shadercc/Cargo.toml", "--"];
+
+/** Run a build command, failing with its output rather than with an exit code. */
+async function run(what: string, argv: readonly string[], cwd?: string): Promise<void> {
+    const shell = Bun.$`${argv}`.quiet().nothrow();
+    const result = await (cwd === undefined ? shell : shell.cwd(cwd));
+    if (result.exitCode !== 0) {
+        console.error(result.stdout.toString());
+        console.error(result.stderr.toString());
+        throw new Error(what);
+    }
+}
 
 type Stage = "vertex" | "fragment" | "compute";
 
@@ -167,7 +178,15 @@ function functionName(module: string, entry: string): string {
     return camel(module, false) + camel(entry, true);
 }
 
-async function buildShaders(): Promise<void> {
+/**
+ * Compile every shader, to SPIR-V and — when `shadercross` is there — to DXIL
+ * beside it.
+ *
+ * Both variants are written for every entry point rather than only the one this
+ * machine will run, because which one is needed is a property of the *device*
+ * the program opens, not of the machine that built it.
+ */
+async function buildShaders(shadercross: string | null): Promise<void> {
     await mkdir(GEN_WGSL_DIR, { recursive: true });
     await mkdir(dirname(MANIFEST), { recursive: true });
 
@@ -201,12 +220,28 @@ async function buildShaders(): Promise<void> {
                 throw new Error(`shadercc failed on ${file} :: ${entry.name}`);
             }
 
+            if (shadercross !== null) {
+                // `--cull` is deliberately not passed. It lets the compiler drop
+                // a binding the shader never reads, which would renumber every
+                // binding after it and desync the counts shadercc just reported.
+                const spv = `${SPV_DIR}/${stem}.spv`;
+                await run(`shadercross failed on ${stem}`, [
+                    shadercross, spv,
+                    "-s", "SPIRV",
+                    "-d", "DXIL",
+                    "-t", entry.stage,
+                    "-e", entry.name,
+                    "-o", `${SPV_DIR}/${stem}.dxil`,
+                ]);
+            }
+
             compiled.push({ entry, counts: parseCounts(result.stdout.toString()) });
         }
     }
 
     await writeFile(MANIFEST, renderManifest(compiled));
-    console.log(`shaders: ${compiled.length} entry points, manifest -> ${MANIFEST}`);
+    const formats = shadercross === null ? "SPIR-V" : "SPIR-V and DXIL";
+    console.log(`shaders: ${compiled.length} entry points as ${formats}, manifest -> ${MANIFEST}`);
 }
 
 /**
@@ -217,6 +252,11 @@ async function buildShaders(): Promise<void> {
  * struct somebody still has to copy into a create-info; handing back the
  * created object means the numbers are used exactly where they were generated
  * and there is no second place for them to be wrong.
+ *
+ * What each function names is the path *without* an extension, because the
+ * bytecode to open depends on the device the program ends up with rather than
+ * on anything known here. `shader.ts` asks the device and appends `.spv` or
+ * `.dxil`.
  */
 function renderManifest(compiled: readonly { entry: EntryPoint; counts: Counts }[]): string {
     const lines: string[] = [
@@ -234,7 +274,7 @@ function renderManifest(compiled: readonly { entry: EntryPoint; counts: Counts }
 
     for (const { entry, counts } of compiled) {
         const name = functionName(entry.module, entry.name);
-        const path = `${SPV_DIR}/${entry.module}.${entry.name}.spv`;
+        const stem = `${SPV_DIR}/${entry.module}.${entry.name}`;
 
         if (entry.stage === "compute") {
             lines.push(
@@ -242,7 +282,7 @@ function renderManifest(compiled: readonly { entry: EntryPoint; counts: Counts }
                 `export function ${name}(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUComputePipeline> | null {`,
                 "    return loadComputePipeline(",
                 "        device,",
-                `        "${path}",`,
+                `        "${stem}",`,
                 `        "${entry.name}",`,
                 `        ${counts.samplers}, // samplers`,
                 `        ${counts.readonlyStorageTextures}, // read-only storage textures`,
@@ -266,7 +306,7 @@ function renderManifest(compiled: readonly { entry: EntryPoint; counts: Counts }
             `export function ${name}(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {`,
             "    return loadShader(",
             "        device,",
-            `        "${path}",`,
+            `        "${stem}",`,
             `        "${entry.name}",`,
             `        SDL_GPUShaderStage.${stage},`,
             `        ${counts.samplers}, // samplers`,
@@ -280,6 +320,182 @@ function renderManifest(compiled: readonly { entry: EntryPoint; counts: Counts }
     }
 
     return lines.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// SDL_shadercross.
+//
+// Naga's SPIR-V is all `tools/shadercc` can emit — its HLSL back end targets
+// wgpu's bindless D3D12 model, which is not the fixed descriptor tables SDL
+// builds, and shadercc's README has the detail. SDL ships a tool for exactly
+// this gap, so DXIL is reached by translating the SPIR-V rather than by
+// compiling the WGSL a second way:
+//
+//     WGSL --shadercc--> SPIR-V --shadercross--> DXIL
+//
+// Built here rather than downloaded because SDL_shadercross publishes no
+// releases. Four pieces go into the one executable:
+//
+//   * **SDL_shadercross** itself, pinned to a commit — the repository has no
+//     tags, so there is nothing else to pin to.
+//   * **SPIRV-Cross**, which does SPIR-V to HLSL. Pinned to whatever
+//     SDL_shadercross's own submodule points at, read out of the clone, so the
+//     two cannot drift apart.
+//   * **DirectXShaderCompiler**, which does HLSL to DXIL. Prebuilt: building it
+//     means building LLVM. SDL_shadercross has a script that fetches the
+//     release it was tested against, and hardcodes the directory that script
+//     writes to, so that directory is what gets used.
+//   * **SDL3**, which SDL_shadercross links against — the same devel package
+//     the program itself links against, below.
+//
+// The whole thing is keyed on the executable existing, so this costs nothing
+// after the first build.
+// ---------------------------------------------------------------------------
+
+const SHADERCROSS_DIR = "build/shadercross";
+const SHADERCROSS_PREFIX = `${SHADERCROSS_DIR}/prefix`;
+const SHADERCROSS = `${SHADERCROSS_PREFIX}/bin/shadercross.exe`;
+
+/** The SDL_shadercross commit this is built from. Its repository has no releases. */
+const SHADERCROSS_COMMIT = "1ff05bec573988a98ef9e0260b4da44f512b8367";
+
+/**
+ * The generator, named rather than left to CMake.
+ *
+ * CMake would pick the newest Visual Studio it can find, which is a different
+ * toolchain on a different machine and a silent one. Naming it means a machine
+ * without these build tools fails here, with the version it wanted in the
+ * message.
+ */
+const SHADERCROSS_GENERATOR = ["-G", "Visual Studio 17 2022", "-A", "x64"];
+
+/** Clone at one commit, without the history or the blobs leading up to it. */
+async function cloneCommit(url: string, directory: string, commit: string): Promise<void> {
+    if (await Bun.file(`${directory}/.git/HEAD`).exists()) {
+        return;
+    }
+
+    await mkdir(directory, { recursive: true });
+    await run(`git init failed in ${directory}`, ["git", "-C", directory, "init", "--quiet"]);
+    await run(`git remote failed in ${directory}`, ["git", "-C", directory, "remote", "add", "origin", url]);
+    await run(`fetching ${commit} from ${url} failed`, [
+        "git", "-C", directory, "fetch", "--quiet", "--depth", "1", "origin", commit,
+    ]);
+    await run(`checking out ${commit} failed`, [
+        "git", "-C", directory, "checkout", "--quiet", "--detach", "FETCH_HEAD",
+    ]);
+}
+
+/**
+ * Which SPIRV-Cross commit SDL_shadercross expects.
+ *
+ * Read out of the clone's own tree rather than written down here. A submodule
+ * is a commit id in a tree entry, and `ls-tree` prints it whether or not the
+ * submodule was ever checked out — which it is not, since the vendored build
+ * would pull in DirectXShaderCompiler's sources too.
+ */
+async function pinnedSpirvCross(source: string): Promise<string> {
+    const result = await Bun.$`git -C ${source} ls-tree HEAD external/SPIRV-Cross`.quiet().nothrow();
+    const match = /^\S+\s+commit\s+(\S+)/.exec(result.stdout.toString());
+    if (result.exitCode !== 0 || match === null) {
+        console.error(result.stderr.toString());
+        throw new Error("cannot read the SPIRV-Cross commit SDL_shadercross pins");
+    }
+    return match[1]!;
+}
+
+/**
+ * Configure, build and install one CMake project into the shared prefix.
+ *
+ * Everything lands in the one prefix and everything searches it, so SPIRV-Cross
+ * is found by the project built after it without either knowing where the other
+ * put itself.
+ */
+async function cmakeInstall(
+    what: string,
+    source: string,
+    build: string,
+    search: readonly string[],
+    options: readonly string[],
+): Promise<void> {
+    const prefix = resolve(import.meta.dir, SHADERCROSS_PREFIX);
+
+    await run(`configuring ${what} failed`, [
+        "cmake", "-S", source, "-B", build,
+        ...SHADERCROSS_GENERATOR,
+        `-DCMAKE_INSTALL_PREFIX=${prefix}`,
+        `-DCMAKE_PREFIX_PATH=${[prefix, ...search].join(";")}`,
+        ...options,
+    ]);
+    await run(`building ${what} failed`, [
+        "cmake", "--build", build, "--config", "Release", "--target", "install", "--parallel",
+    ]);
+}
+
+/**
+ * Build shadercross if it is not already built, and return the path to it.
+ *
+ * The three libraries it loads at run time are copied in beside it rather than
+ * found on `PATH`: `dxcompiler.dll` loads `dxil.dll` itself, to sign what it
+ * produced, and an unsigned DXIL blob is rejected by the runtime rather than by
+ * the compiler — so the failure would land a long way from the missing file.
+ */
+async function buildShadercross(sdl3Package: string): Promise<string> {
+    const exe = resolve(import.meta.dir, SHADERCROSS);
+    if (await Bun.file(exe).exists()) {
+        return exe;
+    }
+
+    console.log("shadercross: building (first run only)");
+
+    const source = resolve(import.meta.dir, `${SHADERCROSS_DIR}/SDL_shadercross`);
+    await cloneCommit("https://github.com/libsdl-org/SDL_shadercross.git", source, SHADERCROSS_COMMIT);
+
+    const spirvCross = resolve(import.meta.dir, `${SHADERCROSS_DIR}/SPIRV-Cross`);
+    await cloneCommit("https://github.com/KhronosGroup/SPIRV-Cross.git", spirvCross, await pinnedSpirvCross(source));
+
+    await cmakeInstall("SPIRV-Cross", spirvCross, `${SHADERCROSS_DIR}/build-spirv-cross`, [], [
+        "-DSPIRV_CROSS_SHARED=ON",
+        "-DSPIRV_CROSS_STATIC=OFF",
+        "-DSPIRV_CROSS_CLI=OFF",
+        "-DSPIRV_CROSS_ENABLE_TESTS=OFF",
+    ]);
+
+    // Naming the system stops the script fetching the Linux build as well as
+    // the Windows one, which it does by default when nothing has told it where
+    // it is. `DXC_ROOT` is deliberately left alone: SDL_shadercross's own
+    // CMakeLists overwrites it with this default, so it is the only place the
+    // binaries can be put where they will be found. Run from the build
+    // directory, because a script-mode `cmake` unpacks through a scratch
+    // sub-build in whatever directory it was started from.
+    await run(
+        "fetching DirectXShaderCompiler failed",
+        [
+            "cmake", "-DCMAKE_SYSTEM_NAME=Windows",
+            "-P", `${source}/build-scripts/download-prebuilt-DirectXShaderCompiler.cmake`,
+        ],
+        resolve(import.meta.dir, SHADERCROSS_DIR),
+    );
+    const dxc = `${source}/external/DirectXShaderCompiler-binaries/windows/bin/x64`;
+
+    await cmakeInstall("SDL_shadercross", source, `${SHADERCROSS_DIR}/build-shadercross`, [sdl3Package], [
+        // Vendored would build DirectXShaderCompiler, and with it LLVM, from
+        // source. Everything it needs is installed or downloaded above instead.
+        "-DSDLSHADERCROSS_VENDORED=OFF",
+        "-DSDLSHADERCROSS_SPIRVCROSS_SHARED=ON",
+        "-DSDLSHADERCROSS_SHARED=ON",
+        "-DSDLSHADERCROSS_STATIC=OFF",
+        "-DSDLSHADERCROSS_CLI=ON",
+        "-DSDLSHADERCROSS_INSTALL_CPACK=OFF",
+    ]);
+
+    const runtime = [`${sdl3Package}/lib/x64/SDL3.dll`, `${dxc}/dxcompiler.dll`, `${dxc}/dxil.dll`];
+    for (const library of runtime) {
+        await Bun.write(`${SHADERCROSS_PREFIX}/bin/${basename(library)}`, Bun.file(library));
+    }
+
+    console.log(`shadercross: built -> ${SHADERCROSS}`);
+    return exe;
 }
 
 // ---------------------------------------------------------------------------
@@ -383,9 +599,14 @@ const DEPENDENCIES: readonly NativeDependency[] = [
 
 const DEPENDENCY_ROOT = "build/sdl3";
 
+/** Where a dependency is extracted to. Relative to the project root. */
+function packageDirectory(dep: NativeDependency): string {
+    return `${DEPENDENCY_ROOT}/${dep.name}-${dep.version}`;
+}
+
 /** Where a dependency's `x64` libraries live once extracted. Relative to the project root. */
 function libraryDirectory(dep: NativeDependency): string {
-    return `${DEPENDENCY_ROOT}/${dep.name}-${dep.version}/lib/x64`;
+    return `${packageDirectory(dep)}/lib/x64`;
 }
 
 /**
@@ -443,11 +664,22 @@ async function copyRuntimeLibraries(dep: NativeDependency, lib: string): Promise
     }
 }
 
-await buildShaders();
-
+// The dependencies come before the shaders, because shadercross links against
+// SDL3 and the shaders are what shadercross is built for.
 const libraryDirectories = windows
     ? await Promise.all(DEPENDENCIES.map((dep) => ensureDevelPackage(dep)))
     : [];
+
+// DXIL is a D3D12 format and D3D12 is Windows. Elsewhere the shaders stay
+// SPIR-V, which is what the Vulkan and Metal-through-Vulkan paths want; MSL
+// would be the same translation with a different `-d`, once there is a Mac to
+// try it on.
+const sdl3 = DEPENDENCIES.find((dep) => dep.name === "SDL3")!;
+const shadercross = windows
+    ? await buildShadercross(resolve(import.meta.dir, packageDirectory(sdl3)))
+    : null;
+
+await buildShaders(shadercross);
 
 const gltfLinkDirectory = await buildGltfLoader();
 

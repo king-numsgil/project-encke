@@ -12,7 +12,7 @@ import { loadComputePipeline, loadShader } from "./shader.ts";
 export function blurBlurMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUComputePipeline> | null {
     return loadComputePipeline(
         device,
-        "shaders/out/blur.blur_main.spv",
+        "shaders/out/blur.blur_main",
         "blur_main",
         0, // samplers
         0, // read-only storage textures
@@ -30,7 +30,7 @@ export function blurBlurMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUCom
 export function checkerGenerate(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUComputePipeline> | null {
     return loadComputePipeline(
         device,
-        "shaders/out/checker.generate.spv",
+        "shaders/out/checker.generate",
         "generate",
         0, // samplers
         0, // read-only storage textures
@@ -48,7 +48,7 @@ export function checkerGenerate(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPU
 export function clusterBuildCsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUComputePipeline> | null {
     return loadComputePipeline(
         device,
-        "shaders/out/cluster_build.cs_main.spv",
+        "shaders/out/cluster_build.cs_main",
         "cs_main",
         0, // samplers
         0, // read-only storage textures
@@ -66,7 +66,7 @@ export function clusterBuildCsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_
 export function clusterClearCsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUComputePipeline> | null {
     return loadComputePipeline(
         device,
-        "shaders/out/cluster_clear.cs_main.spv",
+        "shaders/out/cluster_clear.cs_main",
         "cs_main",
         0, // samplers
         0, // read-only storage textures
@@ -84,7 +84,7 @@ export function clusterClearCsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_
 export function clusterCullCsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUComputePipeline> | null {
     return loadComputePipeline(
         device,
-        "shaders/out/cluster_cull.cs_main.spv",
+        "shaders/out/cluster_cull.cs_main",
         "cs_main",
         0, // samplers
         0, // read-only storage textures
@@ -102,7 +102,7 @@ export function clusterCullCsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_G
 export function clusterMarkCsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUComputePipeline> | null {
     return loadComputePipeline(
         device,
-        "shaders/out/cluster_mark.cs_main.spv",
+        "shaders/out/cluster_mark.cs_main",
         "cs_main",
         1, // samplers
         0, // read-only storage textures
@@ -120,7 +120,7 @@ export function clusterMarkCsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_G
 export function depthPrepassVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/depth_prepass.vs_main.spv",
+        "shaders/out/depth_prepass.vs_main",
         "vs_main",
         SDL_GPUShaderStage.VERTEX,
         0, // samplers
@@ -134,7 +134,7 @@ export function depthPrepassVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_
 export function depthPrepassFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/depth_prepass.fs_main.spv",
+        "shaders/out/depth_prepass.fs_main",
         "fs_main",
         SDL_GPUShaderStage.FRAGMENT,
         0, // samplers
@@ -148,7 +148,7 @@ export function depthPrepassFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_
 export function forwardVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/forward.vs_main.spv",
+        "shaders/out/forward.vs_main",
         "vs_main",
         SDL_GPUShaderStage.VERTEX,
         0, // samplers
@@ -162,7 +162,7 @@ export function forwardVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUSh
 export function forwardFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/forward.fs_main.spv",
+        "shaders/out/forward.fs_main",
         "fs_main",
         SDL_GPUShaderStage.FRAGMENT,
         8, // samplers
@@ -176,7 +176,7 @@ export function forwardFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUSh
 export function shadowDepthVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/shadow_depth.vs_main.spv",
+        "shaders/out/shadow_depth.vs_main",
         "vs_main",
         SDL_GPUShaderStage.VERTEX,
         0, // samplers
@@ -190,7 +190,7 @@ export function shadowDepthVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_G
 export function shadowDepthFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/shadow_depth.fs_main.spv",
+        "shaders/out/shadow_depth.fs_main",
         "fs_main",
         SDL_GPUShaderStage.FRAGMENT,
         0, // samplers
@@ -204,7 +204,7 @@ export function shadowDepthFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_G
 export function ssaoVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/ssao.vs_main.spv",
+        "shaders/out/ssao.vs_main",
         "vs_main",
         SDL_GPUShaderStage.VERTEX,
         0, // samplers
@@ -218,7 +218,7 @@ export function ssaoVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShade
 export function ssaoFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/ssao.fs_main.spv",
+        "shaders/out/ssao.fs_main",
         "fs_main",
         SDL_GPUShaderStage.FRAGMENT,
         1, // samplers
@@ -232,7 +232,7 @@ export function ssaoFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShade
 export function ssaoBlurVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/ssao_blur.vs_main.spv",
+        "shaders/out/ssao_blur.vs_main",
         "vs_main",
         SDL_GPUShaderStage.VERTEX,
         0, // samplers
@@ -246,7 +246,7 @@ export function ssaoBlurVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUS
 export function ssaoBlurFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/ssao_blur.fs_main.spv",
+        "shaders/out/ssao_blur.fs_main",
         "fs_main",
         SDL_GPUShaderStage.FRAGMENT,
         1, // samplers
@@ -260,7 +260,7 @@ export function ssaoBlurFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUS
 export function texturedVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/textured.vs_main.spv",
+        "shaders/out/textured.vs_main",
         "vs_main",
         SDL_GPUShaderStage.VERTEX,
         0, // samplers
@@ -274,7 +274,7 @@ export function texturedVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUS
 export function texturedFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/textured.fs_main.spv",
+        "shaders/out/textured.fs_main",
         "fs_main",
         SDL_GPUShaderStage.FRAGMENT,
         1, // samplers
@@ -288,7 +288,7 @@ export function texturedFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUS
 export function tonemapVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/tonemap.vs_main.spv",
+        "shaders/out/tonemap.vs_main",
         "vs_main",
         SDL_GPUShaderStage.VERTEX,
         0, // samplers
@@ -302,7 +302,7 @@ export function tonemapVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUSh
 export function tonemapFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/tonemap.fs_main.spv",
+        "shaders/out/tonemap.fs_main",
         "fs_main",
         SDL_GPUShaderStage.FRAGMENT,
         1, // samplers
@@ -316,7 +316,7 @@ export function tonemapFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUSh
 export function triangleVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/triangle.vs_main.spv",
+        "shaders/out/triangle.vs_main",
         "vs_main",
         SDL_GPUShaderStage.VERTEX,
         0, // samplers
@@ -330,7 +330,7 @@ export function triangleVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUS
 export function triangleFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/triangle.fs_main.spv",
+        "shaders/out/triangle.fs_main",
         "fs_main",
         SDL_GPUShaderStage.FRAGMENT,
         1, // samplers
@@ -344,7 +344,7 @@ export function triangleFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUS
 export function uiVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/ui.vs_main.spv",
+        "shaders/out/ui.vs_main",
         "vs_main",
         SDL_GPUShaderStage.VERTEX,
         0, // samplers
@@ -358,7 +358,7 @@ export function uiVsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader>
 export function uiFsMain(device: Pointer<SDL_GPUDevice>): Pointer<SDL_GPUShader> | null {
     return loadShader(
         device,
-        "shaders/out/ui.fs_main.spv",
+        "shaders/out/ui.fs_main",
         "fs_main",
         SDL_GPUShaderStage.FRAGMENT,
         1, // samplers

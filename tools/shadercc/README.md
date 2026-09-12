@@ -4,9 +4,11 @@ Compiles one WGSL entry point to SPIR-V for SDL_gpu, using
 [Naga](https://docs.rs/naga) — wgpu's shader translator — as the front and back
 end.
 
-SPIR-V and nothing else. For DXIL, DXBC, MSL or metallib, feed this tool's
-output to [SDL_shadercross](https://github.com/libsdl-org/SDL_shadercross);
-[why](#why-not-dxil-and-msl-too) is at the bottom.
+SPIR-V and nothing else. DXIL, DXBC, MSL and metallib come from feeding this
+tool's output to [SDL_shadercross](https://github.com/libsdl-org/SDL_shadercross),
+which `build.ts` builds and runs for the DXIL — [why](#why-not-dxil-and-msl-too)
+is at the bottom, along with [what to watch for](#the-shadercross-half) in the
+translation.
 
 It exists for the half of `SDL_GPUShaderCreateInfo` that is not the bytecode:
 SDL does not reflect on the shader it is given. It assumes the resources were
@@ -160,6 +162,51 @@ is built for the rest and takes SPIR-V as input, so the pipeline is:
 ```
 WGSL --shadercc--> SPIR-V --SDL_shadercross--> DXIL / DXBC / MSL / metallib
 ```
+
+## The shadercross half
+
+`build.ts` runs that second step for every entry point, so `shaders/out` holds a
+`.spv` and a `.dxil` for each, and `--gpu direct3d12` runs the DXIL. It also
+*builds* shadercross, because there are no releases to download — the sources,
+the pinned commits and the DirectXShaderCompiler fetch are all in `build.ts`,
+under `build/shadercross/`.
+
+The binding layout above survives the translation exactly, which is the part
+that had to be checked rather than assumed. SPIRV-Cross gives each descriptor
+set a register space and each binding a register index, and a sampler sharing
+its texture's binding lands on `s<n>` beside the texture's `t<n>` — which is
+what SDL's D3D12 backend expects, for the same reason the Vulkan one wants them
+combined. A fragment shader with eight textures, three storage buffers and three
+uniform buffers comes out as `t0..t7`/`s0..s7` and `t8..t10` in `space2` and
+`b0..b2` in `space3`, which is SDL's layout verbatim.
+
+`--cull` is deliberately not passed. It lets the compiler drop a binding the
+shader never reads, and every binding after it would shift down by one while the
+counts printed above stayed put.
+
+### Two things the translation gets wrong
+
+Both were found by rendering the same frame on both backends and diffing, and
+neither produces a diagnostic anywhere. Worth knowing before writing a shader
+that trips a third.
+
+**`atomicStore` in any shader compiled twice.** SPIRV-Cross turns an
+`OpAtomicStore` into `InterlockedExchange` with a temporary for the old value it
+discards. The temporary is declared on the first pass and skipped on later ones,
+because the map it is cached in is not cleared by the reset between passes, so
+the emitted HLSL names a variable that was never declared and DXC rejects it.
+Anything that forces a second pass is enough — `cluster_cull.wgsl` gets there
+through the continue blocks in its bitonic sort. `atomicExchange` with the
+result discarded is the same operation and declares its result inline.
+
+**An array of matrices reached through a by-value struct parameter.** A function
+taking a uniform block by value and indexing an `array<mat4x4<f32>, N>` inside
+it reads back matrices that are not the ones in the buffer. Vector members of
+the same block are fine; indexing the array at the call site, where the block is
+still the uniform global, is fine. This one is silent in the worst way: in
+`shaders/include/shadow.wgsl` it put every projected depth outside `0 .. 1`,
+which is the "nothing was recorded here" early-out, so the whole scene rendered
+unshadowed and nothing failed.
 
 ## Layout
 

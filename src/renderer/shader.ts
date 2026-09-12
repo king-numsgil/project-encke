@@ -1,4 +1,4 @@
-// Turning a `.spv` file into something SDL can bind.
+// Turning a compiled shader file into something SDL can bind.
 //
 // Nothing here decides what the resource counts are — they arrive as arguments,
 // from `shaders.generated.ts`, which got them from `shadercc`'s own report on
@@ -6,12 +6,19 @@
 // on trust and cannot check them: a shader declaring a sampler its create-info
 // does not mention gets no descriptor for it and samples zeroes, with no error
 // raised anywhere.
+//
+// Nor does anything here decide which *file* to open. `build.ts` writes both a
+// `.spv` and, on Windows, a `.dxil` for every entry point, and the manifest
+// names neither: it hands over the path without an extension, because which
+// bytecode is wanted is a property of the device that got opened rather than of
+// the build that produced them.
 
 import {
     SDL_CreateGPUComputePipeline,
     SDL_CreateGPUShader,
     SDL_free,
     SDL_GetError,
+    SDL_GetGPUShaderFormats,
     type SDL_GPUComputePipeline,
     type SDL_GPUComputePipelineCreateInfo,
     type SDL_GPUDevice,
@@ -23,14 +30,37 @@ import {
 } from "../bindings/SDL3";
 
 /**
+ * The bytecode format to load for this device.
+ *
+ * SPIR-V first, because a device accepting it is the Vulkan backend and that is
+ * the path everything here was developed against. DXIL is the D3D12 backend's,
+ * translated from the same SPIR-V at build time.
+ */
+function bytecodeFormat(device: Pointer<SDL_GPUDevice>): SDL_GPUShaderFormat {
+    const formats = SDL_GetGPUShaderFormats(device);
+    if ((formats & SDL_GPUShaderFormat.SPIRV) !== SDL_GPUShaderFormat.INVALID) {
+        return SDL_GPUShaderFormat.SPIRV;
+    }
+    if ((formats & SDL_GPUShaderFormat.DXIL) !== SDL_GPUShaderFormat.INVALID) {
+        return SDL_GPUShaderFormat.DXIL;
+    }
+    return SDL_GPUShaderFormat.INVALID;
+}
+
+/** The extension `build.ts` wrote that format under. */
+function extensionFor(format: SDL_GPUShaderFormat): string {
+    return format === SDL_GPUShaderFormat.DXIL ? ".dxil" : ".spv";
+}
+
+/**
  * A graphics shader, with the counts SDL cannot work out for itself.
  *
- * SPIR-V only. `SDL_CreateGPUDevice` was asked for SPIR-V and nothing else,
- * which on its own selects Vulkan.
+ * `stem` is the compiled shader's path without an extension; the one that gets
+ * opened depends on the device.
  */
 export function loadShader(
     device: Pointer<SDL_GPUDevice>,
-    path: string,
+    stem: string,
     entrypoint: string,
     stage: SDL_GPUShaderStage,
     numSamplers: u32,
@@ -38,6 +68,13 @@ export function loadShader(
     numStorageBuffers: u32,
     numUniformBuffers: u32,
 ): Pointer<SDL_GPUShader> | null {
+    const format = bytecodeFormat(device);
+    if (format === SDL_GPUShaderFormat.INVALID) {
+        console.log("shader: this device takes neither SPIR-V nor DXIL, and nothing else was built");
+        return null;
+    }
+    const path = `${stem}${extensionFor(format)}`;
+
     const size: FixedArray<usize, 1> = fixedArray(1, 0);
     const code = SDL_LoadFile(cstring(path), size);
     if (code === null) {
@@ -49,7 +86,7 @@ export function loadShader(
         code: code.reify<u8>(),
         code_size: size[0],
         entrypoint: cstring(entrypoint),
-        format: SDL_GPUShaderFormat.SPIRV,
+        format: format,
         stage: stage,
         num_samplers: numSamplers,
         num_storage_textures: numStorageTextures,
@@ -76,7 +113,7 @@ export function loadShader(
  */
 export function loadComputePipeline(
     device: Pointer<SDL_GPUDevice>,
-    path: string,
+    stem: string,
     entrypoint: string,
     numSamplers: u32,
     numReadonlyStorageTextures: u32,
@@ -88,6 +125,13 @@ export function loadComputePipeline(
     threadsY: u32,
     threadsZ: u32,
 ): Pointer<SDL_GPUComputePipeline> | null {
+    const format = bytecodeFormat(device);
+    if (format === SDL_GPUShaderFormat.INVALID) {
+        console.log("shader: this device takes neither SPIR-V nor DXIL, and nothing else was built");
+        return null;
+    }
+    const path = `${stem}${extensionFor(format)}`;
+
     const size: FixedArray<usize, 1> = fixedArray(1, 0);
     const code = SDL_LoadFile(cstring(path), size);
     if (code === null) {
@@ -99,7 +143,7 @@ export function loadComputePipeline(
         code: code.reify<u8>(),
         code_size: size[0],
         entrypoint: cstring(entrypoint),
-        format: SDL_GPUShaderFormat.SPIRV,
+        format: format,
         num_samplers: numSamplers,
         num_readonly_storage_textures: numReadonlyStorageTextures,
         num_readonly_storage_buffers: numReadonlyStorageBuffers,

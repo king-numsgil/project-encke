@@ -54,7 +54,7 @@ function lookSpeed(): f32 {
 
 export function run(options: Reference<Options>): i32 {
     const display = new Display();
-    if (!display.open("Encke — clustered forward", options.width, options.height, options.present)) {
+    if (!display.open("Encke — clustered forward", options.width, options.height, options.present, options.gpu)) {
         return -1;
     }
 

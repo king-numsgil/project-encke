@@ -774,7 +774,7 @@ at the top of `src/ecs/entities.ts` lays out the three shapes a fix could take;
 ## Layout
 
 ```
-build.ts                    shaders -> SPIR-V -> manifest, then the program
+build.ts                    shaders -> SPIR-V -> DXIL -> manifest, then the program
 assets/
   fonts/                    the overlay's two faces, and their licences
   materials/                PBR maps, one folder per material
@@ -833,6 +833,26 @@ On Windows `build.ts` fetches the prebuilt `-VC` packages from libsdl-org's
 releases into `build/sdl3/` and copies their DLLs beside the executable. Adding
 SDL3_mixer later is one line in `DEPENDENCIES`. Elsewhere the same list resolves
 through pkg-config instead.
+
+`SDL_shadercross` is a dependency too, but a built one rather than a downloaded
+one — it publishes no releases. On the first Windows build, `build.ts` clones it
+and SPIRV-Cross at pinned commits, fetches the DirectXShaderCompiler release it
+was tested against, and builds the three into `build/shadercross/`. It takes a
+couple of minutes once and nothing after that. `tools/shadercc/README.md` has
+the why.
+
+### Backends
+
+`--gpu vulkan` (the default) or `--gpu direct3d12`, which run the same frame
+from the same WGSL through different bytecode: the SPIR-V `shadercc` emits, or
+the DXIL `shadercross` translates it into. Which file gets opened is decided in
+`src/renderer/shader.ts` by asking the device, not by the build.
+
+They agree, frame for frame and pixel for pixel, and the two are within noise of
+each other on frame time. That is worth re-checking after a shader change rather
+than assuming, because the failure mode of the translation step is silence — see
+the note at the top of `shaders/include/shadow.wgsl` for one that cost an
+afternoon.
 
 SDL3_image's `optional/` folder is **not** optional here: it holds the codec
 DLLs, including `libpng16-16.dll`, and none of them are linked statically.

@@ -35,6 +35,17 @@ import {
 } from "../bindings/SDL3";
 import { presentModeName } from "./options.ts";
 
+/**
+ * The bytecode an SDL backend takes, for the backends `build.ts` compiles for.
+ *
+ * `shaders/out` holds a `.spv` and a `.dxil` for every entry point, so this is
+ * the whole of the choice: D3D12 takes the DXIL, everything else takes the
+ * SPIR-V.
+ */
+function shaderFormatFor(driver: string): SDL_GPUShaderFormat {
+    return driver === "direct3d12" ? SDL_GPUShaderFormat.DXIL : SDL_GPUShaderFormat.SPIRV;
+}
+
 export class Display {
     window: Pointer<SDL_Window> | null;
     device: Pointer<SDL_GPUDevice> | null;
@@ -61,7 +72,13 @@ export class Display {
         this.height = 0;
     }
 
-    open(title: string, requestedWidth: i32, requestedHeight: i32, requested: SDL_GPUPresentMode): boolean {
+    open(
+        title: string,
+        requestedWidth: i32,
+        requestedHeight: i32,
+        requested: SDL_GPUPresentMode,
+        driver: string,
+    ): boolean {
         const window = SDL_CreateWindow(cstring(title), requestedWidth, requestedHeight, SDL_WindowFlags.NONE);
         if (window === null) {
             console.log(`display: window failed : ${stringFromCString(SDL_GetError())}`);
@@ -69,10 +86,11 @@ export class Display {
         }
         this.window = window;
 
-        // SPIR-V and nothing else, which on its own selects Vulkan. Naming the
-        // driver too means a machine with a broken loader fails here rather than
-        // quietly running somewhere the shaders were not compiled for.
-        const device = SDL_CreateGPUDevice(SDL_GPUShaderFormat.SPIRV, true, cstring("vulkan"));
+        // One format, and the one this driver takes. Asking for both would let
+        // SDL fall back to a backend the run was not meant to be measuring, and
+        // naming the driver as well means a machine with a broken loader fails
+        // here rather than quietly running somewhere else.
+        const device = SDL_CreateGPUDevice(shaderFormatFor(driver), true, cstring(driver));
         if (device === null) {
             console.log(`display: device failed : ${stringFromCString(SDL_GetError())}`);
             SDL_DestroyWindow(window);
@@ -81,8 +99,10 @@ export class Display {
         }
         this.device = device;
 
-        const driver = SDL_GetGPUDeviceDriver(device);
-        console.log(`display: driver ${driver === null ? "?" : stringFromCString(driver)}`);
+        // What SDL says it opened, not what was asked for — they agree here,
+        // since the request named a driver, but the log should be the answer.
+        const opened = SDL_GetGPUDeviceDriver(device);
+        console.log(`display: driver ${opened === null ? "?" : stringFromCString(opened)}`);
 
         if (!SDL_ClaimWindowForGPUDevice(device, window)) {
             console.log(`display: claiming the window failed : ${stringFromCString(SDL_GetError())}`);

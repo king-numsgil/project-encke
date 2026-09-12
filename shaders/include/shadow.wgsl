@@ -16,6 +16,19 @@
 // The cost of an atlas is that filtering can walk out of one tile and into its
 // neighbour, which reads as a bar of wrong shadow along a tile edge. Every tap
 // is clamped to the tile's interior for that reason.
+//
+// **Every function here takes its matrix as an argument rather than indexing
+// `Shadows` for it.** That is not a style choice. `Shadows` holds
+// `array<mat4x4<f32>, 4>`, and a function that takes the block by value and
+// indexes that array is mistranslated on the way to DXIL: the matrices read
+// back as something else, every projected depth lands outside `0 .. 1`, that is
+// the "nothing was recorded here" early-out, and the scene renders with no
+// shadows at all and no error anywhere. Indexing at the call site, where the
+// block is still the uniform global, produces the right matrix. The other
+// members are vectors and survive the copy, which is why the block is still
+// passed for them. None of this is visible on Vulkan, which runs the SPIR-V
+// these functions were compiled to directly; it is the SPIR-V to HLSL step that
+// loses it. See `tools/shadercc/README.md`.
 
 /** How many cascades the sun is split into. */
 const CASCADE_COUNT : u32 = 4u;
@@ -126,11 +139,14 @@ fn pcf_tile(
 fn sample_cascade(
     atlas: texture_depth_2d,
     atlas_sampler: sampler_comparison,
-    shadows: Shadows,
-    cascade: u32,
+    view_proj: mat4x4<f32>,
+    rect: vec4<f32>,
+    bias: f32,
+    texel: vec2<f32>,
+    radius: f32,
     world_pos: vec3<f32>,
 ) -> f32 {
-    let clip = shadows.cascade_view_proj[cascade] * vec4<f32>(world_pos, 1.0);
+    let clip = view_proj * vec4<f32>(world_pos, 1.0);
     let ndc = clip.xyz / clip.w;
 
     if ndc.z <= 0.0 || ndc.z >= 1.0 {
@@ -142,18 +158,7 @@ fn sample_cascade(
         return 1.0;
     }
 
-    // The bias is stated in world units and converted here, so it is the same
-    // physical distance in every cascade rather than the same clip-depth number.
-    let reference = ndc.z - shadows.params.x * shadows.cascade_depth_scale[cascade];
-    return pcf_tile(
-        atlas,
-        atlas_sampler,
-        shadows.cascade_rect[cascade],
-        tile_uv,
-        reference,
-        shadows.atlas_texel.xy,
-        shadows.params.z,
-    );
+    return pcf_tile(atlas, atlas_sampler, rect, tile_uv, ndc.z - bias, texel, radius);
 }
 
 /**
@@ -165,20 +170,39 @@ fn sample_cascade(
  * begins exactly where the object does. Offsetting unconditionally — which this
  * did at first — lifts every contact shadow by a texel's worth of world space,
  * which in the far cascades is most of a metre.
+ *
+ * The caller picks the cascade with {@link cascade_for} and passes both its
+ * matrix and the next one's, for the reason at the top of this file.
+ * `next_view_proj` is clamped to the last cascade rather than left to run off
+ * the end: it is unused when there is no cascade to blend into, but the index
+ * is evaluated either way.
  */
 fn sun_shadow(
     atlas: texture_depth_2d,
     atlas_sampler: sampler_comparison,
     shadows: Shadows,
+    cascade: u32,
+    view_proj: mat4x4<f32>,
+    next_view_proj: mat4x4<f32>,
     world_pos: vec3<f32>,
     normal: vec3<f32>,
     light_dir: vec3<f32>,
     view_z: f32,
 ) -> f32 {
-    let cascade = cascade_for(view_z, shadows.cascade_split);
     let slope = obliquity(normal, light_dir);
     let offset = normal * (shadows.cascade_texel_ws[cascade] * shadows.params.y * slope);
-    let lit = sample_cascade(atlas, atlas_sampler, shadows, cascade, world_pos + offset);
+    // The bias is stated in world units and converted here, so it is the same
+    // physical distance in every cascade rather than the same clip-depth number.
+    let lit = sample_cascade(
+        atlas,
+        atlas_sampler,
+        view_proj,
+        shadows.cascade_rect[cascade],
+        shadows.params.x * shadows.cascade_depth_scale[cascade],
+        shadows.atlas_texel.xy,
+        shadows.params.z,
+        world_pos + offset,
+    );
 
     // Cross-fade into the next cascade over the last slice of this one, so the
     // resolution change is a gradient rather than a visible line across the floor.
@@ -195,7 +219,16 @@ fn sun_shadow(
     }
 
     let next_offset = normal * (shadows.cascade_texel_ws[cascade + 1u] * shadows.params.y * slope);
-    let next = sample_cascade(atlas, atlas_sampler, shadows, cascade + 1u, world_pos + next_offset);
+    let next = sample_cascade(
+        atlas,
+        atlas_sampler,
+        next_view_proj,
+        shadows.cascade_rect[cascade + 1u],
+        shadows.params.x * shadows.cascade_depth_scale[cascade + 1u],
+        shadows.atlas_texel.xy,
+        shadows.params.z,
+        world_pos + next_offset,
+    );
     return mix(lit, next, t);
 }
 
@@ -211,12 +244,13 @@ fn spot_shadow(
     atlas_sampler: sampler_comparison,
     shadows: Shadows,
     slot: u32,
+    view_proj: mat4x4<f32>,
     world_pos: vec3<f32>,
     normal: vec3<f32>,
     light_dir: vec3<f32>,
 ) -> f32 {
     let offset = normal * (shadows.spot_params.y * obliquity(normal, light_dir));
-    let clip = shadows.spot_view_proj[slot] * vec4<f32>(world_pos + offset, 1.0);
+    let clip = view_proj * vec4<f32>(world_pos + offset, 1.0);
     if clip.w <= 0.0 {
         return 1.0;
     }

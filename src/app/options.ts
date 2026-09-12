@@ -20,6 +20,17 @@ export class Options {
     /** What was asked for. Support is queried later, against the real window. */
     present: SDL_GPUPresentMode;
 
+    /**
+     * Which SDL_gpu backend to open, by SDL's own driver name.
+     *
+     * Here for the same reason the present mode is: it changes what a frame
+     * time means. The two backends run different bytecode — `vulkan` the
+     * SPIR-V, `direct3d12` the DXIL translated from it — compiled from the same
+     * WGSL, so this is also the only way to tell whether a difference is the
+     * renderer or the translation.
+     */
+    gpu: string;
+
     /** Empty when no screenshot was asked for. */
     screenshot: string;
 
@@ -119,6 +130,10 @@ export class Options {
         // defaulting to it is how that gets observed rather than assumed.
         // `--present vsync` still forces the safe mode.
         this.present = SDL_GPUPresentMode.MAILBOX;
+        // Vulkan, because SPIR-V is what the shaders are compiled to and the
+        // DXIL is a translation of it — so this is the path a difference
+        // between the two is measured against.
+        this.gpu = "vulkan";
         this.screenshot = "";
         this.frames = 0;
         this.lights = 160;
@@ -324,6 +339,14 @@ export function parseOptions(args: string[]): Options {
                 options.present = presentModeFrom(args[i + 1]);
             }
             i += 2;
+        } else if (flag === "--gpu" && hasValue) {
+            if (args[i + 1] !== "vulkan" && args[i + 1] !== "direct3d12") {
+                console.log(`options: --gpu wants vulkan or direct3d12, got '${args[i + 1]}'`);
+                options.invalid = true;
+            } else {
+                options.gpu = args[i + 1];
+            }
+            i += 2;
         } else if (flag === "--lights" && hasValue) {
             const value = parseInteger(args[i + 1]);
             if (value < 0) {
@@ -422,6 +445,7 @@ export function printUsage(): void {
     console.log("  --width N            render width, default 1600");
     console.log("  --height N           render height, default 900");
     console.log("  --present MODE       mailbox (default, falls back to vsync), vsync, immediate");
+    console.log("  --gpu BACKEND        vulkan (default) or direct3d12");
     console.log("  --screenshot PATH    write a PNG once the scene has settled, then exit");
     console.log("  --lights N           point lights in the test scene, default 160 (cap 380)");
     console.log("  --model PATH         a .gltf or .glb to load beside the test scene");
